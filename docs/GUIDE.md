@@ -38,6 +38,7 @@ Champs d'une offre :
 | Champ            | Rôle                                                   | Exemple                    |
 |------------------|--------------------------------------------------------|----------------------------|
 | `nom`            | nom affiché et repris dans le message WhatsApp         | `"ProNET 3 Go"`            |
+| `code`           | code USSD direct : la carte le compose, l'offre s'active sans menu | `"#175#221#"` |
 | `prix`           | en F CFA, nombre sans espace                           | `975`                      |
 | `validite`       | forme courte, **obligatoirement** `N h` ou `N j`       | `"7 j"`                    |
 | `validiteLongue` | affichée sur la carte et dans WhatsApp                 | `"7 jours"`                |
@@ -52,7 +53,8 @@ jauge. Un avertissement s'affiche si le `gain` saisi ne correspond pas aux ligne
 
 Astuce : ` ` dans un texte = espace insécable (évite « 1 000 F » coupé en fin de ligne).
 
-Paramètres globaux : `lancementTexte` (date affichée), `ussd` (**`#175#`**), `whatsapp` (numéro
+Paramètres globaux : `lancementTexte` (date affichée), `ussd` (**`#175#`**, le menu général ; chaque
+offre a en plus son `code` direct, qui doit commencer par `#175#` et finir par `#`), `whatsapp` (numéro
 international sans « + », ex. `221755250000`), `serviceClient`, `email`, `adresse` (adresse du site,
 voir § 6), `vedette` (l'offre rejouée dans le haut de page, par son `id`).
 
@@ -73,8 +75,8 @@ Pour régénérer le PDF « maison » à partir de `offres.js` :
 - [ ] Date de lancement : **21 octobre 2026** retenue (`lancementTexte`).
 - [ ] Validité ProMIX 475 : **24 h** retenue — si 48 h, changer `validite` et `validiteLongue`.
 - [ ] Numéro WhatsApp officiel : **75 525 00 00** repris du site promobile.sn (`whatsapp`).
-- [ ] Code d'activation : **#175#** (confirmé le 19/10/2026 ; ouvre un menu où le client choisit
-      son offre). Lien d'appel `tel:%23175%23`.
+- [x] Codes d'activation : **un code direct par offre**, testés par le client le 19/10/2026
+      (ex. ProNET 3 Go = `#175#221#`, lien `tel:%23175%23221%23`). `#175#` seul ouvre le menu.
 - [ ] PDF final fourni par Marketing (sinon le PDF généré reste en place).
 - [ ] **iPhone** : Apple bloque les liens d'appel contenant `#` ou `*`. Sur iPhone, la page met donc
       « Copier le code » en premier (le client colle le code dans l'app Téléphone). À valider avec le client.
@@ -112,7 +114,18 @@ vérifiée par fichier HTML (un TXT est impossible sur un sous-domaine en CNAME)
 **Aperçu WhatsApp** : WhatsApp garde l'image en cache. Pour la changer, renommer le fichier
 (`og-image-v2.png`, et mettre à jour `tools/build_page.py`) et partager le lien avec `?v=2`.
 
-## 7. Mesure (F5) — sans données personnelles
+## 7. Animations et bouton pause
+
+Au chargement, la carte du haut (l'offre `vedette`) est lancée, casse le « mur » et se relève ; les
+éclats restent en suspension et la carte bat doucement. Le téléphone de « Comment activer » tape le
+code de l'offre vedette tant que la section est à l'écran. Tout s'arrête hors de l'écran (batterie).
+
+Deux petits boutons **pause** (en haut à droite du slogan, et sur le téléphone) arrêtent toutes ces
+animations : c'est une **exigence d'accessibilité** (WCAG 2.2.2, tout mouvement de plus de 5 s doit
+pouvoir être mis en pause). Le choix est mémorisé sur le téléphone du visiteur. Les personnes qui ont
+activé « Supprimer les animations » dans leur téléphone voient la page immobile, au complet.
+
+## 8. Mesure (F5) — sans données personnelles
 
 La page émet ces événements : `visite`, `offre_clic`, `activer_ussd`, `activer_whatsapp`,
 `copier_code`, `telecharger_pdf` (+ `filtre`), chacun avec `offre` et `source`.
@@ -127,11 +140,12 @@ Plausible (payant) ou Google Analytics 4 fonctionnent aussi sans rien changer d'
 Sans outil, les événements restent visibles dans la console du navigateur (préfixe `[mesure]`,
 niveau « Verbose » à activer), utile pour la recette.
 
-## 8. Recette (critères de validation § 7)
+## 9. Recette (critères de validation § 7)
 
 - [ ] Les 8 cartes affichent les prix, volumes et validités du catalogue officiel.
-- [ ] Android : chaque carte ouvre le clavier avec `#175#` déjà saisi.
-- [ ] iPhone : « Copier le code » copie `#175#`, à coller dans l'app Téléphone.
+- [ ] Android : chaque carte ouvre le clavier avec **son** code déjà saisi (ex. `#175#221#`) et
+      l'offre s'active directement.
+- [ ] iPhone : « Copier le code » copie le code de l'offre, à coller dans l'app Téléphone.
 - [ ] Chaque carte ouvre WhatsApp avec le bon message prérempli.
 - [ ] Tester aussi **depuis un lien ouvert dans WhatsApp, Facebook et Instagram** (navigateurs
       intégrés, d'où vient l'essentiel du trafic) : clavier, WhatsApp et PDF.

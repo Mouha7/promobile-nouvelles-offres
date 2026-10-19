@@ -120,7 +120,8 @@ def construire(sortie: pathlib.Path) -> None:
              else f"{x['label']} : {x['apres']}") for x in o["details"])
         gain = o["gain"] + (f"<br/><font size='8.5'>{o['gainSecondaire']}</font>" if o.get("gainSecondaire") else "")
         lignes.append([
-            Paragraph(f"<b>{o['nom']}</b><br/><font color='#5F646B' size='7.6'>{d['familles'][o['famille']]['libelle']}</font>", st["cell"]),
+            Paragraph(f"<b>{o['nom']}</b><br/><font color='#5F646B' size='7.6'>{d['familles'][o['famille']]['libelle']}</font>"
+                      f"<br/><font color='#E30613' size='9'><b>{o['code']}</b></font>", st["cell"]),
             Paragraph(avant, st["cellg"]), Paragraph(apres, st["cell"]),
             Paragraph(f"{fcfa(o['prix'])} F", st["cellb"]), Paragraph(o["validiteLongue"], st["cell"]),
             Paragraph(gain, st["gain"]),
@@ -147,7 +148,8 @@ def construire(sortie: pathlib.Path) -> None:
     affiche = " ".join([affiche[0:2], affiche[2:5], affiche[5:7], affiche[7:9]]) if len(affiche) == 9 else affiche
     bloc_ussd = [Paragraph("<b>Par le code</b>", st["p"]), Spacer(1, 2),
                  Paragraph(d["ussd"], st["code"]), Spacer(1, 2),
-                 Paragraph("Composez le code sur votre téléphone, puis suivez le menu pour choisir votre offre.", st["pg"])]
+                 Paragraph("Composez le code de l'offre (en rouge dans le tableau) : elle s'active directement. "
+                           f"Ou composez {d['ussd']} et suivez le menu.", st["pg"])]
     bloc_wa = [Paragraph("<b>Sur WhatsApp</b>", st["p"]), Spacer(1, 2),
                Paragraph(f"+221 {affiche}", st["code"]), Spacer(1, 2),
                Paragraph("Écrivez le nom de l'offre souhaitée, par exemple « Je souhaite activer l'offre ProNET 3 Go ».", st["pg"])]

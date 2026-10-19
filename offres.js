@@ -43,6 +43,7 @@ var PROMOBILE = {
   "offres": [
     {
       "id": "promini-175",
+      "code": "#175#12#",
       "famille": "ProMINI",
       "nom": "ProMINI 175",
       "ancienNom": "ProMINI 175",
@@ -58,6 +59,7 @@ var PROMOBILE = {
     },
     {
       "id": "pronet-3go",
+      "code": "#175#221#",
       "famille": "ProNET",
       "nom": "ProNET 3 Go",
       "ancienNom": "ProNET 2,5 Go",
@@ -72,6 +74,7 @@ var PROMOBILE = {
     },
     {
       "id": "pronet-4go",
+      "code": "#175#231#",
       "famille": "ProNET",
       "nom": "ProNET 4 Go",
       "ancienNom": "ProNET 3,5 Go",
@@ -86,6 +89,7 @@ var PROMOBILE = {
     },
     {
       "id": "pronet-m-6-5go",
+      "code": "#175#232#",
       "famille": "ProNET",
       "nom": "ProNET (M) 6,5 Go",
       "ancienNom": "ProNET (M) 5,5 Go",
@@ -100,6 +104,7 @@ var PROMOBILE = {
     },
     {
       "id": "promix-475",
+      "code": "#175#31#",
       "famille": "ProMIX",
       "nom": "ProMIX 475",
       "ancienNom": "ProMIX 475",
@@ -116,6 +121,7 @@ var PROMOBILE = {
     },
     {
       "id": "promix-975",
+      "code": "#175#32#",
       "famille": "ProMIX",
       "nom": "ProMIX 975",
       "ancienNom": "ProMIX 975",
@@ -133,6 +139,7 @@ var PROMOBILE = {
     },
     {
       "id": "promix-1375",
+      "code": "#175#331#",
       "famille": "ProMIX",
       "nom": "ProMIX 1375",
       "ancienNom": "ProMIX 1375",
@@ -149,6 +156,7 @@ var PROMOBILE = {
     },
     {
       "id": "promix-1975",
+      "code": "#175#332#",
       "famille": "ProMIX",
       "nom": "ProMIX 1975",
       "ancienNom": "ProMIX 1975",

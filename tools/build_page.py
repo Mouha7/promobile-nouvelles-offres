@@ -108,9 +108,25 @@ def duree(o: dict) -> tuple[int, str]:
     return int(m.group(1)), {"h": "HUR", "j": "DAY"}[m.group(2)]
 
 
-def tel(d: dict) -> str:
+def tel(code: str) -> str:
     """Règle technique : chaque « # » est encodé en %23 (sinon le navigateur coupe le lien)."""
-    return "tel:" + d["ussd"].replace("#", "%23")
+    return "tel:" + code.replace("#", "%23")
+
+
+def verifier_codes(d: dict) -> None:
+    """Chaque offre a son code direct (#175#221#…), qui commence par le code du menu (#175#)."""
+    menu = d["ussd"]
+    if not re.fullmatch(r"[#*]\d+#", menu):
+        raise Erreur(f"« ussd » : « {menu} » n'est pas un code valide (ex. « #175# »)")
+    vus: dict[str, str] = {}
+    for o in d["offres"]:
+        code = o.get("code", "")
+        if not re.fullmatch(re.escape(menu) + r"(\d+#)+", code):
+            raise Erreur(f"offre « {o['nom']} » : code « {code} » invalide — attendu {menu} suivi de "
+                         f"chiffres et de « # » (ex. « {menu}221# »)")
+        if code in vus:
+            raise Erreur(f"le code {code} est utilisé par « {vus[code]} » et « {o['nom']} »")
+        vus[code] = o["nom"]
 
 
 def wa_affiche(d: dict) -> str:
@@ -173,8 +189,9 @@ def html_carte(d: dict, o: dict) -> str:
         f'<p class="prix"><span class="sr">Prix : </span>{fcfa(o["prix"])}<small>F</small></p></div>'
         f'<ul class="jauges">{"".join(html_jauge(j) for j in js)}</ul>'
         f'{inclus}'
-        f'<a class="activer" href="{tel(d)}" aria-label="Activer {e(o["nom"])}, {e(fcfa(o["prix"]))} francs, '
-        f'{e(o["validiteLongue"])}">Activer<span class="act-sous">{e(d["ussd"])} ou WhatsApp</span>{FLECHE}</a>'
+        f'<a class="activer" href="{tel(o["code"])}" data-code="{e(o["code"])}" aria-label="Activer {e(o["nom"])} '
+        f'avec {e(o["code"])}, {e(fcfa(o["prix"]))} francs, {e(o["validiteLongue"])}">'
+        f'<span class="act-txt">Activer<span class="act-sous">{e(o["code"])} ou WhatsApp</span></span>{FLECHE}</a>'
         f'</article>')
 
 
@@ -195,9 +212,7 @@ def html_filtres(d: dict) -> str:
 
 
 def html_vedette(d: dict) -> str:
-    o = next((x for x in d["offres"] if x["id"] == d.get("vedette")), None)
-    if not o:
-        raise Erreur(f"« vedette » : aucune offre n'a l'id « {d.get('vedette')} »")
+    o = offre_vedette(d)
     j = jauges(o)[0]
     return (
         f'<a class="vedette" href="#{e(o["id"])}" aria-label="Exemple : {e(o["nom"])}, '
@@ -218,8 +233,16 @@ def html_h1(d: dict) -> str:
     return f'<h1 id="slogan">{e(slogan)}.</h1>'
 
 
+def offre_vedette(d: dict) -> dict:
+    o = next((x for x in d["offres"] if x["id"] == d.get("vedette")), None)
+    if not o:
+        raise Erreur(f"« vedette » : aucune offre n'a l'id « {d.get('vedette')} »")
+    return o
+
+
 def html_code(d: dict) -> str:
-    return "".join(f'<span style="--k:{i}">{e(c)}</span>' for i, c in enumerate(d["ussd"]))
+    """Le téléphone de « Comment activer » tape le code direct de l'offre vedette."""
+    return "".join(f"<span>{e(c)}</span>" for c in offre_vedette(d)["code"])
 
 
 def html_contact(d: dict) -> str:
@@ -347,6 +370,7 @@ def construire(d: dict, page: str) -> str:
     ids = [o["id"] for o in d["offres"]]
     if len(ids) != len(set(ids)):
         raise Erreur("deux offres ont le même « id »")
+    verifier_codes(d)
     zones = {
         "meta": html_meta(d),
         "jsonld": jsonld(d),
@@ -367,6 +391,8 @@ def construire(d: dict, page: str) -> str:
         "pdfPoids": poids_pdf(d),
         "waAffiche": wa_affiche(d),
         "serviceClient": e(d["serviceClient"]),
+        "vedetteNom": e(offre_vedette(d)["nom"]),
+        "vedetteCode": e(offre_vedette(d)["code"]),
     })
     return page
 

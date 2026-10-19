@@ -35,14 +35,16 @@
 <script defer data-domain="offres.promobile.sn" src="https://plausible.io/js/script.tagged-events.js"></script>
 -->
 
-<!-- Animations : seulement si le mouvement est autorisé. Sans cette classe, tout s'affiche à l'état final. -->
-<script>(function(h){try{if(window.matchMedia&&matchMedia("(prefers-reduced-motion: no-preference)").matches&&"IntersectionObserver"in window){h.className+=" anim"}}catch(e){}})(document.documentElement);</script>
+<!-- Animations : seulement si le mouvement est autorisé et le navigateur assez récent (propriétés translate/rotate/scale).
+     Sans cette classe, tout s'affiche à l'état final, immobile. -->
+<script>(function(h){try{if(window.matchMedia&&matchMedia("(prefers-reduced-motion: no-preference)").matches&&"IntersectionObserver"in window&&window.CSS&&CSS.supports&&CSS.supports("translate","1px")){h.className+=" anim"}}catch(e){}})(document.documentElement);</script>
 
 <style>
 /* ----------------------------------------------------------------
    Charte Promobile : blanc, rouge #E30613, noir bleuté #14181F, accent jaune #FFCF00 (ruban « Nouvelle offre »
    de promobile.sn). Poppins pour le texte, Barlow Condensed (proche du DIN du site officiel) pour les chiffres.
    Concept « Avant → Après » : chaque carte montre l'ancien volume (gris) et ce qui s'ajoute (rouge), au même prix.
+   Héros : la carte vedette est lancée comme une brique, casse le mur, se relève ; les éclats restent en suspension.
    ---------------------------------------------------------------- */
 @font-face{font-family:"Poppins";font-style:normal;font-weight:400;font-display:swap;src:url("assets/fonts/poppins-latin-400-normal.woff2") format("woff2")}
 @font-face{font-family:"Poppins";font-style:normal;font-weight:600;font-display:swap;src:url("assets/fonts/poppins-latin-600-normal.woff2") format("woff2")}
@@ -73,8 +75,11 @@
   --ombre:0 1px 2px rgba(20,24,31,.05),0 10px 28px -14px rgba(20,24,31,.22);
   --ombre-haut:0 2px 4px rgba(20,24,31,.06),0 22px 44px -18px rgba(20,24,31,.32);
   --sortie:cubic-bezier(.2,.8,.2,1);
-  /* ressort léger (rebond ~5 %) échantillonné en linear() */
-  --ressort:linear(0,.09 4%,.33 10%,.62 17%,.86 25%,1.01 33%,1.06 40%,1.05 48%,1.02 58%,1 70%,.995 82%,1);
+  /* ressort léger : cubic-bezier partout, linear() là où il est compris (sinon toute l'animation serait ignorée) */
+  --ressort:cubic-bezier(.34,1.4,.64,1);
+}
+@supports (animation-timing-function:linear(0,1)){
+  :root{--ressort:linear(0,.09 4%,.33 10%,.62 17%,.86 25%,1.01 33%,1.06 40%,1.05 48%,1.02 58%,1 70%,.995 82%,1)}
 }
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-padding-top:4.75rem}
@@ -117,11 +122,23 @@ h1,h2,h3{text-wrap:balance}
 .btn-lg{min-height:56px;font-size:1.02rem;padding:.85rem 1.4rem}
 .poids{font-weight:400;opacity:.75;font-size:.88em;white-space:nowrap}
 
+/* Bouton pause des animations (WCAG 2.2.2) : visible seulement quand les animations tournent */
+.btn-pause{
+  flex:none;display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;
+  border:1.5px solid var(--ligne);background:#fff;color:var(--noir);cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.btn-pause:hover{border-color:var(--noir)}
+.btn-pause[hidden]{display:none}
+.btn-pause svg{width:16px;height:16px}
+.btn-pause .i-lecture,.btn-pause[aria-pressed="true"] .i-pause{display:none}
+.btn-pause[aria-pressed="true"] .i-lecture{display:block}
+
 /* ---------- Ruban aperçu (visible seulement dans l'aperçu Claude) ---------- */
 .ruban{display:none;background:#FFF4CC;color:#5C4300;font-size:.85rem;text-align:center;padding:.5rem var(--gouttiere-d) .5rem var(--gouttiere-g);border-bottom:1px solid #F2DE9A}
 .ruban[data-on]{display:block}
 
 /* ---------- En-tête (non collant : l'écran est précieux) ---------- */
+.top{position:relative;z-index:3} /* devant les éclats du héros qui montent jusqu'ici */
 .top .wrap{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:60px;padding-block:.5rem}
 .logo{display:inline-flex;text-decoration:none;flex:none}
 .logo img{height:30px;width:auto}
@@ -132,9 +149,13 @@ h1,h2,h3{text-wrap:balance}
 @media (min-width:600px){.logo img{height:36px}.btn-pdf .lib-long{display:inline}.btn-pdf .lib-court{display:none}}
 
 /* ---------- Héros ---------- */
-.hero{background:radial-gradient(70% 85% at 100% 0%,rgba(227,6,19,.11),rgba(227,6,19,0) 70%)}
+/* z-index 2 : les éclats qui tombent sous le héros passent devant le fond de la section suivante.
+   overflow-x: clip coupe les éclats sur les côtés sans empêcher la chute ; repli « hidden » avant Safari 16. */
+.hero{position:relative;z-index:2;overflow:hidden;background:radial-gradient(70% 85% at 100% 0%,rgba(227,6,19,.11),rgba(227,6,19,0) 70%)}
+@supports (overflow:clip){.hero{overflow:visible;overflow-x:clip}}
 .hero-grille{display:grid;gap:1rem;padding-block:clamp(.75rem,3vw,3.5rem) clamp(1rem,3vw,3.5rem)}
-.hero-texte{display:grid;gap:.85rem;justify-items:start}
+.hero-texte{position:relative;z-index:1;display:grid;gap:.85rem;justify-items:start}
+.hero-haut{display:flex;align-items:center;justify-content:space-between;gap:.75rem;width:100%}
 .nouveau{
   display:inline-flex;align-items:center;gap:.5rem;margin:0;
   background:var(--jaune);color:var(--noir);border-radius:999px;padding:.32rem .8rem .32rem .55rem;
@@ -165,6 +186,28 @@ h1,h2,h3{text-wrap:balance}
 .v-apres{font-size:1.9rem;color:#fff}
 .vedette .j-barre{height:.7rem;background:rgba(255,255,255,.12)}
 .vedette .j-barre::before{background:rgba(255,255,255,.4)}
+
+/* Scène : fissures, brèche (le trou dans le mur), onde de choc, éclats. Tout est absolu : la mise en page ne bouge pas.
+   La scène ne crée pas de contexte d'empilement : le texte (z 1) passe devant les éclats (z 0), la carte (z 2) devant tout. */
+.scene{position:relative}
+.coeur{position:relative;z-index:2}
+.fissures,.breche,.onde,.debris{position:absolute;pointer-events:none}
+.fissures{z-index:0;left:-40%;top:-80%;width:180%;height:260%;overflow:visible}
+.fissures path{fill:none;stroke:rgba(20,24,31,.2);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:0}
+.fissures .r{stroke:rgba(227,6,19,.5)}
+.breche{z-index:1;left:-9px;right:-10px;top:-10px;bottom:-9px}
+.breche svg{display:block;width:100%;height:100%;fill:var(--rouge);rotate:1.5deg}
+.onde{z-index:1;--o:min(120vw,640px);left:50%;top:50%;width:var(--o);height:var(--o);margin:calc(var(--o) / -2) 0 0 calc(var(--o) / -2);border-radius:50%;border:3px solid var(--rouge);opacity:0}
+.debris{z-index:0;left:50%;top:50%;width:0;height:0;--kx:1.75px;--ky:.8px;--ks:.75}
+.grappe{position:absolute;left:0;top:0}
+.eclat{
+  position:absolute;left:0;top:0;overflow:visible;fill:currentColor;
+  width:calc(var(--t) * var(--ks) * 1px);height:calc(var(--t) * var(--ks) * 1px);
+  margin:calc(var(--t) * var(--ks) * -.5px) 0 0 calc(var(--t) * var(--ks) * -.5px);
+  transform:translate(calc(var(--xm,var(--x)) * var(--kx)),calc(var(--ym,var(--y)) * var(--ky))) rotate(calc(var(--r) * 1deg));
+}
+.eclat.o,.dd.o{display:none}
+.c-r{color:var(--rouge)}.c-f{color:var(--rouge-fonce)}.c-n{color:var(--noir)}.c-j{color:var(--jaune)}
 @media (min-width:880px){
   .hero-grille{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:center;gap:3.5rem}
   .hero-texte{gap:1.2rem}
@@ -174,11 +217,16 @@ h1,h2,h3{text-wrap:balance}
   .v-gain{display:block}
   .v-avant{font-size:1.7rem}.v-apres{font-size:2.6rem}
   .vedette .j-barre{height:.9rem}
+  .breche{left:-16px;right:-18px;top:-18px;bottom:-16px}
+  .debris{--kx:3.2px;--ky:2.3px;--ks:1}
+  .eclat{transform:translate(calc(var(--x) * var(--kx)),calc(var(--y) * var(--ky))) rotate(calc(var(--r) * 1deg))}
+  .eclat.o{display:block}
 }
 
 /* ---------- Section offres ---------- */
-.offres{padding-bottom:clamp(2rem,5vw,4rem)}
-.sec-tete{display:grid;gap:.2rem;padding-top:clamp(.25rem,2vw,1.5rem)}
+/* Jamais de z-index / transform / opacity ici : la barre de filtres collante (z 20) doit rester devant le héros. */
+.offres{position:relative;padding-bottom:clamp(2rem,5vw,4rem)}
+.sec-tete{position:relative;z-index:3;display:grid;gap:.2rem;padding-top:clamp(.25rem,2vw,1.5rem)}
 .sec-tete h2{margin:0;font-size:clamp(1.35rem,1.6vw + 1rem,2.1rem);letter-spacing:-.025em;line-height:1.15}
 .sec-tete p{margin:0;color:var(--texte-2);font-size:.92rem}
 .sec-tete p strong{color:var(--texte)}
@@ -197,9 +245,16 @@ h1,h2,h3{text-wrap:balance}
 .chip[aria-pressed="true"]{background:var(--noir);border-color:var(--noir);color:#fff}
 .chip[aria-pressed="true"] .nb{background:var(--rouge);color:#fff}
 
+.wrap-grille{position:relative;z-index:1}
 .grille{display:grid;grid-template-columns:1fr;gap:.85rem;padding-top:.35rem}
 @media (min-width:600px){.grille{grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}}
 @media (min-width:1040px){.grille{grid-template-columns:repeat(4,minmax(0,1fr));gap:1.1rem}}
+
+/* Éclats qui ont dérivé jusqu'aux offres : derrière la grille (cartes à fond blanc), visibles seulement dans les espaces */
+.derive{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.dd{position:absolute;top:var(--mt);left:var(--ml);width:calc(var(--t) * 1px);height:calc(var(--t) * 1px)}
+.dd svg{display:block;width:100%;height:100%;fill:currentColor;overflow:visible;rotate:calc(var(--r) * 1deg)}
+@media (min-width:1040px){.dd{top:var(--dt);left:var(--dl)}.dd.o{display:block}}
 
 /* ---------- Carte ---------- */
 .carte{
@@ -250,8 +305,9 @@ h1,h2,h3{text-wrap:balance}
 }
 .activer::after{content:"";position:absolute;inset:0;z-index:1;border-radius:var(--rayon)}
 .activer:focus-visible{outline:none}
-.act-sous{font-weight:400;font-size:.82rem;opacity:.7;margin-left:.1rem}
-.activer .fl{margin-left:auto;width:30px;height:30px;padding:6px;border-radius:50%;background:var(--rouge);transition:transform .2s var(--sortie)}
+.act-txt{display:grid;line-height:1.15;min-width:0}
+.act-sous{font-weight:400;font-size:.8rem;opacity:.72;font-family:var(--police)}
+.activer .fl{margin-left:auto;width:30px;height:30px;padding:6px;border-radius:50%;background:var(--rouge);transition:transform .2s var(--sortie);flex:none}
 @media (hover:hover){.carte:hover .activer{background:#000}.carte:hover .activer .fl{transform:translateX(3px)}}
 
 /* ---------- Comment activer ---------- */
@@ -266,16 +322,26 @@ h1,h2,h3{text-wrap:balance}
 .etapes span{color:var(--texte-2);font-size:.92rem}
 .etapes .code-inline{font-family:var(--chiffres);font-weight:700;font-size:1.1em;color:var(--rouge)}
 
-/* Téléphone dessiné en CSS : l'écran compose le code, puis la touche verte pulse (une seule fois) */
-.tel{width:min(100%,250px);justify-self:center;background:var(--noir);border-radius:34px;padding:12px;box-shadow:0 30px 60px -30px rgba(20,24,31,.6)}
-.tel-ecran{background:#fff;border-radius:24px;padding:1rem .9rem .9rem;display:grid;gap:.85rem;justify-items:center}
-.tel-code{display:flex;justify-content:center;min-height:3rem;align-items:center;font-family:var(--chiffres);font-weight:700;font-size:2.6rem;letter-spacing:.06em;line-height:1}
-.tel-code span{display:inline-block}
-.tel-pave{display:grid;grid-template-columns:repeat(3,44px);gap:8px 14px;justify-content:center;font-family:var(--chiffres);font-weight:700;font-size:1.15rem}
+/* Téléphone dessiné en CSS : l'écran compose le code direct de l'offre vedette, puis la touche verte sonne */
+.tel-zone{position:relative;justify-self:center;width:min(100%,250px)}
+.tel{background:var(--noir);border-radius:34px;padding:12px;box-shadow:0 30px 60px -30px rgba(20,24,31,.6)}
+.tel-ecran{background:#fff;border-radius:24px;padding:1rem .9rem .9rem;display:grid;gap:.6rem;justify-items:center}
+.tel-leg{margin:0;font-size:.75rem;font-weight:600;color:var(--texte-2)}
+.tel-code{display:flex;justify-content:center;min-height:2.6rem;align-items:center;font-family:var(--chiffres);font-weight:700;font-size:2.15rem;letter-spacing:.02em;line-height:1;white-space:nowrap}
+.tel-code span{display:inline-block;transition:transform .2s var(--sortie)}
+.tel-pave{display:grid;grid-template-columns:repeat(3,44px);gap:8px 14px;justify-content:center;font-family:var(--chiffres);font-weight:700;font-size:1.15rem;margin-top:.25rem}
 .tel-pave span{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--fond-2)}
-.tel-appel{width:52px;height:52px;border-radius:50%;background:#16A34A;display:grid;place-items:center;color:#fff}
+.tel-appel{position:relative;width:52px;height:52px;border-radius:50%;background:#16A34A;display:grid;place-items:center;color:#fff}
 .tel-appel svg{width:24px;height:24px}
-@media (max-width:799px){.tel{width:100%;border-radius:26px;padding:8px}.tel-ecran{grid-template-columns:1fr auto;align-items:center;border-radius:20px;padding:.6rem .6rem .6rem 1.1rem}.tel-pave{display:none}.tel-code{justify-content:flex-start;font-size:2.2rem}}
+.tel-appel::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid #16A34A;opacity:0;pointer-events:none}
+.btn-pause-tel{position:absolute;top:-10px;right:-10px;z-index:1;box-shadow:0 4px 12px -4px rgba(20,24,31,.3)}
+@media (max-width:799px){
+  .tel-zone{width:100%}
+  .tel{border-radius:26px;padding:8px}
+  .tel-ecran{grid-template-columns:1fr auto;grid-template-areas:"leg appel" "code appel";align-items:center;justify-items:start;border-radius:20px;padding:.55rem .6rem .6rem 1.1rem;gap:.1rem .75rem}
+  .tel-leg{grid-area:leg}.tel-code{grid-area:code;justify-content:flex-start;font-size:2rem}.tel-appel{grid-area:appel}
+  .tel-pave{display:none}
+}
 
 /* ---------- Bande catalogue ---------- */
 .cata .wrap{padding-block:clamp(2rem,5vw,4rem)}
@@ -344,7 +410,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 .secours p{margin:0;font-size:.86rem;color:var(--texte-2)}
 .secours[data-accent] p{color:var(--texte)}
 .code-ligne{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
-.code{font-family:var(--chiffres);font-weight:700;font-size:1.9rem;letter-spacing:.05em;line-height:1;background:#fff;border:1.5px solid var(--ligne);border-radius:12px;padding:.45rem .9rem;user-select:all;-webkit-user-select:all;flex:1 1 auto;text-align:center;min-width:120px}
+.code{font-family:var(--chiffres);font-weight:700;font-size:1.9rem;letter-spacing:.03em;line-height:1;background:#fff;border:1.5px solid var(--ligne);border-radius:12px;padding:.45rem .9rem;user-select:all;-webkit-user-select:all;flex:1 1 auto;text-align:center;min-width:140px;white-space:nowrap}
 .code-ligne .btn{min-height:48px;padding:.5rem 1rem;font-size:.9rem;flex:1 1 auto}
 .note{margin:0;font-size:.78rem;color:var(--texte-2);text-align:center}
 /* iPhone : Apple bloque les liens tel: contenant # ou * → la copie du code passe en premier */
@@ -362,19 +428,64 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 }
 .toast[data-on]{opacity:1;transform:translate(-50%,0)}
 
-/* ---------- Mouvement (seulement si html.anim : mouvement autorisé + IntersectionObserver) ----------
-   Seuls des transform partent d'un état « avant » : le texte, les prix et le code restent toujours lisibles. */
+/* ================================================================
+   MOUVEMENT — seulement si html.anim (mouvement autorisé, IntersectionObserver, translate/rotate/scale).
+   Seuls transform / opacity / translate / rotate / scale sont animés. Le texte n'est jamais caché.
+   ================================================================ */
 @keyframes pousse{from{transform:scaleX(0)}}
 @keyframes barre{from{transform:scaleX(0)}}
 @keyframes surgit{from{transform:scale(.55)}}
-@keyframes saute{0%{transform:translateY(.35em) scale(.7)}60%{transform:translateY(-.05em) scale(1.08)}100%{transform:none}}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.55)}100%{box-shadow:0 0 0 18px rgba(22,163,74,0)}}
+/* Lancer → impact → se relever : UNE seule animation sur la carte (plusieurs se masqueraient entre elles) */
+@keyframes intro{
+  0%{translate:55vw -60vh;rotate:-32deg;scale:1.8;animation-timing-function:cubic-bezier(.5,0,.9,.45)}
+  39%{translate:0 0;rotate:0deg;scale:1.12 .82;animation-timing-function:cubic-bezier(.2,.8,.3,1)}
+  55%{translate:0 -10px;rotate:1.6deg;scale:.95 1.06}
+  70%{translate:0 4px;rotate:-.8deg;scale:1.03 .98}
+  85%{translate:0 -2px;rotate:.3deg;scale:.99 1.01}
+  100%{translate:0 0;rotate:0deg;scale:1}
+}
+@keyframes jaillit{0%{transform:scale(0) rotate(-14deg)}60%{transform:scale(1.08) rotate(2deg)}100%{transform:none}}
+@keyframes onde{from{transform:scale(.15);opacity:.85}to{transform:scale(1);opacity:0}}
+@keyframes secousse{0%,100%{transform:none}20%{transform:translate(-4px,2px)}40%{transform:translate(4px,-2px)}60%{transform:translate(-3px,1px)}80%{transform:translate(2px,-1px)}}
+@keyframes fissure{from{stroke-dashoffset:1}}
+@keyframes eclate{from{transform:translate(0,0) rotate(0deg) scale(0)}}
+@keyframes battement{0%,52%,100%{transform:scale(1)}13%{transform:scale(1.015)}26%{transform:scale(1)}38%{transform:scale(1.008)}}
+@keyframes battement-fort{0%,52%,100%{transform:scale(1)}13%{transform:scale(1.05)}26%{transform:scale(1.01)}38%{transform:scale(1.03)}}
+@keyframes respire{0%,52%,100%{transform:scale(1)}13%{transform:scale(1.035)}26%{transform:scale(1.005)}38%{transform:scale(1.02)}}
+@keyframes flotte{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(var(--fx,4px),var(--fy,-6px)) rotate(var(--fr,1deg))}}
+@keyframes pose{from{transform:translate(0,-70px) rotate(-120deg) scale(.5)}}
+@keyframes anneau{from{transform:scale(1);opacity:.75}to{transform:scale(1.9);opacity:0}}
+@keyframes sonne{0%,100%{transform:none}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
 
-/* Démonstrateur du héros : CSS seul, joué une fois au chargement (le h1 n'est jamais animé : LCP) */
-.anim .vedette .j-gain{animation:pousse .9s var(--sortie) .55s both}
-.anim .v-avant::after{animation:barre .3s ease-out 1.35s both}
-.anim .v-apres{animation:surgit .55s var(--ressort) 1.45s both}
-.anim .v-gain{animation:surgit .6s var(--ressort) 1.5s both;transform-origin:left bottom}
+/* Intro du héros (une fois, au chargement) — la carte est hors écran pendant 0 s : départ immédiat */
+.anim .vedette{animation:intro 1.15s cubic-bezier(.3,.7,.4,1) backwards}
+.anim .breche{animation:jaillit .5s cubic-bezier(.2,.9,.3,1.2) .45s backwards}
+.anim .onde{animation:onde .6s ease-out .45s}
+.anim .scene{animation:secousse .3s linear .45s}
+.anim .fissures path{animation:fissure .45s ease-out .47s backwards}
+.anim .fissures path:nth-child(even){animation-delay:.53s}
+.anim .eclat{animation:eclate var(--dur,1s) cubic-bezier(.15,.9,.25,1) .45s backwards}
+/* … puis les éléments de la carte se placent */
+.anim .vedette .j-gain{animation:pousse .9s var(--sortie) 1.2s both}
+.anim .v-avant::after{animation:barre .3s ease-out 1.95s both}
+.anim .v-apres{animation:surgit .55s var(--ressort) 2.05s both}
+.anim .v-gain{animation:surgit .6s var(--ressort) 2.1s both;transform-origin:left bottom}
+
+/* Boucles (battement, respiration, flottement) : en pause par défaut, actives seulement quand leur zone est
+   à l'écran (.actif, posé par le JS) et que le visiteur n'a pas mis en pause (html.pause). Longhands uniquement :
+   le raccourci « animation » remettrait l'état à « running ». */
+.actif{--jeu:running}
+html.pause .actif{--jeu:paused}
+.anim .coeur,.anim .breche svg,.anim .debris,.anim .grappe,.anim .dd svg{animation-iteration-count:infinite;animation-timing-function:ease-in-out;animation-play-state:var(--jeu,paused)}
+.anim .coeur{animation-name:battement;animation-duration:1.8s;animation-delay:2.2s}
+.anim .breche svg{animation-name:battement-fort;animation-duration:1.8s;animation-delay:2.25s}
+.anim .debris{animation-name:respire;animation-duration:1.8s;animation-delay:2.2s}
+.anim .grappe{animation-name:flotte;animation-duration:var(--fd,3.6s);animation-delay:var(--fdl,0s)}
+.anim .dd svg{animation-name:flotte;animation-duration:var(--fd,4s);animation-delay:var(--fdl,0s)}
+
+/* Éclats dérivés : ils « se posent » à leur première apparition à l'écran */
+.anim .dd:not(.vu){transform:translate(0,-70px) rotate(-120deg) scale(.5)}
+.anim .dd.vu{animation:pose .9s cubic-bezier(.2,.8,.3,1)}
 
 /* Cartes : la jauge pousse, puis le gain rebondit, quand la carte entre à l'écran (classe .vu) */
 .anim .carte .j-gain{transition:transform .8s var(--sortie) calc(var(--d,0ms) + .15s)}
@@ -383,28 +494,39 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 .anim .carte:not(.vu) .gain{transform:scale(.88)}
 .anim .f-resume .j-gain{animation:pousse .8s var(--sortie) .25s both}
 
-/* Téléphone : chaque caractère du code apparaît, puis l'appel pulse */
-.anim .tel:not(.vu) .tel-code span{transform:scale(0)}
-.anim .tel.vu .tel-code span{animation:saute .35s var(--sortie) calc(.25s + var(--k) * .22s) both}
-.anim .tel.vu .tel-appel{animation:pulse 1s ease-out 1.6s 2}
+/* Téléphone : le JS tape le code (.tape + .on) tant que la section est visible ; sans JS, le code reste affiché */
+.tel.tape .tel-code span:not(.on){transform:scale(0)}
+.tel-appel.sonne{animation:sonne .25s ease-in-out 2}
+.tel-appel.sonne::after{animation:anneau .9s ease-out 2}
 
 /* Filtres : View Transition (navigateurs récents), sinon changement instantané */
 ::view-transition-group(*){animation-duration:.32s;animation-timing-function:var(--sortie)}
 
 @media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
 @media print{
-  .top .btn,.barre-filtres,.ruban,.feuille,.toast,.evitement,.cta-offres{display:none!important}
+  .top .btn,.barre-filtres,.ruban,.feuille,.toast,.evitement,.cta-offres,.btn-pause,
+  .fissures,.breche,.onde,.debris,.derive{display:none!important}
   .carte{break-inside:avoid;box-shadow:none}
-  .j-gain,.gain,.tel-code span,.v-apres,.v-gain,.v-avant::after{transform:none!important;animation:none!important}
+  .vedette,.scene,.coeur,.j-gain,.gain,.tel-code span,.v-apres,.v-gain,.v-avant::after{transform:none!important;translate:none!important;rotate:none!important;scale:none!important;animation:none!important}
 }
 </style>
 </head>
 <body>
 
 <div class="ruban" id="ruban" role="note">
-  Aperçu de validation · Sur le site en ligne, « Activer » ouvre le clavier du téléphone avec le code et le PDF se télécharge directement.
+  Aperçu de validation · Sur le site en ligne, « Activer » ouvre le clavier du téléphone avec le code de l'offre et le PDF se télécharge directement.
 </div>
 <a class="evitement" href="#offres">Aller aux offres</a>
+
+<!-- Formes des éclats (définies une fois, réutilisées par <use>) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="e1" viewBox="0 0 10 10"><polygon points="0,2 7,0 10,6 3,10"/></symbol>
+  <symbol id="e2" viewBox="0 0 10 10"><polygon points="1,0 10,3 6,10 0,7"/></symbol>
+  <symbol id="e3" viewBox="0 0 10 10"><polygon points="0,0 10,4 2,10"/></symbol>
+  <symbol id="e4" viewBox="0 0 10 10"><polygon points="2,0 10,1 8,9 0,10 1,5"/></symbol>
+  <symbol id="e5" viewBox="0 0 10 10"><polygon points="0,3 5,0 10,2 7,10 1,8"/></symbol>
+  <symbol id="plus" viewBox="0 0 10 10"><path d="M3.8 0h2.4v3.8H10v2.4H6.2V10H3.8V6.2H0V3.8h3.8z"/></symbol>
+</svg>
 
 <header class="top">
   <div class="wrap">
@@ -420,10 +542,16 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 </header>
 
 <main id="haut">
-  <section class="hero" aria-labelledby="slogan">
+  <section class="hero" id="hero" aria-labelledby="slogan">
     <div class="wrap hero-grille">
       <div class="hero-texte">
-        <p class="nouveau">Nouveau · dès le <strong data-d="lancementTexte">21 octobre 2026</strong></p>
+        <div class="hero-haut">
+          <p class="nouveau">Nouveau · dès le <strong data-d="lancementTexte">21 octobre 2026</strong></p>
+          <button class="btn-pause" type="button" aria-pressed="false" aria-label="Pause des animations" title="Pause des animations" hidden>
+            <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+            <svg class="i-lecture" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
+          </button>
+        </div>
         <!-- gen:h1 --><h1 id="slogan">Plus de valeur, <em>au même prix.</em></h1><!-- /gen:h1 -->
         <p class="appui">Plus de Go, plus de minutes, plus de bonus. <strong>Le prix ne bouge pas.</strong></p>
         <a class="btn btn-rouge btn-lg cta-offres" href="#offres">
@@ -431,21 +559,77 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14m0 0-6-6m6 6 6-6"/></svg>
         </a>
       </div>
-      <!-- gen:vedette --><a class="vedette" href="#pronet-3go" aria-label="Exemple : ProNET 3 Go, 2,5 Go avant, 3 Go maintenant, toujours 975 francs"><span class="v-tete"><span><b>ProNET 3 Go</b> · 7 jours</span><span class="v-prix">975 F · même prix</span></span><span class="v-gain">+0,5 Go</span><span class="v-jauge" style="--r:0.833"><span class="v-avant">2,5 Go</span><span class="j-barre"><span class="j-gain"></span></span><span class="v-apres">3 Go</span></span></a><!-- /gen:vedette -->
+
+      <div class="scene">
+        <svg class="fissures" viewBox="-100 -100 200 200" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <path pathLength="1" d="M58-10 70-16 78-12 90-22 100-20"/>
+          <path pathLength="1" class="r" d="M58 18 66 26 80 28 88 40 100 44"/>
+          <path pathLength="1" d="M30-42 36-56 46-62 50-78 60-90"/>
+          <path pathLength="1" d="M-20-42-26-58-22-70-32-86-30-100"/>
+          <path pathLength="1" class="r" d="M-58-6-70 0-82-8-94-4-100-10"/>
+          <path pathLength="1" d="M-56 22-64 34-78 38-86 52-100 56"/>
+          <path pathLength="1" d="M10 42 14 56 8 70 18 84 14 100"/>
+          <path pathLength="1" d="M-40 42-48 60-60 66-66 82"/>
+          <path pathLength="1" d="M78-12 84-2 96 4"/>
+          <path pathLength="1" d="M-82-8-88-20-98-26"/>
+        </svg>
+        <div class="breche" aria-hidden="true">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><polygon points="0,6 6,0 14,4 22,0 30,3 40,0 48,4 57,0 66,3 74,0 83,4 92,0 100,7 97,16 100,26 96,36 100,46 97,56 100,66 96,76 100,86 94,100 85,96 76,100 66,97 57,100 48,96 38,100 29,97 20,100 11,96 3,100 0,90 4,80 0,70 3,60 0,50 4,40 0,30 3,20 0,12"/></svg>
+        </div>
+        <div class="onde" aria-hidden="true"></div>
+        <div class="debris" aria-hidden="true">
+          <div class="grappe" style="--fd:3.4s;--fdl:-.6s;--fx:5px;--fy:-7px;--fr:1deg">
+            <svg class="eclat c-r" style="--x:62;--y:-88;--xm:70;--ym:-68;--r:24;--t:22;--dur:.95s"><use href="#e1"/></svg>
+            <svg class="eclat c-j" style="--x:88;--y:-58;--xm:98;--ym:-40;--r:-38;--t:14;--dur:1.1s"><use href="#e3"/></svg>
+            <svg class="eclat c-r o" style="--x:40;--y:-112;--r:70;--t:10;--dur:1.2s"><use href="#plus"/></svg>
+            <svg class="eclat c-n o" style="--x:96;--y:-102;--r:12;--t:9;--dur:1.15s"><use href="#e5"/></svg>
+          </div>
+          <div class="grappe" style="--fd:4.2s;--fdl:-1.8s;--fx:-6px;--fy:5px;--fr:-1deg">
+            <svg class="eclat c-r" style="--x:104;--y:18;--xm:104;--ym:10;--r:-20;--t:18;--dur:.9s"><use href="#e2"/></svg>
+            <svg class="eclat c-f" style="--x:84;--y:70;--xm:88;--ym:62;--r:48;--t:12;--dur:1.05s"><use href="#e4"/></svg>
+            <svg class="eclat c-n o" style="--x:112;--y:96;--r:-64;--t:8;--dur:1.2s"><use href="#e1"/></svg>
+          </div>
+          <div class="grappe" style="--fd:4.8s;--fdl:-.9s;--fx:4px;--fy:8px;--fr:.6deg">
+            <svg class="eclat c-r" style="--x:30;--y:108;--xm:62;--ym:92;--r:32;--t:16;--dur:1.2s"><use href="#e5"/></svg>
+            <svg class="eclat c-j" style="--x:-18;--y:134;--xm:92;--ym:104;--r:-50;--t:11;--dur:1.3s"><use href="#e2"/></svg>
+            <svg class="eclat c-n" style="--x:58;--y:150;--xm:76;--ym:118;--r:15;--t:9;--dur:1.35s"><use href="#e3"/></svg>
+            <svg class="eclat c-r o" style="--x:-50;--y:118;--r:80;--t:13;--dur:1.25s"><use href="#plus"/></svg>
+          </div>
+          <div class="grappe" style="--fd:3.8s;--fdl:-2.4s;--fx:6px;--fy:-4px;--fr:-.8deg">
+            <svg class="eclat c-n" style="--x:-98;--y:54;--xm:-100;--ym:40;--r:-30;--t:20;--dur:.95s"><use href="#e3"/></svg>
+            <svg class="eclat c-r" style="--x:-110;--y:-6;--xm:-104;--ym:-14;--r:58;--t:12;--dur:1.05s"><use href="#e1"/></svg>
+            <svg class="eclat c-j o" style="--x:-84;--y:92;--r:10;--t:9;--dur:1.15s"><use href="#e4"/></svg>
+          </div>
+          <div class="grappe" style="--fd:2.9s;--fdl:-1.2s;--fx:-4px;--fy:-6px;--fr:1.2deg">
+            <svg class="eclat c-r" style="--x:-70;--y:-92;--xm:-92;--ym:-60;--r:-16;--t:15;--dur:1s"><use href="#e2"/></svg>
+            <svg class="eclat c-f" style="--x:-102;--y:-60;--xm:-108;--ym:-30;--r:40;--t:10;--dur:1.1s"><use href="#e5"/></svg>
+            <svg class="eclat c-n o" style="--x:-30;--y:-118;--r:-72;--t:8;--dur:1.2s"><use href="#e4"/></svg>
+            <svg class="eclat c-j" style="--x:8;--y:-100;--xm:40;--ym:-70;--r:26;--t:11;--dur:1.05s"><use href="#plus"/></svg>
+          </div>
+        </div>
+        <div class="coeur"><!-- gen:vedette --><a class="vedette" href="#pronet-3go" aria-label="Exemple : ProNET 3 Go, 2,5 Go avant, 3 Go maintenant, toujours 975 francs"><span class="v-tete"><span><b>ProNET 3 Go</b> · 7 jours</span><span class="v-prix">975 F · même prix</span></span><span class="v-gain">+0,5 Go</span><span class="v-jauge" style="--r:0.833"><span class="v-avant">2,5 Go</span><span class="j-barre"><span class="j-gain"></span></span><span class="v-apres">3 Go</span></span></a><!-- /gen:vedette --></div>
+      </div>
     </div>
   </section>
 
   <section class="offres" id="offres" aria-labelledby="t-offres">
+    <div class="derive" aria-hidden="true">
+      <span class="dd c-r" style="--t:14;--r:28;--mt:540px;--ml:calc(100% - 13px);--dt:300px;--dl:3%"><svg style="--fd:4.4s;--fdl:-1s;--fx:3px;--fy:-6px;--fr:8deg"><use href="#e1"/></svg></span>
+      <span class="dd c-j" style="--t:11;--r:-40;--mt:1010px;--ml:2px;--dt:610px;--dl:calc(100% - 70px)"><svg style="--fd:3.6s;--fdl:-2s;--fx:-3px;--fy:5px;--fr:-10deg"><use href="#e3"/></svg></span>
+      <span class="dd c-n" style="--t:12;--r:65;--mt:1500px;--ml:calc(100% - 12px);--dt:880px;--dl:4%"><svg style="--fd:5s;--fdl:-.4s;--fx:4px;--fy:4px;--fr:6deg"><use href="#e5"/></svg></span>
+      <span class="dd c-r o" style="--t:10;--r:-15;--dt:450px;--dl:calc(50% - 5px)"><svg style="--fd:3.9s;--fdl:-2.6s;--fx:-2px;--fy:-5px;--fr:-6deg"><use href="#plus"/></svg></span>
+      <span class="dd c-f o" style="--t:13;--r:110;--dt:1050px;--dl:calc(100% - 50px)"><svg style="--fd:4.6s;--fdl:-1.4s;--fx:5px;--fy:-3px;--fr:9deg"><use href="#e2"/></svg></span>
+    </div>
     <div class="wrap sec-tete">
       <h2 id="t-offres">Les <span data-d="nb">8</span> offres améliorées</h2>
-      <p>Touchez une offre pour l'activer. Aucun paiement sur ce site.</p>
+      <p>Touchez une offre : son code s'ouvre directement dans votre clavier. Aucun paiement sur ce site.</p>
     </div>
     <div class="barre-filtres">
       <div class="wrap"><!-- gen:filtres --><div class="filtres" role="group" aria-label="Filtrer les offres"><button class="chip" type="button" data-f="tous" aria-pressed="true">Toutes<span class="nb">8</span></button><button class="chip" type="button" data-f="ProNET" aria-pressed="false">Internet<span class="nb">3</span></button><button class="chip" type="button" data-f="ProMIX" aria-pressed="false">Appels + Internet<span class="nb">4</span></button><button class="chip" type="button" data-f="ProMINI" aria-pressed="false">Bonus<span class="nb">1</span></button></div><!-- /gen:filtres --></div>
     </div>
-    <div class="wrap">
+    <div class="wrap wrap-grille">
       <p class="sr" id="statut" role="status"></p>
-      <div class="grille" id="grille"><!-- gen:offres --><article class="carte" id="promini-175" data-id="promini-175" data-famille="ProMINI" style="view-transition-name:c-promini-175"><div class="carte-tete"><h3 class="carte-nom">ProMINI 175</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>24 heures</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">Bonus ×2</span></p><p class="prix"><span class="sr">Prix : </span>175<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.500"><span class="j-lab">Bonus appels</span><span class="j-val"><s><span class="sr">avant </span>1 000 F</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>2 000 F tous réseaux</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><p class="inclus">Toujours inclus : Internet <b>175 Mo</b></p><a class="activer" href="tel:%23175%23" aria-label="Activer ProMINI 175, 175 francs, 24 heures">Activer<span class="act-sous">#175# ou WhatsApp</span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><article class="carte" id="pronet-3go" data-id="pronet-3go" data-famille="ProNET" style="view-transition-name:c-pronet-3go"><div class="carte-tete"><h3 class="carte-nom">ProNET 3 Go</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>7 jours</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">+0,5 Go</span></p><p class="prix"><span class="sr">Prix : </span>975<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.833"><span class="j-lab">Internet</span><span class="j-val"><s><span class="sr">avant </span>2,5 Go</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>3 Go</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><a class="activer" href="tel:%23175%23" aria-label="Activer ProNET 3 Go, 975 francs, 7 jours">Activer<span class="act-sous">#175# ou WhatsApp</span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><article class="carte" id="pronet-4go" data-id="pronet-4go" data-famille="ProNET" style="view-transition-name:c-pronet-4go"><div class="carte-tete"><h3 class="carte-nom">ProNET 4 Go</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>30 jours</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">+0,5 Go</span></p><p class="prix"><span class="sr">Prix : </span>1 375<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.875"><span class="j-lab">Internet</span><span class="j-val"><s><span class="sr">avant </span>3,5 Go</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>4 Go</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><a class="activer" href="tel:%23175%23" aria-label="Activer ProNET 4 Go, 1 375 francs, 30 jours">Activer<span class="act-sous">#175# ou WhatsApp</span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><article class="carte" id="pronet-m-6-5go" data-id="pronet-m-6-5go" data-famille="ProNET" style="view-transition-name:c-pronet-m-6-5go"><div class="carte-tete"><h3 class="carte-nom">ProNET (M) 6,5 Go</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>30 jours</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">+1 Go</span></p><p class="prix"><span class="sr">Prix : </span>1 975<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.846"><span class="j-lab">Internet</span><span class="j-val"><s><span class="sr">avant </span>5,5 Go</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>6,5 Go</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><a class="activer" href="tel:%23175%23" aria-label="Activer ProNET (M) 6,5 Go, 1 975 francs, 30 jours">Activer<span class="act-sous">#175# ou WhatsApp</span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><article class="carte" id="promix-475" data-id="promix-475" data-famille="ProMIX" style="view-transition-name:c-promix-475"><div class="carte-tete"><h3 class="carte-nom">ProMIX 475</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>24 heures</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">+20 min</span></p><p class="prix"><span class="sr">Prix : </span>475<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.800"><span class="j-lab">Appels</span><span class="j-val"><s><span class="sr">avant </span>80 min</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>100 min</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><p class="inclus">Toujours inclus : SMS <b>50</b><span class="sep" aria-hidden="true"> · </span>Internet <b>500 Mo</b></p><a class="activer" href="tel:%23175%23" aria-label="Activer ProMIX 475, 475 francs, 24 heures">Activer<span class="act-sous">#175# ou WhatsApp</span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><article class="carte" id="promix-975" data-id="promix-975" data-famille="ProMIX" style="view-transition-name:c-promix-975"><div class="carte-tete"><h3 class="carte-nom">ProMIX 975</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>7 jours</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">+0,5 Go</span><span class="gain-plus">+50 SMS</span></p><p class="prix"><span class="sr">Prix : </span>975<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.500"><span class="j-lab">SMS</span><span class="j-val"><s><span class="sr">avant </span>50</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>100</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li><li class="jauge" style="--r:0.750"><span class="j-lab">Internet</span><span class="j-val"><s><span class="sr">avant </span>1,5 Go</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>2 Go</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><p class="inclus">Toujours inclus : Appels <b>120 min</b></p><a class="activer" href="tel:%23175%23" aria-label="Activer ProMIX 975, 975 francs, 7 jours">Activer<span class="act-sous">#175# ou WhatsApp</span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><article class="carte" id="promix-1375" data-id="promix-1375" data-famille="ProMIX" style="view-transition-name:c-promix-1375"><div class="carte-tete"><h3 class="carte-nom">ProMIX 1375</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>7 jours</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">+0,5 Go</span></p><p class="prix"><span class="sr">Prix : </span>1 375<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.833"><span class="j-lab">Internet</span><span class="j-val"><s><span class="sr">avant </span>2,5 Go</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>3 Go</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><p class="inclus">Toujours inclus : Appels <b>150 min</b><span class="sep" aria-hidden="true"> · </span>SMS <b>100</b></p><a class="activer" href="tel:%23175%23" aria-label="Activer ProMIX 1375, 1 375 francs, 7 jours">Activer<span class="act-sous">#175# ou WhatsApp</span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><article class="carte" id="promix-1975" data-id="promix-1975" data-famille="ProMIX" style="view-transition-name:c-promix-1975"><div class="carte-tete"><h3 class="carte-nom">ProMIX 1975</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>7 jours</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">+120 min</span></p><p class="prix"><span class="sr">Prix : </span>1 975<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.600"><span class="j-lab">Appels</span><span class="j-val"><s><span class="sr">avant </span>180 min</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>300 min</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><p class="inclus">Toujours inclus : SMS <b>100</b><span class="sep" aria-hidden="true"> · </span>Internet <b>3,5 Go</b></p><a class="activer" href="tel:%23175%23" aria-label="Activer ProMIX 1975, 1 975 francs, 7 jours">Activer<span class="act-sous">#175# ou WhatsApp</span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><!-- /gen:offres --></div>
+      <div class="grille" id="grille"><!-- gen:offres --><article class="carte" id="promini-175" data-id="promini-175" data-famille="ProMINI" style="view-transition-name:c-promini-175"><div class="carte-tete"><h3 class="carte-nom">ProMINI 175</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>24 heures</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">Bonus ×2</span></p><p class="prix"><span class="sr">Prix : </span>175<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.500"><span class="j-lab">Bonus appels</span><span class="j-val"><s><span class="sr">avant </span>1 000 F</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>2 000 F tous réseaux</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><p class="inclus">Toujours inclus : Internet <b>175 Mo</b></p><a class="activer" href="tel:%23175%2312%23" data-code="#175#12#" aria-label="Activer ProMINI 175 avec #175#12#, 175 francs, 24 heures"><span class="act-txt">Activer<span class="act-sous">#175#12# ou WhatsApp</span></span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><article class="carte" id="pronet-3go" data-id="pronet-3go" data-famille="ProNET" style="view-transition-name:c-pronet-3go"><div class="carte-tete"><h3 class="carte-nom">ProNET 3 Go</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>7 jours</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">+0,5 Go</span></p><p class="prix"><span class="sr">Prix : </span>975<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.833"><span class="j-lab">Internet</span><span class="j-val"><s><span class="sr">avant </span>2,5 Go</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>3 Go</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><a class="activer" href="tel:%23175%23221%23" data-code="#175#221#" aria-label="Activer ProNET 3 Go avec #175#221#, 975 francs, 7 jours"><span class="act-txt">Activer<span class="act-sous">#175#221# ou WhatsApp</span></span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><article class="carte" id="pronet-4go" data-id="pronet-4go" data-famille="ProNET" style="view-transition-name:c-pronet-4go"><div class="carte-tete"><h3 class="carte-nom">ProNET 4 Go</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>30 jours</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">+0,5 Go</span></p><p class="prix"><span class="sr">Prix : </span>1 375<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.875"><span class="j-lab">Internet</span><span class="j-val"><s><span class="sr">avant </span>3,5 Go</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>4 Go</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><a class="activer" href="tel:%23175%23231%23" data-code="#175#231#" aria-label="Activer ProNET 4 Go avec #175#231#, 1 375 francs, 30 jours"><span class="act-txt">Activer<span class="act-sous">#175#231# ou WhatsApp</span></span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><article class="carte" id="pronet-m-6-5go" data-id="pronet-m-6-5go" data-famille="ProNET" style="view-transition-name:c-pronet-m-6-5go"><div class="carte-tete"><h3 class="carte-nom">ProNET (M) 6,5 Go</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>30 jours</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">+1 Go</span></p><p class="prix"><span class="sr">Prix : </span>1 975<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.846"><span class="j-lab">Internet</span><span class="j-val"><s><span class="sr">avant </span>5,5 Go</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>6,5 Go</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><a class="activer" href="tel:%23175%23232%23" data-code="#175#232#" aria-label="Activer ProNET (M) 6,5 Go avec #175#232#, 1 975 francs, 30 jours"><span class="act-txt">Activer<span class="act-sous">#175#232# ou WhatsApp</span></span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><article class="carte" id="promix-475" data-id="promix-475" data-famille="ProMIX" style="view-transition-name:c-promix-475"><div class="carte-tete"><h3 class="carte-nom">ProMIX 475</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>24 heures</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">+20 min</span></p><p class="prix"><span class="sr">Prix : </span>475<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.800"><span class="j-lab">Appels</span><span class="j-val"><s><span class="sr">avant </span>80 min</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>100 min</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><p class="inclus">Toujours inclus : SMS <b>50</b><span class="sep" aria-hidden="true"> · </span>Internet <b>500 Mo</b></p><a class="activer" href="tel:%23175%2331%23" data-code="#175#31#" aria-label="Activer ProMIX 475 avec #175#31#, 475 francs, 24 heures"><span class="act-txt">Activer<span class="act-sous">#175#31# ou WhatsApp</span></span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><article class="carte" id="promix-975" data-id="promix-975" data-famille="ProMIX" style="view-transition-name:c-promix-975"><div class="carte-tete"><h3 class="carte-nom">ProMIX 975</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>7 jours</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">+0,5 Go</span><span class="gain-plus">+50 SMS</span></p><p class="prix"><span class="sr">Prix : </span>975<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.500"><span class="j-lab">SMS</span><span class="j-val"><s><span class="sr">avant </span>50</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>100</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li><li class="jauge" style="--r:0.750"><span class="j-lab">Internet</span><span class="j-val"><s><span class="sr">avant </span>1,5 Go</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>2 Go</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><p class="inclus">Toujours inclus : Appels <b>120 min</b></p><a class="activer" href="tel:%23175%2332%23" data-code="#175#32#" aria-label="Activer ProMIX 975 avec #175#32#, 975 francs, 7 jours"><span class="act-txt">Activer<span class="act-sous">#175#32# ou WhatsApp</span></span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><article class="carte" id="promix-1375" data-id="promix-1375" data-famille="ProMIX" style="view-transition-name:c-promix-1375"><div class="carte-tete"><h3 class="carte-nom">ProMIX 1375</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>7 jours</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">+0,5 Go</span></p><p class="prix"><span class="sr">Prix : </span>1 375<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.833"><span class="j-lab">Internet</span><span class="j-val"><s><span class="sr">avant </span>2,5 Go</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>3 Go</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><p class="inclus">Toujours inclus : Appels <b>150 min</b><span class="sep" aria-hidden="true"> · </span>SMS <b>100</b></p><a class="activer" href="tel:%23175%23331%23" data-code="#175#331#" aria-label="Activer ProMIX 1375 avec #175#331#, 1 375 francs, 7 jours"><span class="act-txt">Activer<span class="act-sous">#175#331# ou WhatsApp</span></span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><article class="carte" id="promix-1975" data-id="promix-1975" data-famille="ProMIX" style="view-transition-name:c-promix-1975"><div class="carte-tete"><h3 class="carte-nom">ProMIX 1975</h3><span class="duree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>7 jours</span></div><div class="gain-ligne"><p class="gain"><span class="gain-val">+120 min</span></p><p class="prix"><span class="sr">Prix : </span>1 975<small>F</small></p></div><ul class="jauges"><li class="jauge" style="--r:0.600"><span class="j-lab">Appels</span><span class="j-val"><s><span class="sr">avant </span>180 min</s><span class="j-fl" aria-hidden="true">→</span><b><span class="sr">, maintenant </span>300 min</b></span><span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li></ul><p class="inclus">Toujours inclus : SMS <b>100</b><span class="sep" aria-hidden="true"> · </span>Internet <b>3,5 Go</b></p><a class="activer" href="tel:%23175%23332%23" data-code="#175#332#" aria-label="Activer ProMIX 1975 avec #175#332#, 1 975 francs, 7 jours"><span class="act-txt">Activer<span class="act-sous">#175#332# ou WhatsApp</span></span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></article><!-- /gen:offres --></div>
     </div>
   </section>
 
@@ -454,17 +638,24 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
       <div>
         <h2 id="t-comment">Activer une offre prend dix secondes</h2>
         <ol class="etapes">
-          <li><strong>Choisissez votre offre</strong><span>Appuyez sur la carte : le gain, le prix et la durée y sont écrits en clair.</span></li>
-          <li><strong>Composez <span class="code-inline" data-d="ussd">#175#</span></strong><span>Composez le code sur votre téléphone, puis suivez le menu pour choisir votre offre. Ou passez par WhatsApp : le message est déjà écrit.</span></li>
+          <li><strong>Choisissez votre offre</strong><span>Touchez la carte : le gain, le prix, la durée et son code y sont écrits en clair.</span></li>
+          <li><strong>Composez son code</strong><span>Par exemple <b class="code-inline" data-d="vedetteCode">#175#221#</b> pour <b data-d="vedetteNom">ProNET 3 Go</b> : l'offre s'active directement. Vous pouvez aussi composer <b class="code-inline" data-d="ussd">#175#</b> et suivre le menu, ou passer par WhatsApp.</span></li>
           <li><strong>Confirmez, c'est activé</strong><span>Le montant est pris sur votre crédit Promobile. Pas de carte bancaire, pas de compte à créer.</span></li>
         </ol>
       </div>
-      <div class="tel" aria-hidden="true">
-        <div class="tel-ecran">
-          <div class="tel-code"><!-- gen:code --><span style="--k:0">#</span><span style="--k:1">1</span><span style="--k:2">7</span><span style="--k:3">5</span><span style="--k:4">#</span><!-- /gen:code --></div>
-          <div class="tel-pave"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>*</span><span>0</span><span>#</span></div>
-          <div class="tel-appel"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 15.5c-1.2 0-2.4-.2-3.6-.6a1 1 0 0 0-1 .25l-2.2 2.2a15 15 0 0 1-6.6-6.6l2.2-2.2a1 1 0 0 0 .25-1A11.4 11.4 0 0 1 8.5 4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1 17 17 0 0 0 17 17 1 1 0 0 0 1-1v-3.5a1 1 0 0 0-1-1z"/></svg></div>
+      <div class="tel-zone">
+        <div class="tel" aria-hidden="true">
+          <div class="tel-ecran">
+            <p class="tel-leg" data-d="vedetteNom">ProNET 3 Go</p>
+            <div class="tel-code"><!-- gen:code --><span>#</span><span>1</span><span>7</span><span>5</span><span>#</span><span>2</span><span>2</span><span>1</span><span>#</span><!-- /gen:code --></div>
+            <div class="tel-pave"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>*</span><span>0</span><span>#</span></div>
+            <div class="tel-appel"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 15.5c-1.2 0-2.4-.2-3.6-.6a1 1 0 0 0-1 .25l-2.2 2.2a15 15 0 0 1-6.6-6.6l2.2-2.2a1 1 0 0 0 .25-1A11.4 11.4 0 0 1 8.5 4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1 17 17 0 0 0 17 17 1 1 0 0 0 1-1v-3.5a1 1 0 0 0-1-1z"/></svg></div>
+          </div>
         </div>
+        <button class="btn-pause btn-pause-tel" type="button" aria-pressed="false" aria-label="Pause des animations" title="Pause des animations" hidden>
+          <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          <svg class="i-lecture" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
+        </button>
       </div>
     </div>
   </section>
@@ -474,7 +665,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
       <div class="cata-boite">
         <div>
           <h2 id="t-cata">Toutes les offres Promobile dans un seul PDF</h2>
-          <p>Léger pour la 3G, à garder sur le téléphone ou à partager sur WhatsApp.</p>
+          <p>Avec le code de chaque offre. Léger pour la 3G, à garder sur le téléphone ou à partager sur WhatsApp.</p>
         </div>
         <a class="btn btn-blanc btn-lg js-pdf" href="Catalogue_Offres_Promobile.pdf" download data-pos="bas">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
@@ -507,7 +698,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
     </div>
     <p class="officiel">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3z"/><path d="m9 12 2 2 4-4"/></svg>
-      <span>Canaux officiels Promobile : le code <strong data-d="ussd">#175#</strong> et le WhatsApp <strong data-d="waAffiche">+221 75 525 00 00</strong>. Méfiez-vous des autres numéros.</span>
+      <span>Canaux officiels Promobile : les codes <strong data-d="ussd">#175#</strong>… et le WhatsApp <strong data-d="waAffiche">+221 75 525 00 00</strong>. Méfiez-vous des autres numéros.</span>
     </p>
     <div class="legal">
       <p><strong>Mentions légales.</strong> Site édité par Sirius Télécoms Afrique SAU, opérateur de la marque Promobile. Offres valables au Sénégal pour les clients Promobile, dans la limite des conditions générales d'utilisation disponibles sur <a href="https://www.promobile.sn" target="_blank" rel="noopener">promobile.sn</a>. Les prix sont indiqués en francs CFA, toutes taxes comprises. Ce site n'encaisse aucun paiement et ne collecte aucune donnée personnelle ; seules des statistiques anonymes de consultation sont mesurées.</p>
@@ -532,7 +723,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
     <div class="choix">
       <a class="btn btn-rouge btn-lg" id="f-ussd" href="tel:%23175%23">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2.5"/><path d="M9 6h6M9 10h.01M12 10h.01M15 10h.01M9 13h.01M12 13h.01M15 13h.01M9 16h.01M12 16h.01M15 16h.01"/></svg>
-        <span class="txt"><span id="f-ussd-lib">Composer <span data-d="ussd">#175#</span></span><small id="f-ussd-aide">Le clavier s'ouvre avec le code, puis suivez le menu</small></span>
+        <span class="txt"><span id="f-ussd-lib">Composer le code</span><small id="f-ussd-aide">L'offre s'active directement</small></span>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
       </a>
       <a class="btn btn-wa btn-lg" id="f-wa" href="#" target="_blank" rel="noopener">
@@ -551,22 +742,25 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
         </button>
       </div>
     </div>
-    <p class="note">Aucun paiement sur ce site : l'achat se fait sur <span data-d="ussd">#175#</span> ou WhatsApp, avec votre crédit Promobile.</p>
+    <p class="note">Aucun paiement sur ce site : l'achat se fait par le code ou sur WhatsApp, avec votre crédit Promobile. Vous pouvez aussi composer <span data-d="ussd">#175#</span> et suivre le menu.</p>
   </div>
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <!-- gen:donnees -->
-<script>var PROMOBILE = {"slogan":"Plus de valeur, au même prix","lancement":"2026-10-21","lancementTexte":"21 octobre 2026","adresse":"https://mouha7.github.io/promobile-nouvelles-offres/","vedette":"pronet-3go","ussd":"#175#","whatsapp":"221755250000","serviceClient":"1675","email":"contact@promobile.sn","siteOfficiel":"https://www.promobile.sn","catalogue":{"fichier":"Catalogue_Offres_Promobile.pdf","poidsAffiche":"moins de 1 Mo"},"familles":{"ProNET":{"prefixe":"PRO'","suffixe":"NET","libelle":"Offres Internet","court":"Internet"},"ProMIX":{"prefixe":"PRO'","suffixe":"MIX","libelle":"Offres Mix","court":"Appels + Internet"},"ProMINI":{"prefixe":"PRO'","suffixe":"MINI","libelle":"Bonus & Internet","court":"Bonus"}},"offres":[{"id":"promini-175","famille":"ProMINI","nom":"ProMINI 175","ancienNom":"ProMINI 175","prix":175,"validite":"24 h","validiteLongue":"24 heures","gain":"Bonus ×2","gainDetail":"2 000 F de bonus au lieu de 1 000 F","details":[{"label":"Bonus appels","avant":"1 000 F","apres":"2 000 F tous réseaux","change":true},{"label":"Internet","avant":"175 Mo","apres":"175 Mo","change":false}]},{"id":"pronet-3go","famille":"ProNET","nom":"ProNET 3 Go","ancienNom":"ProNET 2,5 Go","prix":975,"validite":"7 j","validiteLongue":"7 jours","gain":"+0,5 Go","gainDetail":"3 Go au lieu de 2,5 Go","details":[{"label":"Internet","avant":"2,5 Go","apres":"3 Go","change":true}]},{"id":"pronet-4go","famille":"ProNET","nom":"ProNET 4 Go","ancienNom":"ProNET 3,5 Go","prix":1375,"validite":"30 j","validiteLongue":"30 jours","gain":"+0,5 Go","gainDetail":"4 Go au lieu de 3,5 Go","details":[{"label":"Internet","avant":"3,5 Go","apres":"4 Go","change":true}]},{"id":"pronet-m-6-5go","famille":"ProNET","nom":"ProNET (M) 6,5 Go","ancienNom":"ProNET (M) 5,5 Go","prix":1975,"validite":"30 j","validiteLongue":"30 jours","gain":"+1 Go","gainDetail":"6,5 Go au lieu de 5,5 Go","details":[{"label":"Internet","avant":"5,5 Go","apres":"6,5 Go","change":true}]},{"id":"promix-475","famille":"ProMIX","nom":"ProMIX 475","ancienNom":"ProMIX 475","prix":475,"validite":"24 h","validiteLongue":"24 heures","gain":"+20 min","gainDetail":"100 min au lieu de 80 min","details":[{"label":"Appels","avant":"80 min","apres":"100 min","change":true},{"label":"SMS","avant":"50","apres":"50","change":false},{"label":"Internet","avant":"500 Mo","apres":"500 Mo","change":false}]},{"id":"promix-975","famille":"ProMIX","nom":"ProMIX 975","ancienNom":"ProMIX 975","prix":975,"validite":"7 j","validiteLongue":"7 jours","gain":"+0,5 Go","gainSecondaire":"+50 SMS","gainDetail":"2 Go et 100 SMS au lieu de 1,5 Go et 50 SMS","details":[{"label":"Appels","avant":"120 min","apres":"120 min","change":false},{"label":"SMS","avant":"50","apres":"100","change":true},{"label":"Internet","avant":"1,5 Go","apres":"2 Go","change":true}]},{"id":"promix-1375","famille":"ProMIX","nom":"ProMIX 1375","ancienNom":"ProMIX 1375","prix":1375,"validite":"7 j","validiteLongue":"7 jours","gain":"+0,5 Go","gainDetail":"3 Go au lieu de 2,5 Go","details":[{"label":"Appels","avant":"150 min","apres":"150 min","change":false},{"label":"SMS","avant":"100","apres":"100","change":false},{"label":"Internet","avant":"2,5 Go","apres":"3 Go","change":true}]},{"id":"promix-1975","famille":"ProMIX","nom":"ProMIX 1975","ancienNom":"ProMIX 1975","prix":1975,"validite":"7 j","validiteLongue":"7 jours","gain":"+120 min","gainDetail":"300 min au lieu de 180 min","details":[{"label":"Appels","avant":"180 min","apres":"300 min","change":true},{"label":"SMS","avant":"100","apres":"100","change":false},{"label":"Internet","avant":"3,5 Go","apres":"3,5 Go","change":false}]}]};</script>
+<script>var PROMOBILE = {"slogan":"Plus de valeur, au même prix","lancement":"2026-10-21","lancementTexte":"21 octobre 2026","adresse":"https://mouha7.github.io/promobile-nouvelles-offres/","vedette":"pronet-3go","ussd":"#175#","whatsapp":"221755250000","serviceClient":"1675","email":"contact@promobile.sn","siteOfficiel":"https://www.promobile.sn","catalogue":{"fichier":"Catalogue_Offres_Promobile.pdf","poidsAffiche":"moins de 1 Mo"},"familles":{"ProNET":{"prefixe":"PRO'","suffixe":"NET","libelle":"Offres Internet","court":"Internet"},"ProMIX":{"prefixe":"PRO'","suffixe":"MIX","libelle":"Offres Mix","court":"Appels + Internet"},"ProMINI":{"prefixe":"PRO'","suffixe":"MINI","libelle":"Bonus & Internet","court":"Bonus"}},"offres":[{"id":"promini-175","code":"#175#12#","famille":"ProMINI","nom":"ProMINI 175","ancienNom":"ProMINI 175","prix":175,"validite":"24 h","validiteLongue":"24 heures","gain":"Bonus ×2","gainDetail":"2 000 F de bonus au lieu de 1 000 F","details":[{"label":"Bonus appels","avant":"1 000 F","apres":"2 000 F tous réseaux","change":true},{"label":"Internet","avant":"175 Mo","apres":"175 Mo","change":false}]},{"id":"pronet-3go","code":"#175#221#","famille":"ProNET","nom":"ProNET 3 Go","ancienNom":"ProNET 2,5 Go","prix":975,"validite":"7 j","validiteLongue":"7 jours","gain":"+0,5 Go","gainDetail":"3 Go au lieu de 2,5 Go","details":[{"label":"Internet","avant":"2,5 Go","apres":"3 Go","change":true}]},{"id":"pronet-4go","code":"#175#231#","famille":"ProNET","nom":"ProNET 4 Go","ancienNom":"ProNET 3,5 Go","prix":1375,"validite":"30 j","validiteLongue":"30 jours","gain":"+0,5 Go","gainDetail":"4 Go au lieu de 3,5 Go","details":[{"label":"Internet","avant":"3,5 Go","apres":"4 Go","change":true}]},{"id":"pronet-m-6-5go","code":"#175#232#","famille":"ProNET","nom":"ProNET (M) 6,5 Go","ancienNom":"ProNET (M) 5,5 Go","prix":1975,"validite":"30 j","validiteLongue":"30 jours","gain":"+1 Go","gainDetail":"6,5 Go au lieu de 5,5 Go","details":[{"label":"Internet","avant":"5,5 Go","apres":"6,5 Go","change":true}]},{"id":"promix-475","code":"#175#31#","famille":"ProMIX","nom":"ProMIX 475","ancienNom":"ProMIX 475","prix":475,"validite":"24 h","validiteLongue":"24 heures","gain":"+20 min","gainDetail":"100 min au lieu de 80 min","details":[{"label":"Appels","avant":"80 min","apres":"100 min","change":true},{"label":"SMS","avant":"50","apres":"50","change":false},{"label":"Internet","avant":"500 Mo","apres":"500 Mo","change":false}]},{"id":"promix-975","code":"#175#32#","famille":"ProMIX","nom":"ProMIX 975","ancienNom":"ProMIX 975","prix":975,"validite":"7 j","validiteLongue":"7 jours","gain":"+0,5 Go","gainSecondaire":"+50 SMS","gainDetail":"2 Go et 100 SMS au lieu de 1,5 Go et 50 SMS","details":[{"label":"Appels","avant":"120 min","apres":"120 min","change":false},{"label":"SMS","avant":"50","apres":"100","change":true},{"label":"Internet","avant":"1,5 Go","apres":"2 Go","change":true}]},{"id":"promix-1375","code":"#175#331#","famille":"ProMIX","nom":"ProMIX 1375","ancienNom":"ProMIX 1375","prix":1375,"validite":"7 j","validiteLongue":"7 jours","gain":"+0,5 Go","gainDetail":"3 Go au lieu de 2,5 Go","details":[{"label":"Appels","avant":"150 min","apres":"150 min","change":false},{"label":"SMS","avant":"100","apres":"100","change":false},{"label":"Internet","avant":"2,5 Go","apres":"3 Go","change":true}]},{"id":"promix-1975","code":"#175#332#","famille":"ProMIX","nom":"ProMIX 1975","ancienNom":"ProMIX 1975","prix":1975,"validite":"7 j","validiteLongue":"7 jours","gain":"+120 min","gainDetail":"300 min au lieu de 180 min","details":[{"label":"Appels","avant":"180 min","apres":"300 min","change":true},{"label":"SMS","avant":"100","apres":"100","change":false},{"label":"Internet","avant":"3,5 Go","apres":"3,5 Go","change":false}]}]};</script>
 <!-- /gen:donnees -->
 
-<!-- Révélation au défilement : indépendante des données, ne cache jamais de texte -->
+<!-- Mouvement : révélations, mise en veille hors écran, téléphone, bouton pause. Indépendant des données. -->
 <script>
 (function(){
   "use strict";
   var h = document.documentElement;
   if (h.className.indexOf("anim") < 0) { return; }
+  var $$ = function(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); };
+
+  /* Cartes : la jauge pousse une fois, à la première apparition */
   var io = new IntersectionObserver(function(entrees){
     var k = 0;
     entrees.forEach(function(en){
@@ -576,7 +770,77 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
       io.unobserve(en.target);
     });
   }, { rootMargin: "0px 0px -10% 0px", threshold: 0.2 });
-  Array.prototype.forEach.call(document.querySelectorAll(".carte,.tel"), function(el){ io.observe(el); });
+  $$(".carte").forEach(function(el){ io.observe(el); });
+
+  /* Pause demandée par le visiteur (mémorisée) */
+  var PAUSE = false;
+  try { PAUSE = localStorage.getItem("pm_pause") === "1"; } catch (e) {}
+  var boutons = $$(".btn-pause");
+
+  /* Téléphone : tape le code, sonne, efface, recommence — seulement s'il est à l'écran */
+  var tel = document.querySelector(".tel");
+  var chiffres = tel ? Array.prototype.slice.call(tel.querySelectorAll(".tel-code span")) : [];
+  var appel = tel ? tel.querySelector(".tel-appel") : null;
+  var telVisible = false, gen = 0, telT = null;
+  function telStop(){
+    gen++; clearTimeout(telT); telT = null;
+    if (!tel) { return; }
+    tel.classList.remove("tape");
+    chiffres.forEach(function(c){ c.classList.remove("on"); });
+    if (appel) { appel.classList.remove("sonne"); }
+  }
+  function telStart(){
+    if (!tel || telT || PAUSE || !telVisible || document.hidden) { return; }
+    var g = ++gen;
+    tel.classList.add("tape");
+    (function cycle(){
+      var i = 0;
+      chiffres.forEach(function(c){ c.classList.remove("on"); });
+      if (appel) { appel.classList.remove("sonne"); }
+      function suivant(){
+        if (g !== gen) { return; }
+        if (i < chiffres.length) { chiffres[i++].classList.add("on"); telT = setTimeout(suivant, 180); return; }
+        if (appel) { void appel.offsetWidth; appel.classList.add("sonne"); }
+        telT = setTimeout(function(){
+          if (g !== gen) { return; }
+          chiffres.forEach(function(c){ c.classList.remove("on"); });
+          telT = setTimeout(function(){ if (g === gen) { cycle(); } }, 700);
+        }, 2200);
+      }
+      telT = setTimeout(suivant, 400);
+    })();
+  }
+
+  /* Mise en veille : les boucles ne tournent que si leur zone est à l'écran (.actif) */
+  function suivre(entrees){
+    entrees.forEach(function(en){
+      var el = en.target, vis = en.isIntersecting;
+      el.classList.toggle("actif", vis);
+      if (el.classList.contains("dd") && vis) { el.classList.add("vu"); }
+      if (el === tel) { telVisible = vis; if (vis) { telStop(); telStart(); } else { telStop(); } }
+    });
+  }
+  /* Le héros reste « actif » tant que ses éclats tombés (sous lui) sont visibles */
+  var hero = document.getElementById("hero");
+  if (hero) { new IntersectionObserver(suivre, { rootMargin: "160px 0px 0px 0px", threshold: 0 }).observe(hero); }
+  var zones = new IntersectionObserver(suivre, { threshold: 0 });
+  $$(".derive,.dd").forEach(function(el){ zones.observe(el); });
+  if (tel) { zones.observe(tel); }
+  document.addEventListener("visibilitychange", function(){ if (document.hidden) { telStop(); } else { telStart(); } });
+
+  function majPause(){
+    h.classList.toggle("pause", PAUSE);
+    boutons.forEach(function(b){ b.hidden = false; b.setAttribute("aria-pressed", PAUSE ? "true" : "false"); });
+    if (PAUSE) { telStop(); } else { telStart(); }
+  }
+  boutons.forEach(function(b){
+    b.addEventListener("click", function(){
+      PAUSE = !PAUSE;
+      try { localStorage.setItem("pm_pause", PAUSE ? "1" : "0"); } catch (e) {}
+      majPause();
+    });
+  });
+  majPause();
 })();
 </script>
 
@@ -624,9 +888,9 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
       : "Bonjour, je souhaite des informations sur les nouvelles offres Promobile.";
     return "https://wa.me/" + waNumero() + "?text=" + encodeURIComponent(msg);
   }
-  /* Règle technique : chaque « # » est encodé en %23 → #175# devient tel:%23175%23 */
-  var CODE = D.ussd || "#175#";
-  function telUssd(){ return "tel:" + CODE.replace(/#/g, "%23"); }
+  /* Règle technique : chaque « # » est encodé en %23 → #175#221# devient tel:%23175%23221%23 */
+  var MENU = D.ussd || "#175#";
+  function telLien(code){ return "tel:" + String(code).replace(/#/g, "%23"); }
   var toastT;
   function toast(msg){
     var t = $("#toast"); if (!t) { return; }
@@ -664,19 +928,14 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
   /* ---------- Feuille d'activation ---------- */
   var feuille = $("#feuille"), courante = null, secoursT = null, quitte = false;
   var secours = $("#f-secours"), secoursTxt = $("#f-secours-txt");
-  var TXT_SECOURS = "Le clavier ne s'ouvre pas ? Copiez le code, ouvrez Téléphone, collez-le et appelez, puis suivez le menu.";
-  var TXT_IOS = "Sur iPhone : copiez le code, ouvrez l'app Téléphone, collez-le et appelez. Suivez ensuite le menu.";
-  if (feuille && IOS) {
-    feuille.classList.add("ios");
-    var lib = $("#f-ussd-lib"); if (lib) { lib.textContent = "Ouvrir le clavier"; }
-    var aide = $("#f-ussd-aide"); if (aide) { aide.textContent = "Peut ne pas marcher sur iPhone : utilisez la copie"; }
-  }
+  if (feuille && IOS) { feuille.classList.add("ios"); }
 
   function ouvrir(carte){
     if (!feuille || typeof feuille.showModal !== "function") { return false; }
     var id = carte.getAttribute("data-id");
     courante = D.offres.filter(function(o){ return o.id === id; })[0];
-    if (!courante) { return false; }
+    if (!courante || !courante.code) { return false; }
+    var code = courante.code;
     var fam = (D.familles && D.familles[courante.famille]) || {};
     $("#f-sur").textContent = (fam.court || courante.famille) + " · " + courante.validiteLongue + " · " + fcfa(courante.prix) + " F";
     $("#f-titre").textContent = "Activer " + courante.nom;
@@ -685,10 +944,15 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
     var gain = carte.querySelector(".gain-ligne"), jauges = carte.querySelector(".jauges");
     if (gain) { resume.appendChild(gain.cloneNode(true)); }
     if (jauges) { resume.appendChild(jauges.cloneNode(true)); }
-    $("#f-ussd").href = telUssd();
+    $("#f-ussd").href = telLien(code);
+    $("#f-ussd-lib").textContent = IOS ? "Ouvrir le clavier" : "Composer " + code;
+    $("#f-ussd-aide").textContent = IOS ? "Peut ne pas marcher sur iPhone : utilisez la copie" : "Le clavier s'ouvre avec le code : l'offre s'active directement";
+    $("#f-code").textContent = code;
     $("#f-wa").href = waLien(courante);
     secours.removeAttribute("data-accent");
-    secoursTxt.textContent = IOS ? TXT_IOS : TXT_SECOURS;
+    secoursTxt.textContent = IOS
+      ? "Sur iPhone : copiez le code, ouvrez l'app Téléphone, collez-le et appelez. L'offre s'active directement."
+      : "Le clavier ne s'ouvre pas ? Copiez le code, ouvrez Téléphone, collez-le et appelez.";
     clearTimeout(secoursT);
     feuille.showModal();
     track("offre_clic", { offre: courante.id });
@@ -701,7 +965,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
     var c = e.target.closest(".carte"); if (!c) { return; }
     var ok = false;
     try { ok = ouvrir(c); } catch (err) { ok = false; }
-    if (ok) { e.preventDefault(); } /* sinon le lien tel: s'applique tel quel */
+    if (ok) { e.preventDefault(); } /* sinon le lien tel: de la carte s'applique tel quel */
   });
   if (feuille) {
     $("#f-fermer").addEventListener("click", fermer);
@@ -735,7 +999,8 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
   var copier = $("#f-copier");
   if (copier) {
     copier.addEventListener("click", function(){
-      function ok(){ toast("Code " + CODE + " copié"); track("copier_code", { offre: courante && courante.id }); }
+      var code = (courante && courante.code) || MENU;
+      function ok(){ toast("Code " + code + " copié"); track("copier_code", { offre: courante && courante.id }); }
       function repli(){
         try {
           var r = document.createRange(); r.selectNodeContents($("#f-code"));
@@ -743,7 +1008,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
           if (document.execCommand("copy")) { ok(); } else { toast("Sélectionnez le code et copiez-le"); }
         } catch (e) { toast("Sélectionnez le code et copiez-le"); }
       }
-      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(CODE).then(ok, repli); }
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(code).then(ok, repli); }
       else { repli(); }
     });
   }
