@@ -1,0 +1,12 @@
+# Dépendances et caches
+node_modules/
+__pycache__/
+tools/.fonts/
+.venv/
+.DS_Store
+# Aperçu Claude (généré)
+dist/
+# Dossier publiable (généré par tools/build_page.py --site _site, en local comme dans l'Action)
+_site/
+# Documents internes : le dépôt est public
+docs/*.docx
