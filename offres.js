@@ -29,6 +29,26 @@ var PROMOBILE = {
   "email": "contact@promobile.sn",
   "siteOfficiel": "https://www.promobile.sn",
 
+  "sloganWolof": "Doss Bi Yokati Na !!!",
+  "sloganWolofSens": "le niveau a augmenté",
+
+  "reseau": {
+    "badge": "4G+",
+    "court": "Réseau sur plus de 98 % du Sénégal",
+    "complet": "Couverture du réseau 4G+ sur plus de 98 % du territoire sénégalais"
+  },
+
+  "recharge": {
+    "titre": "Pas assez de crédit ? Rechargez",
+    "texte": "Achetez du crédit avec nos partenaires Wave ou Max it (Orange Money), sur l'app Promobile ou en ligne.",
+    "canaux": [
+      { "id": "wave", "nom": "Wave", "detail": "Achat crédit", "android": "com.wave.personal", "ios": "1523884528" },
+      { "id": "maxit", "nom": "Max it", "detail": "Orange Money", "android": "com.orange.myorange.osn", "ios": "1039327980" },
+      { "id": "promobile", "nom": "Promobile", "detail": "L'application", "android": "com.promobile.app", "ios": "6449710285" },
+      { "id": "en-ligne", "nom": "En ligne", "detail": "promobile.sn", "url": "https://www.promobile.sn/erecharge" }
+    ]
+  },
+
   "catalogue": {
     "fichier": "Catalogue_Offres_Promobile.pdf",
     "poidsAffiche": "moins de 1 Mo"

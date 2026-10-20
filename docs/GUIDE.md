@@ -58,6 +58,21 @@ offre a en plus son `code` direct, qui doit commencer par `#175#` et finir par `
 international sans « + », ex. `221755250000`), `serviceClient`, `email`, `adresse` (adresse du site,
 voir § 6), `vedette` (l'offre rejouée dans le haut de page, par son `id`).
 
+Textes de campagne (facultatifs : un champ absent fait disparaître l'élément) :
+
+- `sloganWolof` : le slogan du moment sous le titre, sur un coup de surligneur jaune (ex. `"Doss Bi Yokati Na !!!"`).
+  La ponctuation finale s'affiche en rouge. `sloganWolofSens` donne sa traduction, lue par les lecteurs d'écran et
+  affichée au survol.
+- `reseau` : la ligne en pied de la carte phare. `badge` (`"4G+"`), `court` (le texte affiché, sur une ligne : le
+  garder court) et `complet` (la phrase entière, lue par les lecteurs d'écran). Garder la source du chiffre de
+  couverture annoncé.
+- `recharge` : la 4e étape de « Comment activer ». `titre`, `texte` et `canaux`. Chaque canal a un `id` (`wave`,
+  `maxit`, `promobile`, `en-ligne` : il fixe la couleur de la pastille), un `nom`, un `detail` (sous-titre), puis soit
+  `url` (un site, en `https://`), soit `android` (identifiant Google Play, ex. `com.wave.personal`) **et** `ios`
+  (numéro App Store, ex. `1523884528`). Une appli ouvre sa fiche Play Store ; sur iPhone, sa fiche App Store. La fiche
+  affiche « Ouvrir » si l'appli est déjà installée. Pour ouvrir **directement** l'app Promobile (et une offre précise),
+  il faut un lien profond fourni par son éditeur (TelEtCom) : le mettre alors dans `url`.
+
 **Changer un prix ne met pas à jour le PDF** : le régénérer (§ 3) ou déposer la nouvelle version du
 Marketing. L'automate affiche un avertissement si le PDF est plus ancien que `offres.js`.
 
@@ -122,6 +137,8 @@ devant. Des confettis (bibliothèque canvas-confetti 1.9.4, licence ISC, intégr
 carte ; en même temps, une pluie tombe sur toute la largeur et deux canons tirent depuis les coins bas de l'écran,
 si bien que tout l'écran est couvert pendant environ 3 s. Les lambeaux de papier restent en collerette autour de
 la carte, et des confettis restent posés autour d'elle et dans les marges, où ils flottent doucement.
+Au même moment, sous le titre, le coup de surligneur jaune se dessine derrière le slogan wolof, qui « tamponne »
+puis fait un petit signe toutes les 5 s tant que le haut de page est à l'écran.
 Si la page s'ouvre ailleurs qu'en haut (lien vers `#offres` ou vers une offre), la zone de la carte reste blanche
 et l'intro se joue quand on remonte jusqu'à elle. Un rechargement repart toujours du haut de la page.
 

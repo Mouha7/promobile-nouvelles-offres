@@ -211,18 +211,96 @@ def html_filtres(d: dict) -> str:
             + "".join(chips) + "</div>")
 
 
+def typo(texte: str) -> str:
+    """Espaces insécables de la typographie française : avant ! ? : ; % » et après «."""
+    return re.sub(r" ([!?:;%»])", NBSP + r"\1", texte.strip()).replace("« ", "«" + NBSP)
+
+
+SIGNAL = ('<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="10" width="2.6" height="4.5" rx=".6"/>'
+          '<rect x="5" y="7" width="2.6" height="7.5" rx=".6"/><rect x="9" y="4" width="2.6" height="10.5" rx=".6"/>'
+          '<rect x="13" y="1" width="2.6" height="13.5" rx=".6"/></svg>')
+
+
 def html_vedette(d: dict) -> str:
     o = offre_vedette(d)
     j = jauges(o)[0]
+    r = d.get("reseau")
+    if r and not all(r.get(k) for k in ("badge", "court", "complet")):
+        raise Erreur("« reseau » : il faut « badge », « court » et « complet »")
+    ligne = (f'<span class="v-reseau" title="{e(typo(r["complet"]))}">{SIGNAL}<b>{e(r["badge"])}</b>'
+             f'<span>{e(typo(r["court"]))}</span></span>') if r else ""
+    complet = f'. {e(typo(r["complet"]))}' if r else ""
     return (
         f'<a class="vedette" href="#{e(o["id"])}" aria-label="Exemple : {e(o["nom"])}, '
-        f'{e(j["avant"])} avant, {e(j["apres"])} maintenant, toujours {e(fcfa(o["prix"]))} francs">'
+        f'{e(j["avant"])} avant, {e(j["apres"])} maintenant, toujours {e(fcfa(o["prix"]))} francs{complet}">'
         f'<span class="v-tete"><span><b>{e(o["nom"])}</b> · {e(o["validiteLongue"])}</span>'
         f'<span class="v-prix">{fcfa(o["prix"])}{NBSP}F · même prix</span></span>'
         f'<span class="v-gain">{e(o["gain"])}</span>'
         f'<span class="v-jauge" style="--r:{j["r"]:.3f}"><span class="v-avant">{e(j["avant"])}</span>'
         f'<span class="j-barre"><span class="j-gain"></span></span>'
-        f'<span class="v-apres">{e(j["apres"])}</span></span></a>')
+        f'<span class="v-apres">{e(j["apres"])}</span></span>{ligne}</a>')
+
+
+def html_doss(d: dict) -> str:
+    """Slogan du moment, en wolof, sur un coup de surligneur ; sa traduction pour les lecteurs d'écran."""
+    s, sens = (d.get("sloganWolof") or "").strip(), (d.get("sloganWolofSens") or "").strip()
+    if not s:
+        return ""
+    if not sens:
+        raise Erreur("« sloganWolofSens » : donner la traduction de « sloganWolof »")
+    titre = typo(f"« {sens[:1].upper()}{sens[1:]} »")
+    m = re.fullmatch(r"(.*?)\s*([!?.…]+)", s)          # la ponctuation finale (« !!! ») passe en rouge
+    texte = f'{e(m.group(1))}<em>{NBSP}{e(m.group(2))}</em>' if m else e(typo(s))
+    return (f'<p class="doss"><span lang="wo" title="{e(titre)}">{texte}</span>'
+            f'<span class="sr"> ({e(sens)})</span></p>')
+
+
+PLAY = "https://play.google.com/store/apps/details?id={}"
+APPSTORE = "https://apps.apple.com/sn/app/id{}"
+ID_ANDROID = re.compile(r"[a-zA-Z]\w*(?:\.[a-zA-Z]\w*)+")
+ID_IOS = re.compile(r"\d{6,12}")
+FLECHE = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" '
+          'stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>')
+
+
+GLOBE = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" '
+         'stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>')
+PASTILLES = {"wave": "W", "maxit": "M", "promobile": "Pro", "en-ligne": GLOBE}   # couleurs : CSS .c-<id> .ic
+
+
+def html_recharge(d: dict) -> str:
+    """4e étape de « Comment activer » : acheter du crédit (applis partenaires, app Promobile, e-recharge).
+    Une appli ouvre sa fiche Play Store ; sur iPhone, le script remplace le lien par la fiche App Store (data-ios)."""
+    r = d.get("recharge")
+    if not r:
+        return ""
+    for cle in ("titre", "texte", "canaux"):
+        if not r.get(cle):
+            raise Erreur(f"« recharge » : champ « {cle} » manquant")
+    liens = []
+    for c in r["canaux"]:
+        nom = (c.get("nom") or "").strip()
+        if not nom:
+            raise Erreur("« recharge » : un canal n'a pas de « nom »")
+        if c.get("url"):
+            if not str(c["url"]).startswith("https://"):
+                raise Erreur(f"« recharge » : l'adresse du canal « {nom} » doit commencer par https://")
+            href, ios = c["url"], ""
+        elif c.get("android") and c.get("ios"):
+            if not ID_ANDROID.fullmatch(str(c["android"])) or not ID_IOS.fullmatch(str(c["ios"])):
+                raise Erreur(f"« recharge » : identifiants d'appli invalides pour « {nom} » "
+                             "(android : com.exemple.appli, ios : chiffres seulement)")
+            href, ios = PLAY.format(c["android"]), f' data-ios="{e(APPSTORE.format(c["ios"]))}"'
+        else:
+            raise Erreur(f"« recharge » : le canal « {nom} » doit avoir « url », ou « android » et « ios »")
+        cid = re.sub(r"[^a-z0-9-]", "", str(c.get("id") or nom).lower().replace(" ", "-"))
+        pastille = PASTILLES.get(cid, e(nom[:1].upper()))
+        detail = f'<small>{e(c["detail"])}</small>' if c.get("detail") else ""
+        liens.append(f'<a class="canal c-{cid}" href="{e(href)}"{ios} target="_blank" rel="noopener" data-canal="{e(nom)}">'
+                     f'<span class="ic" aria-hidden="true">{pastille}</span><span class="cn"><b>{e(nom)}</b>{detail}</span>'
+                     f'{FLECHE}</a>')
+    return (f'<li class="recharge"><strong>{e(typo(r["titre"]))}</strong><span>{e(typo(r["texte"]))}</span>'
+            f'<div class="canaux">{"".join(liens)}</div></li>')
 
 
 def html_h1(d: dict) -> str:
@@ -375,10 +453,12 @@ def construire(d: dict, page: str) -> str:
         "meta": html_meta(d),
         "jsonld": jsonld(d),
         "h1": html_h1(d),
+        "doss": html_doss(d),
         "vedette": html_vedette(d),
         "filtres": html_filtres(d),
         "offres": "".join(html_carte(d, o) for o in d["offres"]),
         "code": html_code(d),
+        "recharge": html_recharge(d),
         "contact": html_contact(d),
         "donnees": donnees(d),
     }
