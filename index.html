@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="text-scale" content="scale">
+<meta name="color-scheme" content="only light">
 <!-- gen:meta -->
 <!-- généré depuis offres.js par tools/build_page.py — ne pas modifier à la main -->
 <title>Plus de valeur, au même prix — Nouvelles offres Promobile</title>
@@ -35,16 +36,83 @@
 <script defer data-domain="offres.promobile.sn" src="https://plausible.io/js/script.tagged-events.js"></script>
 -->
 
-<!-- Animations : seulement si le mouvement est autorisé et le navigateur assez récent (propriétés translate/rotate/scale).
-     Sans cette classe, tout s'affiche à l'état final, immobile. -->
-<script>(function(h){try{if(window.matchMedia&&matchMedia("(prefers-reduced-motion: no-preference)").matches&&"IntersectionObserver"in window&&window.CSS&&CSS.supports&&CSS.supports("translate","1px")){h.className+=" anim"}}catch(e){}})(document.documentElement);</script>
+<!-- Animations : seulement si le mouvement est autorisé et le navigateur assez récent (translate/rotate/scale, clip-path).
+     Sans la classe « anim », tout s'affiche à l'état final, immobile. Ce script dessine aussi la déchirure du héros
+     (graine fixe) et lance l'intro (classe .go) deux images après que le héros est entièrement lu. -->
+<script>
+(function(d,h){
+  var A=false,C=false;
+  try{C=CSS.supports("clip-path","polygon(0 0,1px 0,0 1px)")&&!!window.requestAnimationFrame;}catch(e){}
+  try{A=C&&matchMedia("(prefers-reduced-motion: no-preference)").matches&&"IntersectionObserver"in window&&CSS.supports("translate","1px");}catch(e){}
+  if(A){h.className+=" anim";}
+  if(!C){return;}
+  /* Déchirure : fissures à deux échelles (dérive lente + grain, atténué près des extrémités), lambeaux qui pavent le trou */
+  function dechirure(pap){
+    var s=20261021;
+    function r(){s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}
+    function c(v){return Math.min(100,Math.max(0,v));}
+    function v(a){return a.slice().reverse();}
+    function f(a,b,k){
+      var ax=a[0]*k.W/100,ay=a[1]*k.H/100,dx=b[0]*k.W/100-ax,dy=b[1]*k.H/100-ay,L=Math.sqrt(dx*dx+dy*dy),
+          nx=-dy/L,ny=dx/L,w=L*(.03+.03*r()),p=r()*6.28,q=r()*6.28,o=[],u=0,t,e,g;
+      for(;;){
+        u+=2+5*r();if(u>=L-2){break;}t=u/L;g=Math.min(1,Math.min(u,L-u)/8);
+        e=Math.sin(Math.PI*t)*w*(.65*Math.sin(8*t+p)+.35*Math.sin(19*t+q))
+          +g*((r()*2-1)*(1+1.5*r())+(r()<.1?(r()<.5?-1:1)*(3+2*r()):0));
+        o.push([c((ax+dx*t+nx*e)/k.W*100),c((ay+dy*t+ny*e)/k.H*100)]);
+      }
+      return o;
+    }
+    function poly(a){return "polygon("+a.map(function(p){return p[0].toFixed(1)+"% "+p[1].toFixed(1)+"%";}).join(",")+")";}
+    function ch(a){return "M"+a.map(function(p){return p[0].toFixed(1)+" "+p[1].toFixed(1);}).join("L");}
+    [["m",{W:308,H:72,P:[43,56],L:[8.5,47],R:[91,52],F:[67,50],T:[76,0]}],
+     ["d",{W:446,H:226,P:[44,54],L:[13,49],R:[86,45],F:[66,47],T:[73,0],G:[27,52],B:[21,100]}]].forEach(function(x){
+      var id=x[0],k=x[1],P=k.P,L=k.L,R=k.R,F=k.F,T=k.T,G=k.G,B=k.B,TL=[0,0],TR=[100,0],BR=[100,100],BL=[0,100],
+          lg=G&&f(L,G,k),gp=G&&f(G,P,k),gb=G&&f(G,B,k),lp=G?lg.concat([G],gp):f(L,P,k),
+          pf=f(P,F,k),fr=f(F,R,k),ft=f(F,T,k),lt=f(L,TL,k),lb=f(L,BL,k),rt=f(R,TR,k),rb=f(R,BR,k),
+          z={ph1:[TL,T].concat(v(ft),[F],v(pf),[P],v(lp),[L],lt),
+             ph2:[T,TR].concat(v(rt),[R],v(fr),[F],ft),
+             pg:[TL].concat(v(lt),[L],lb,[BL]),
+             pd:[TR,BR].concat(v(rb),[R],rt),
+             pb1:G?[BL].concat(v(lb),[L],lg,[G],gb,[B]):[BL].concat(v(lb),[L],lp,[P],pf,[F],fr,[R],rb,[BR]),
+             pb2:G&&[B,BR].concat(v(rb),[R],v(fr),[F],v(pf),[P],v(gp),[G],gb)},
+          fk=[[L].concat(lt,[TL]),[L].concat(lb,[BL]),[R].concat(rt,[TR]),[R].concat(rb,[BR]),[F].concat(ft,[T])],
+          svg=pap.querySelector(".fentes."+id),n,el;
+      for(n in z){el=pap.querySelector("."+n);if(el&&z[n]){el.style.setProperty("--c"+id,poly(z[n]));}}
+      if(G){fk.push([G].concat(gb,[B]));}
+      svg.querySelector(".c1").setAttribute("d",ch(lp.slice(-Math.ceil(lp.length*.35)).concat([P],pf.slice(0,Math.ceil(pf.length*.5)))));
+      svg.querySelector(".c2").setAttribute("d",ch([L].concat(lp,[P],pf,[F],fr,[R])));
+      svg.querySelector(".c3").setAttribute("d",fk.map(ch).join(""));
+    });
+  }
+  requestAnimationFrame(function guet(){
+    /* attendre que le héros soit entièrement lu (la section suivante existe) */
+    if(!d.getElementById("offres")&&d.readyState==="loading"){requestAnimationFrame(guet);return;}
+    var hero=d.getElementById("hero"),pap=hero&&hero.querySelector(".papier"),ok=false;
+    if(!pap){return;}
+    try{dechirure(pap);pap.classList.add("pret");ok=true;}catch(e){}
+    if(!A){return;}                                   /* mouvement réduit : seulement la collerette, immobile */
+    requestAnimationFrame(function(){requestAnimationFrame(function(){   /* deux images plus tard : l'image du h1 reste légère */
+      var co=hero.querySelector(".coeur"),an=co&&co.getAnimations?co.getAnimations():[],
+          b=hero.querySelector(".slot").getBoundingClientRect(),
+          go=ok&&!(an[0]&&an[0].currentTime>2600)&&b.bottom>0&&b.top<innerHeight
+             &&!/^#(offres|grille|t-[\w-]+|pro[\w-]+)$/i.test(location.hash);
+      hero.classList.add(go?"go":"fini");
+      if(go){hero.classList.add("en-fete");}
+      window.pmIntro={go:go};
+      if(window.pmHero){window.pmHero(window.pmIntro);}
+    });});
+  });
+})(document,document.documentElement);
+</script>
 
 <style>
 /* ----------------------------------------------------------------
    Charte Promobile : blanc, rouge #E30613, noir bleuté #14181F, accent jaune #FFCF00 (ruban « Nouvelle offre »
    de promobile.sn). Poppins pour le texte, Barlow Condensed (proche du DIN du site officiel) pour les chiffres.
    Concept « Avant → Après » : chaque carte montre l'ancien volume (gris) et ce qui s'ajoute (rouge), au même prix.
-   Héros : la carte vedette est lancée comme une brique, casse le mur, se relève ; les éclats restent en suspension.
+   Héros : la carte vedette crève la page blanche (fissure, lambeaux de papier, cavité rouge), passe devant et bat ;
+   confettis (canvas) sur toute la page.
    ---------------------------------------------------------------- */
 @font-face{font-family:"Poppins";font-style:normal;font-weight:400;font-display:swap;src:url("assets/fonts/poppins-latin-400-normal.woff2") format("woff2")}
 @font-face{font-family:"Poppins";font-style:normal;font-weight:600;font-display:swap;src:url("assets/fonts/poppins-latin-600-normal.woff2") format("woff2")}
@@ -52,7 +120,7 @@
 @font-face{font-family:"Barlow Condensed";font-style:normal;font-weight:700;font-display:swap;src:url("assets/fonts/barlow-condensed-700.woff2") format("woff2");unicode-range:U+0020-007E,U+00A0,U+00D7,U+00E0,U+00E7-00EB,U+00F4,U+00F9,U+00FB,U+2192}
 
 :root{
-  color-scheme:light;
+  color-scheme:only light;
   --rouge:#E30613;
   --rouge-fonce:#B9050F;
   --rouge-pale:#FDECEC;
@@ -122,23 +190,13 @@ h1,h2,h3{text-wrap:balance}
 .btn-lg{min-height:56px;font-size:1.02rem;padding:.85rem 1.4rem}
 .poids{font-weight:400;opacity:.75;font-size:.88em;white-space:nowrap}
 
-/* Bouton pause des animations (WCAG 2.2.2) : visible seulement quand les animations tournent */
-.btn-pause{
-  flex:none;display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;
-  border:1.5px solid var(--ligne);background:#fff;color:var(--noir);cursor:pointer;-webkit-tap-highlight-color:transparent;
-}
-.btn-pause:hover{border-color:var(--noir)}
-.btn-pause[hidden]{display:none}
-.btn-pause svg{width:16px;height:16px}
-.btn-pause .i-lecture,.btn-pause[aria-pressed="true"] .i-pause{display:none}
-.btn-pause[aria-pressed="true"] .i-lecture{display:block}
 
 /* ---------- Ruban aperçu (visible seulement dans l'aperçu Claude) ---------- */
 .ruban{display:none;background:#FFF4CC;color:#5C4300;font-size:.85rem;text-align:center;padding:.5rem var(--gouttiere-d) .5rem var(--gouttiere-g);border-bottom:1px solid #F2DE9A}
 .ruban[data-on]{display:block}
 
 /* ---------- En-tête (non collant : l'écran est précieux) ---------- */
-.top{position:relative;z-index:3} /* devant les éclats du héros qui montent jusqu'ici */
+.top{position:relative;z-index:3} /* le héros passe devant (z 21) le temps des confettis */
 .top .wrap{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:60px;padding-block:.5rem}
 .logo{display:inline-flex;text-decoration:none;flex:none}
 .logo img{height:30px;width:auto}
@@ -149,12 +207,12 @@ h1,h2,h3{text-wrap:balance}
 @media (min-width:600px){.logo img{height:36px}.btn-pdf .lib-long{display:inline}.btn-pdf .lib-court{display:none}}
 
 /* ---------- Héros ---------- */
-/* z-index 2 : les éclats qui tombent sous le héros passent devant le fond de la section suivante.
-   overflow-x: clip coupe les éclats sur les côtés sans empêcher la chute ; repli « hidden » avant Safari 16. */
-.hero{position:relative;z-index:2;overflow:hidden;background:radial-gradient(70% 85% at 100% 0%,rgba(227,6,19,.11),rgba(227,6,19,0) 70%)}
+/* z-index 2 (21 pendant les confettis, .en-fete). overflow-x: clip coupe l'anneau de choc et les éclats sur les côtés
+   sans couper la collerette ; repli « hidden » avant Safari 16. */
+.hero{position:relative;z-index:2;overflow:hidden}
 @supports (overflow:clip){.hero{overflow:visible;overflow-x:clip}}
 .hero-grille{display:grid;gap:1rem;padding-block:clamp(.75rem,3vw,3.5rem) clamp(1rem,3vw,3.5rem)}
-.hero-texte{position:relative;z-index:1;display:grid;gap:.85rem;justify-items:start}
+.hero-texte{position:relative;z-index:2;display:grid;gap:.85rem;justify-items:start}
 .hero-haut{display:flex;align-items:center;justify-content:space-between;gap:.75rem;width:100%}
 .nouveau{
   display:inline-flex;align-items:center;gap:.5rem;margin:0;
@@ -173,7 +231,6 @@ h1,h2,h3{text-wrap:balance}
 .vedette{
   display:grid;gap:.55rem;text-decoration:none;color:#fff;background:var(--noir);
   border-radius:var(--rayon);padding:.85rem 1rem 1rem;position:relative;overflow:hidden;isolation:isolate;
-  box-shadow:0 24px 48px -24px rgba(20,24,31,.55);
 }
 .vedette::after{content:"";position:absolute;z-index:-1;inset:auto -20% -60% auto;width:70%;aspect-ratio:1;background:radial-gradient(closest-side,rgba(227,6,19,.35),rgba(227,6,19,0));pointer-events:none}
 .v-tete{display:flex;justify-content:space-between;align-items:baseline;gap:.75rem;font-size:.8rem;color:rgba(255,255,255,.72)}
@@ -187,39 +244,105 @@ h1,h2,h3{text-wrap:balance}
 .vedette .j-barre{height:.7rem;background:rgba(255,255,255,.12)}
 .vedette .j-barre::before{background:rgba(255,255,255,.4)}
 
-/* Scène : fissures, brèche (le trou dans le mur), onde de choc, éclats. Tout est absolu : la mise en page ne bouge pas.
-   La scène ne crée pas de contexte d'empilement : le texte (z 1) passe devant les éclats (z 0), la carte (z 2) devant tout. */
-.scene{position:relative}
-.coeur{position:relative;z-index:2}
-.fissures,.breche,.onde,.debris{position:absolute;pointer-events:none}
-.fissures{z-index:0;left:-40%;top:-80%;width:180%;height:260%;overflow:visible}
-.fissures path{fill:none;stroke:rgba(20,24,31,.2);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:0}
-.fissures .r{stroke:rgba(227,6,19,.5)}
-.breche{z-index:1;left:-9px;right:-10px;top:-10px;bottom:-9px}
-.breche svg{display:block;width:100%;height:100%;fill:var(--rouge);rotate:1.5deg}
-.onde{z-index:1;--o:min(120vw,640px);left:50%;top:50%;width:var(--o);height:var(--o);margin:calc(var(--o) / -2) 0 0 calc(var(--o) / -2);border-radius:50%;border:3px solid var(--rouge);opacity:0}
-.debris{z-index:0;left:50%;top:50%;width:0;height:0;--kx:1.75px;--ky:.8px;--ks:.75}
-.grappe{position:absolute;left:0;top:0}
+/* Scène : la carte vedette est cachée derrière la page blanche ; elle la crève (fissure, cavité rouge, lambeaux de
+   papier repliés vers l'avant en 3D, éclats), passe devant, puis bat. Confettis (canvas) derrière la carte, sur toute la page.
+   Tout est absolu ou fixe : la mise en page ne bouge jamais. Polygones des lambeaux : calculés dans <head> (graine fixe).
+   .slot : trou 1 < carte 2 (7 à --tz) < cadre 3 < papier 4 < fantôme 5 < éclats 8.  Héros : confettis posés 1 < texte 2
+   < canvas 3 < .slot 4. */
+.hero{
+  /* horloge de l'intro (depuis .go) */
+  --ta:300ms;--dg:200ms;--tc:480ms;--dp:420ms;--tf:520ms;--db:640ms;--tk:520ms;--dk:420ms;--tz:660ms;--do:420ms;
+  --dt:360ms;--df:70ms;--tj:820ms;--tb:1380ms;--ts:1480ms;--tv:1900ms;
+  /* jaillissement de la carte (mobile : 1.05 maxi, pas de rotateY) */
+  --kp:520px;--ky0:6px;--kx0:24deg;--kr0:0deg;--ks0:.6;--ky1:-4px;--kx1:-3deg;--kr1:0deg;--ks1:1.05;--ky2:1px;--kr2:0deg;--ks2:.985;--ky3:0px;--ks3:1;
+  /* cadre blanc qui masque la carte autour du trou tant qu'elle est derrière la page */
+  --cs:calc(12px + 2.5vw)}
+.scene{position:relative;margin-block:18px 16px}
+.slot{position:relative;z-index:4}
+.coeur{position:relative;z-index:7}
+.coeur::after{content:"";position:absolute;z-index:-1;inset:12px 4% 0;border-radius:var(--rayon);box-shadow:0 16px 30px -10px rgba(20,24,31,.5);pointer-events:none}
+.pouls{position:absolute;inset:0;z-index:-1;border-radius:var(--rayon);box-shadow:0 0 0 2px rgba(227,6,19,.55),0 0 16px 3px rgba(227,6,19,.28);opacity:0;pointer-events:none;--rx:1.07;--ry:1.26;--sx:1.2;--sy:1.7}
+.trou,.cadre,.papier,.fantome,.bout,.debris{position:absolute;pointer-events:none}
+.papier{inset:10px}
+.trou{inset:12px}
+.cadre{inset:calc(10px - var(--cs) + 1px)}
+.trou,.cadre,.papier,.fantome,.bout,.pb2,.fentes.d{display:none}
+.papier.pret{display:block}
+.trou{z-index:1;opacity:0;background:radial-gradient(130% 160% at 43% 56%,#F2242C,#E30613 55%,#A8000F);box-shadow:inset 0 4px 12px rgba(0,0,0,.45);clip-path:polygon(0 6%,2% 0,27% 2%,55% 0,97% 1.5%,100% 6%,99.3% 50%,100% 94%,96.5% 100%,60% 98%,22% 100%,1.5% 97.5%,0 92%,.7% 46%)}
+/* la « page » autour du trou : un anneau blanc (fond, pas une ombre : même teinte que la page en mode sombre forcé) */
+.cadre{z-index:3;opacity:0;background:var(--fond);clip-path:polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,var(--cs) var(--cs),var(--cs) calc(100% - var(--cs)),calc(100% - var(--cs)) calc(100% - var(--cs)),calc(100% - var(--cs)) var(--cs),var(--cs) var(--cs))}
+.papier{z-index:4;perspective:100vw;perspective-origin:43% 56%}
+.pan{position:absolute;inset:0}
+.pan i{position:absolute;inset:0;clip-path:var(--cm)}
+.ombre{background:rgba(20,24,31,.4);translate:var(--ox,0) var(--oy,0)}
+.face{background:var(--fond)}
+.ton{background:linear-gradient(var(--sens),rgba(20,24,31,.04),rgba(20,24,31,.34) var(--te));opacity:var(--sh)}
+.ph1,.ph2{transform-origin:50% 0;--oy:2px;--sens:to bottom;--te:56%}
+.pb1,.pb2{transform-origin:50% 100%;--oy:-2px;--sens:to top;--te:53%}
+.pg{transform-origin:0 50%;--ox:2px;--sens:to right;--te:9%}
+.pd{transform-origin:100% 50%;--ox:-2px;--sens:to left;--te:9%}
+/* angles : pré-ouverture / pic / rebond / repos (collerette) ; décalages irréguliers, durées propres à chaque lambeau */
+.pb1{--o:0ms;--m:1.1;--a0:-9deg;--a1:-132deg;--a2:-112deg;--a3:-118deg;--sh:.55;transform:rotateX(-118deg)}
+.ph1{--o:9ms;--m:1.05;--a0:9deg;--a1:128deg;--a2:110deg;--a3:116deg;--sh:.9;transform:rotateX(116deg)}
+.ph2{--o:16ms;--m:.95;--a0:8deg;--a1:124deg;--a2:108deg;--a3:114deg;--sh:.85;transform:rotateX(114deg)}
+.pg{--o:24ms;--m:.85;--a0:-8deg;--a1:-134deg;--a2:-114deg;--a3:-120deg;--sh:.95;transform:rotateY(-120deg)}
+.pd{--o:31ms;--m:.85;--a0:8deg;--a1:130deg;--a2:112deg;--a3:118deg;--sh:.6;transform:rotateY(118deg)}
+.fentes{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.fentes path{fill:none;stroke:#2B3038;stroke-width:1.3;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:0}
+.c1{--o:-30ms}.c2{--o:0ms}.c3{--o:0ms}
+.fantome{z-index:5;inset:24px 18%;border-radius:30px;background:var(--noir);box-shadow:0 0 26px 18px var(--noir);opacity:0}
+.bout{z-index:8;left:var(--bx);top:var(--by);width:0;height:0;opacity:0}
+.bout i{position:absolute;width:13px;height:10px;margin:-5px 0 0 -6px;background:linear-gradient(140deg,#fff 40%,#c4c4c4);clip-path:polygon(0 25%,100% 0,72% 100%)}
+.b1{--bx:66%;--by:50%;--o:0ms;--dx:58px;--h:-34px;--f:120px;--rot:470deg}
+.b2{--bx:11%;--by:48%;--o:25ms;--dx:-34px;--h:-26px;--f:130px;--rot:-390deg}
+.fete{position:fixed;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;transition:opacity .45s linear}
+.fete.sort{opacity:0}
+/* confettis posés autour de la carte (ils « atterrissent » après l'explosion, puis restent immobiles) */
+.debris{z-index:1;left:50%;top:50%;width:0;height:0;--kx:1.75px;--ky:.8px;--ks:.8}
 .eclat{
   position:absolute;left:0;top:0;overflow:visible;fill:currentColor;
+  --xx:var(--xm,var(--x));--yy:var(--ym,var(--y));
   width:calc(var(--t) * var(--ks) * 1px);height:calc(var(--t) * var(--ks) * 1px);
   margin:calc(var(--t) * var(--ks) * -.5px) 0 0 calc(var(--t) * var(--ks) * -.5px);
-  transform:translate(calc(var(--xm,var(--x)) * var(--kx)),calc(var(--ym,var(--y)) * var(--ky))) rotate(calc(var(--r) * 1deg));
+  transform:translate(calc(var(--xx) * var(--kx)),calc(var(--yy) * var(--ky))) rotate(calc(var(--r) * 1deg));
 }
 .eclat.o,.dd.o{display:none}
-.c-r{color:var(--rouge)}.c-f{color:var(--rouge-fonce)}.c-n{color:var(--noir)}.c-j{color:var(--jaune)}
+.c-r{color:var(--rouge)}.c-f{color:#9B0911}.c-n{color:var(--noir)}.c-j{color:var(--jaune)}
 @media (min-width:880px){
   .hero-grille{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:center;gap:3.5rem}
   .hero-texte{gap:1.2rem}
   .cta-offres{display:inline-flex}
-  .vedette{padding:1.6rem 1.6rem 1.7rem;gap:1rem;transform:rotate(-1.5deg)}
+  .vedette{padding:1.6rem 1.6rem 1.7rem;gap:1rem}
   .v-tete{font-size:.92rem}
   .v-gain{display:block}
   .v-avant{font-size:1.7rem}.v-apres{font-size:2.6rem}
   .vedette .j-barre{height:.9rem}
-  .breche{left:-16px;right:-18px;top:-18px;bottom:-16px}
-  .debris{--kx:3.2px;--ky:2.3px;--ks:1}
-  .eclat{transform:translate(calc(var(--x) * var(--kx)),calc(var(--y) * var(--ky))) rotate(calc(var(--r) * 1deg))}
+  .scene{margin-block:0}
+  .hero{--ta:400ms;--dg:260ms;--tc:640ms;--dp:600ms;--tf:730ms;--db:850ms;--tk:700ms;--dk:680ms;--tz:890ms;--do:450ms;--dt:560ms;--df:100ms;--tj:1100ms;--tb:1750ms;--ts:1850ms;--tv:1900ms;
+    --kp:900px;--ky0:12px;--kx0:12deg;--kr0:-10deg;--ks0:.8;--ky1:-10px;--kx1:-2deg;--kr1:3deg;--ks1:1.1;--ky2:3px;--kr2:-1deg;--ks2:.98;--ky3:-1px;--ks3:1.006;--cs:44px}
+  .slot{rotate:-1.5deg}
+  .coeur::after{inset:18px 5% 0;box-shadow:0 28px 52px -18px rgba(20,24,31,.5)}
+  .pouls{--rx:1.05;--ry:1.1;--sx:1.14;--sy:1.26}
+  .papier{inset:12px;perspective:760px;perspective-origin:44% 54%}
+  .trou{inset:14px;background:radial-gradient(120% 140% at 44% 54%,#F2242C,#E30613 55%,#A8000F)}
+  .cadre{inset:calc(12px - var(--cs) + 1px)}
+  .pb2,.fentes.d{display:block}
+  .fentes.m{display:none}
+  .fentes path{stroke-width:1.6}
+  .ombre{background:rgba(20,24,31,.32)}
+  .ph1,.ph2{--oy:1.5px}.pb1,.pb2{--oy:-1.5px}.pg{--ox:1.5px}.pd{--ox:-1.5px}
+  .pan i{clip-path:var(--cd)}
+  .pb1{--o:0ms;--m:1.1;--a0:-9deg;--a1:-128deg;--a2:-104deg;--a3:-110deg;--te:55%;transform:rotateX(-110deg)}
+  .ph1{--o:9ms;--m:1.05;--a0:8deg;--a1:118deg;--a2:100deg;--a3:106deg;--te:54%;transform:rotateX(106deg)}
+  .pb2{--o:16ms;--m:1;--a0:-8deg;--a1:-124deg;--a2:-102deg;--a3:-108deg;--sh:.5;--te:55%;transform:rotateX(-108deg)}
+  .ph2{--o:24ms;--m:.95;--a0:7deg;--a1:126deg;--a2:104deg;--a3:110deg;--te:54%;transform:rotateX(110deg)}
+  .pg{--o:31ms;--m:.85;--a1:-140deg;--a2:-118deg;--a3:-124deg;--te:14%;transform:rotateY(-124deg)}
+  .pd{--o:38ms;--m:.85;--a1:136deg;--a2:114deg;--a3:120deg;--te:15%;transform:rotateY(120deg)}
+  .fantome{inset:46px 20%;border-radius:40px;box-shadow:0 0 44px 28px var(--noir)}
+  .b1{--bx:65%;--by:47%;--dx:120px;--h:-64px;--f:230px;--rot:540deg}
+  .b2{--bx:28%;--by:52%;--dx:-96px;--h:-50px;--f:260px;--rot:-430deg}
+  .debris{--kx:3.2px;--ky:2px;--ks:1}
+  .eclat{--xx:var(--x);--yy:var(--y)}
   .eclat.o{display:block}
 }
 
@@ -230,6 +353,7 @@ h1,h2,h3{text-wrap:balance}
 .sec-tete h2{margin:0;font-size:clamp(1.35rem,1.6vw + 1rem,2.1rem);letter-spacing:-.025em;line-height:1.15}
 .sec-tete p{margin:0;color:var(--texte-2);font-size:.92rem}
 .sec-tete p strong{color:var(--texte)}
+@media (max-width:599px){.m-cache{display:none}}
 
 /* Barre de filtres : collante seulement pendant la section offres */
 .barre-filtres{position:sticky;top:0;z-index:20;background:var(--fond);padding-top:env(safe-area-inset-top,0px)}
@@ -311,7 +435,9 @@ h1,h2,h3{text-wrap:balance}
 @media (hover:hover){.carte:hover .activer{background:#000}.carte:hover .activer .fl{transform:translateX(3px)}}
 
 /* ---------- Comment activer ---------- */
-.comment{background:var(--fond-2)}
+.comment{position:relative;background:var(--fond-2)}
+.comment .wrap,.cata .wrap{position:relative;z-index:1}
+.cata{position:relative}
 .comment-grille{display:grid;gap:1.5rem;padding-block:clamp(2rem,5vw,4rem)}
 @media (min-width:800px){.comment-grille{grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:3rem}}
 .comment h2{margin:0 0 1rem;font-size:clamp(1.35rem,1.6vw + 1rem,2.1rem);letter-spacing:-.025em;line-height:1.15}
@@ -326,7 +452,8 @@ h1,h2,h3{text-wrap:balance}
 .tel-zone{position:relative;justify-self:center;width:min(100%,250px)}
 .tel{background:var(--noir);border-radius:34px;padding:12px;box-shadow:0 30px 60px -30px rgba(20,24,31,.6)}
 .tel-ecran{background:#fff;border-radius:24px;padding:1rem .9rem .9rem;display:grid;gap:.6rem;justify-items:center}
-.tel-leg{margin:0;font-size:.75rem;font-weight:600;color:var(--texte-2)}
+.tel-leg{margin:0;font-size:.75rem;font-weight:600;color:var(--texte-2);transition:opacity .2s ease,transform .2s ease}
+.tel-leg.sort{opacity:0;transform:translateY(-4px)}
 .tel-code{display:flex;justify-content:center;min-height:2.6rem;align-items:center;font-family:var(--chiffres);font-weight:700;font-size:2.15rem;letter-spacing:.02em;line-height:1;white-space:nowrap}
 .tel-code span{display:inline-block;transition:transform .2s var(--sortie)}
 .tel-pave{display:grid;grid-template-columns:repeat(3,44px);gap:8px 14px;justify-content:center;font-family:var(--chiffres);font-weight:700;font-size:1.15rem;margin-top:.25rem}
@@ -334,7 +461,6 @@ h1,h2,h3{text-wrap:balance}
 .tel-appel{position:relative;width:52px;height:52px;border-radius:50%;background:#16A34A;display:grid;place-items:center;color:#fff}
 .tel-appel svg{width:24px;height:24px}
 .tel-appel::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid #16A34A;opacity:0;pointer-events:none}
-.btn-pause-tel{position:absolute;top:-10px;right:-10px;z-index:1;box-shadow:0 4px 12px -4px rgba(20,24,31,.3)}
 @media (max-width:799px){
   .tel-zone{width:100%}
   .tel{border-radius:26px;padding:8px}
@@ -435,55 +561,69 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 @keyframes pousse{from{transform:scaleX(0)}}
 @keyframes barre{from{transform:scaleX(0)}}
 @keyframes surgit{from{transform:scale(.55)}}
-/* Lancer → impact → se relever : UNE seule animation sur la carte (plusieurs se masqueraient entre elles) */
-@keyframes intro{
-  0%{translate:55vw -60vh;rotate:-32deg;scale:1.8;animation-timing-function:cubic-bezier(.5,0,.9,.45)}
-  39%{translate:0 0;rotate:0deg;scale:1.12 .82;animation-timing-function:cubic-bezier(.2,.8,.3,1)}
-  55%{translate:0 -10px;rotate:1.6deg;scale:.95 1.06}
-  70%{translate:0 4px;rotate:-.8deg;scale:1.03 .98}
-  85%{translate:0 -2px;rotate:.3deg;scale:.99 1.01}
-  100%{translate:0 0;rotate:0deg;scale:1}
-}
-@keyframes jaillit{0%{transform:scale(0) rotate(-14deg)}60%{transform:scale(1.08) rotate(2deg)}100%{transform:none}}
-@keyframes onde{from{transform:scale(.15);opacity:.85}to{transform:scale(1);opacity:0}}
-@keyframes secousse{0%,100%{transform:none}20%{transform:translate(-4px,2px)}40%{transform:translate(4px,-2px)}60%{transform:translate(-3px,1px)}80%{transform:translate(2px,-1px)}}
-@keyframes fissure{from{stroke-dashoffset:1}}
-@keyframes eclate{from{transform:translate(0,0) rotate(0deg) scale(0)}}
-@keyframes battement{0%,52%,100%{transform:scale(1)}13%{transform:scale(1.015)}26%{transform:scale(1)}38%{transform:scale(1.008)}}
-@keyframes battement-fort{0%,52%,100%{transform:scale(1)}13%{transform:scale(1.05)}26%{transform:scale(1.01)}38%{transform:scale(1.03)}}
-@keyframes respire{0%,52%,100%{transform:scale(1)}13%{transform:scale(1.035)}26%{transform:scale(1.005)}38%{transform:scale(1.02)}}
-@keyframes flotte{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(var(--fx,4px),var(--fy,-6px)) rotate(var(--fr,1deg))}}
+/* Intro du héros : 100 % CSS, déclenchée par .go (posée dans <head>). Ressorts écrits en images clés (iOS 16 ignore
+   linear()). Durées : variables de .hero. Le JS (fin du fichier) ne fait que les confettis, .fini et le battement. */
+@keyframes attente{from,to{opacity:0}}
+@keyframes tenir{from,to{opacity:1}}
+@keyframes sous{from,to{z-index:2}}
+@keyframes jaillit{
+  0%{opacity:0;transform:perspective(var(--kp)) translateY(var(--ky0)) rotateX(var(--kx0)) rotateY(var(--kr0)) scale(var(--ks0));animation-timing-function:cubic-bezier(.23,1,.32,1)}
+  6%{opacity:1}
+  42%{transform:perspective(var(--kp)) translateY(var(--ky1)) rotateX(var(--kx1)) rotateY(var(--kr1)) scale(var(--ks1));animation-timing-function:cubic-bezier(.45,0,.55,1)}
+  68%{transform:perspective(var(--kp)) translateY(var(--ky2)) rotateX(1deg) rotateY(var(--kr2)) scale(var(--ks2));animation-timing-function:cubic-bezier(.45,0,.55,1)}
+  86%{transform:perspective(var(--kp)) translateY(var(--ky3)) rotateX(0deg) rotateY(0deg) scale(var(--ks3));animation-timing-function:cubic-bezier(.45,0,.55,1)}
+  to{opacity:1;transform:perspective(var(--kp)) translateY(0) rotateX(0deg) rotateY(0deg) scale(1)}}
+@keyframes ambiant{0%{opacity:0;translate:0 4px;scale:.9;animation-timing-function:cubic-bezier(.23,1,.32,1)}42%{opacity:.8;translate:0 18px;scale:1.08;animation-timing-function:cubic-bezier(.45,0,.55,1)}to{opacity:1;translate:0 0;scale:1}}
+@keyframes trou{0%,80%{opacity:1}to{opacity:0}}
+@keyframes fantome{0%{opacity:0;scale:.9;animation-timing-function:cubic-bezier(.55,0,.9,.45)}80%{opacity:.13;scale:1}to{opacity:0;scale:1.03}}
+@keyframes tremble{0%{translate:-1.5px .5px}20%{translate:1.5px -.5px}40%{translate:-1.2px 0}60%{translate:1px .5px}80%{translate:-.5px 0}to{translate:0 0}}
+@keyframes fente{0%,30%{opacity:1}to{opacity:0}}
+@keyframes ouvreX{0%{transform:rotateX(0deg);animation-timing-function:cubic-bezier(.5,0,.9,.5)}12%{transform:rotateX(var(--a0));animation-timing-function:cubic-bezier(.3,.7,.4,1)}45%{transform:rotateX(var(--a1));animation-timing-function:cubic-bezier(.4,0,.6,1)}70%{transform:rotateX(var(--a2));animation-timing-function:cubic-bezier(.4,0,.6,1)}to{transform:rotateX(var(--a3))}}
+@keyframes ouvreY{0%{transform:rotateY(0deg);animation-timing-function:cubic-bezier(.5,0,.9,.5)}12%{transform:rotateY(var(--a0));animation-timing-function:cubic-bezier(.3,.7,.4,1)}45%{transform:rotateY(var(--a1));animation-timing-function:cubic-bezier(.4,0,.6,1)}70%{transform:rotateY(var(--a2));animation-timing-function:cubic-bezier(.4,0,.6,1)}to{transform:rotateY(var(--a3))}}
+@keyframes ombrer{0%,12%{opacity:0}45%,to{opacity:var(--sh)}}
+@keyframes bout-y{0%{opacity:1;translate:0 0;animation-timing-function:cubic-bezier(.2,.6,.35,1)}28%{translate:0 var(--h);animation-timing-function:cubic-bezier(.55,0,1,.45)}85%{opacity:1}to{opacity:0;translate:0 var(--f)}}
+@keyframes bout-x{to{translate:var(--dx) 0;rotate:var(--rot)}}
+@keyframes choc{from{opacity:.85;scale:1}to{opacity:0;scale:var(--sx) var(--sy)}}
+@keyframes atterrit{0%{opacity:0;translate:0 -90px;rotate:-140deg;scale:.6}25%{opacity:1}}
 @keyframes pose{from{transform:translate(0,-70px) rotate(-120deg) scale(.5)}}
 @keyframes anneau{from{transform:scale(1);opacity:.75}to{transform:scale(1.9);opacity:0}}
 @keyframes sonne{0%,100%{transform:none}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+@keyframes bat{0%{scale:1;animation-timing-function:cubic-bezier(.3,0,.5,1)}12%{scale:1.04;animation-timing-function:cubic-bezier(.4,0,.6,1)}22%{scale:1.004;animation-timing-function:cubic-bezier(.3,0,.5,1)}34%{scale:1.025;animation-timing-function:cubic-bezier(.4,0,.6,1)}55%,to{scale:1}}
+@keyframes pouls{0%,9%{opacity:0;scale:1}14%{opacity:.9;scale:1.005}62%,to{opacity:0;scale:var(--rx) var(--ry)}}
 
-/* Intro du héros (une fois, au chargement) — la carte est hors écran pendant 0 s : départ immédiat */
-.anim .vedette{animation:intro 1.15s cubic-bezier(.3,.7,.4,1) backwards}
-.anim .breche{animation:jaillit .5s cubic-bezier(.2,.9,.3,1.2) .45s backwards}
-.anim .onde{animation:onde .6s ease-out .45s}
-.anim .scene{animation:secousse .3s linear .45s}
-.anim .fissures path{animation:fissure .45s ease-out .47s backwards}
-.anim .fissures path:nth-child(even){animation-delay:.53s}
-.anim .eclat{animation:eclate var(--dur,1s) cubic-bezier(.15,.9,.25,1) .45s backwards}
-/* … puis les éléments de la carte se placent */
-.anim .vedette .j-gain{animation:pousse .9s var(--sortie) 1.2s both}
-.anim .v-avant::after{animation:barre .3s ease-out 1.95s both}
-.anim .v-apres{animation:surgit .55s var(--ressort) 2.05s both}
-.anim .v-gain{animation:surgit .6s var(--ressort) 2.1s both;transform-origin:left bottom}
+/* avant .go (héros lu en plusieurs morceaux) : carte, papier et confettis posés cachés ; filet de sécurité CSS à 3 s */
+.anim .hero:not(.go):not(.fini) :is(.coeur,.papier,.debris){animation:attente 1ms 3s backwards}
+.anim .hero:not(.go):not(.fini) .coeur:focus-within{animation:none}
+.anim .hero.en-fete{z-index:21}               /* le temps des confettis : ils passent sur l'en-tête et la barre de filtres (z 20) */
+.anim .hero.go:not(.fini) :is(.trou,.cadre,.fantome,.bout){display:block}
+.anim .hero.go:not(.fini) .slot{animation:tremble 80ms linear calc(var(--tc) - 40ms)}
+.anim .hero.go:not(.fini) .trou{animation:trou var(--dt) linear var(--tc)}
+.anim .hero.go:not(.fini) .cadre{animation:tenir calc(var(--tz) + 55ms) linear}
+.anim .hero.go:not(.fini) .fantome{animation:fantome var(--dg) linear var(--ta)}
+.anim .hero.go:not(.fini) .fentes path{animation:fente var(--df) linear calc(var(--tc) + var(--o))}
+.anim .hero.go:not(.fini) .pan{opacity:0;animation:tenir 1ms linear var(--tc) forwards,ouvreX calc(var(--dp) * var(--m)) linear calc(var(--tc) + var(--o)) both}
+.anim .hero.go:not(.fini) :is(.pg,.pd){animation-name:tenir,ouvreY}
+.anim .hero.go:not(.fini) .ton{animation:ombrer calc(var(--dp) * var(--m)) linear calc(var(--tc) + var(--o)) both}
+.anim .hero.go:not(.fini) .vedette{animation:jaillit var(--dk) linear var(--tk) backwards}
+.anim .hero.go:not(.fini) .coeur{animation:sous 1ms linear var(--tz) backwards}   /* animation à part : la transform de la carte reste sur le compositeur */
+.anim .hero.go:not(.fini) .coeur::after{animation:ambiant var(--dk) linear var(--tk) backwards}
+.anim .hero.go:not(.fini) .pouls{animation:choc var(--do) cubic-bezier(.2,.7,.3,1) var(--tz)}
+.anim .hero.go:not(.fini) .bout{animation:bout-y var(--db) linear calc(var(--tf) + var(--o))}
+.anim .hero.go:not(.fini) .bout i{animation:bout-x var(--db) cubic-bezier(.2,.7,.4,1) calc(var(--tf) + var(--o))}
+.anim .hero.go .eclat{animation:atterrit .9s cubic-bezier(.2,.8,.3,1) var(--tp,1.6s) backwards}
+/* … puis les éléments de la carte se placent (re-calés après l'éclatement) */
+.anim .hero.go .vedette .j-gain{animation:pousse .7s var(--sortie) var(--tj) both}
+.anim .hero.go .v-avant::after{animation:barre .26s ease-out var(--tb) both}
+.anim .hero.go .v-apres{animation:surgit .5s var(--ressort) var(--ts) both}
+.anim .hero.go .v-gain{animation:surgit .6s var(--ressort) var(--tv) both;transform-origin:left bottom}
 
-/* Boucles (battement, respiration, flottement) : en pause par défaut, actives seulement quand leur zone est
-   à l'écran (.actif, posé par le JS) et que le visiteur n'a pas mis en pause (html.pause). Longhands uniquement :
-   le raccourci « animation » remettrait l'état à « running ». */
+/* Battement (classe .bat, posée par le JS après l'apparition du nouveau volume) : 3 battements à 80 bpm (2,25 s), puis
+   arrêt ; rejoué quand la carte revient à l'écran (WCAG 2.2.2 : tout mouvement automatique s'arrête avant 5 s). */
+.anim .hero.bat .coeur{animation:bat .75s 3}
+.anim .hero.bat .pouls{animation:pouls .75s ease-out 3}
 .actif{--jeu:running}
-html.pause .actif{--jeu:paused}
-.anim .coeur,.anim .breche svg,.anim .debris,.anim .grappe,.anim .dd svg{animation-iteration-count:infinite;animation-timing-function:ease-in-out;animation-play-state:var(--jeu,paused)}
-.anim .coeur{animation-name:battement;animation-duration:1.8s;animation-delay:2.2s}
-.anim .breche svg{animation-name:battement-fort;animation-duration:1.8s;animation-delay:2.25s}
-.anim .debris{animation-name:respire;animation-duration:1.8s;animation-delay:2.2s}
-.anim .grappe{animation-name:flotte;animation-duration:var(--fd,3.6s);animation-delay:var(--fdl,0s)}
-.anim .dd svg{animation-name:flotte;animation-duration:var(--fd,4s);animation-delay:var(--fdl,0s)}
 
-/* Éclats dérivés : ils « se posent » à leur première apparition à l'écran */
+/* Confettis posés dans les sections : ils atterrissent à leur première apparition à l'écran, puis restent immobiles */
 .anim .dd:not(.vu){transform:translate(0,-70px) rotate(-120deg) scale(.5)}
 .anim .dd.vu{animation:pose .9s cubic-bezier(.2,.8,.3,1)}
 
@@ -504,10 +644,10 @@ html.pause .actif{--jeu:paused}
 
 @media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
 @media print{
-  .top .btn,.barre-filtres,.ruban,.feuille,.toast,.evitement,.cta-offres,.btn-pause,
-  .fissures,.breche,.onde,.debris,.derive{display:none!important}
+  .top .btn,.barre-filtres,.ruban,.feuille,.toast,.evitement,.cta-offres,
+  .trou,.cadre,.papier,.fantome,.bout,.fete,.pouls,.debris,.derive{display:none!important}
   .carte{break-inside:avoid;box-shadow:none}
-  .vedette,.scene,.coeur,.j-gain,.gain,.tel-code span,.v-apres,.v-gain,.v-avant::after{transform:none!important;translate:none!important;rotate:none!important;scale:none!important;animation:none!important}
+  .vedette,.scene,.slot,.coeur,.j-gain,.gain,.tel-code span,.v-apres,.v-gain,.v-avant::after{transform:none!important;translate:none!important;rotate:none!important;scale:none!important;animation:none!important}
 }
 </style>
 </head>
@@ -520,11 +660,11 @@ html.pause .actif{--jeu:paused}
 
 <!-- Formes des éclats (définies une fois, réutilisées par <use>) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-  <symbol id="e1" viewBox="0 0 10 10"><polygon points="0,2 7,0 10,6 3,10"/></symbol>
-  <symbol id="e2" viewBox="0 0 10 10"><polygon points="1,0 10,3 6,10 0,7"/></symbol>
-  <symbol id="e3" viewBox="0 0 10 10"><polygon points="0,0 10,4 2,10"/></symbol>
-  <symbol id="e4" viewBox="0 0 10 10"><polygon points="2,0 10,1 8,9 0,10 1,5"/></symbol>
-  <symbol id="e5" viewBox="0 0 10 10"><polygon points="0,3 5,0 10,2 7,10 1,8"/></symbol>
+  <symbol id="k1" viewBox="0 0 10 10"><rect x="3" y="0" width="4" height="10" rx="1"/></symbol>
+  <symbol id="k2" viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" rx="1"/></symbol>
+  <symbol id="k3" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></symbol>
+  <symbol id="k4" viewBox="0 0 10 10"><polygon points="5,0.5 10,9.5 0,9.5"/></symbol>
+  <symbol id="k5" viewBox="0 0 10 10"><path d="M1 6c2-5 3 5 5 0s3-5 3 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
   <symbol id="plus" viewBox="0 0 10 10"><path d="M3.8 0h2.4v3.8H10v2.4H6.2V10H3.8V6.2H0V3.8h3.8z"/></symbol>
 </svg>
 
@@ -547,10 +687,6 @@ html.pause .actif{--jeu:paused}
       <div class="hero-texte">
         <div class="hero-haut">
           <p class="nouveau">Nouveau · dès le <strong data-d="lancementTexte">21 octobre 2026</strong></p>
-          <button class="btn-pause" type="button" aria-pressed="false" aria-label="Pause des animations" title="Pause des animations" hidden>
-            <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-            <svg class="i-lecture" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
-          </button>
         </div>
         <!-- gen:h1 --><h1 id="slogan">Plus de valeur, <em>au même prix.</em></h1><!-- /gen:h1 -->
         <p class="appui">Plus de Go, plus de minutes, plus de bonus. <strong>Le prix ne bouge pas.</strong></p>
@@ -561,68 +697,69 @@ html.pause .actif{--jeu:paused}
       </div>
 
       <div class="scene">
-        <svg class="fissures" viewBox="-100 -100 200 200" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-          <path pathLength="1" d="M58-10 70-16 78-12 90-22 100-20"/>
-          <path pathLength="1" class="r" d="M58 18 66 26 80 28 88 40 100 44"/>
-          <path pathLength="1" d="M30-42 36-56 46-62 50-78 60-90"/>
-          <path pathLength="1" d="M-20-42-26-58-22-70-32-86-30-100"/>
-          <path pathLength="1" class="r" d="M-58-6-70 0-82-8-94-4-100-10"/>
-          <path pathLength="1" d="M-56 22-64 34-78 38-86 52-100 56"/>
-          <path pathLength="1" d="M10 42 14 56 8 70 18 84 14 100"/>
-          <path pathLength="1" d="M-40 42-48 60-60 66-66 82"/>
-          <path pathLength="1" d="M78-12 84-2 96 4"/>
-          <path pathLength="1" d="M-82-8-88-20-98-26"/>
-        </svg>
-        <div class="breche" aria-hidden="true">
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><polygon points="0,6 6,0 14,4 22,0 30,3 40,0 48,4 57,0 66,3 74,0 83,4 92,0 100,7 97,16 100,26 96,36 100,46 97,56 100,66 96,76 100,86 94,100 85,96 76,100 66,97 57,100 48,96 38,100 29,97 20,100 11,96 3,100 0,90 4,80 0,70 3,60 0,50 4,40 0,30 3,20 0,12"/></svg>
-        </div>
-        <div class="onde" aria-hidden="true"></div>
+        <!-- le JS insère ici <canvas class="fete"> le temps des confettis (moins de 5 s) -->
         <div class="debris" aria-hidden="true">
-          <div class="grappe" style="--fd:3.4s;--fdl:-.6s;--fx:5px;--fy:-7px;--fr:1deg">
-            <svg class="eclat c-r" style="--x:62;--y:-88;--xm:70;--ym:-68;--r:24;--t:22;--dur:.95s"><use href="#e1"/></svg>
-            <svg class="eclat c-j" style="--x:88;--y:-58;--xm:98;--ym:-40;--r:-38;--t:14;--dur:1.1s"><use href="#e3"/></svg>
-            <svg class="eclat c-r o" style="--x:40;--y:-112;--r:70;--t:10;--dur:1.2s"><use href="#plus"/></svg>
-            <svg class="eclat c-n o" style="--x:96;--y:-102;--r:12;--t:9;--dur:1.15s"><use href="#e5"/></svg>
-          </div>
-          <div class="grappe" style="--fd:4.2s;--fdl:-1.8s;--fx:-6px;--fy:5px;--fr:-1deg">
-            <svg class="eclat c-r" style="--x:104;--y:18;--xm:104;--ym:10;--r:-20;--t:18;--dur:.9s"><use href="#e2"/></svg>
-            <svg class="eclat c-f" style="--x:84;--y:70;--xm:88;--ym:62;--r:48;--t:12;--dur:1.05s"><use href="#e4"/></svg>
-            <svg class="eclat c-n o" style="--x:112;--y:96;--r:-64;--t:8;--dur:1.2s"><use href="#e1"/></svg>
-          </div>
-          <div class="grappe" style="--fd:4.8s;--fdl:-.9s;--fx:4px;--fy:8px;--fr:.6deg">
-            <svg class="eclat c-r" style="--x:30;--y:108;--xm:62;--ym:92;--r:32;--t:16;--dur:1.2s"><use href="#e5"/></svg>
-            <svg class="eclat c-j" style="--x:-18;--y:134;--xm:92;--ym:104;--r:-50;--t:11;--dur:1.3s"><use href="#e2"/></svg>
-            <svg class="eclat c-n" style="--x:58;--y:150;--xm:76;--ym:118;--r:15;--t:9;--dur:1.35s"><use href="#e3"/></svg>
-            <svg class="eclat c-r o" style="--x:-50;--y:118;--r:80;--t:13;--dur:1.25s"><use href="#plus"/></svg>
-          </div>
-          <div class="grappe" style="--fd:3.8s;--fdl:-2.4s;--fx:6px;--fy:-4px;--fr:-.8deg">
-            <svg class="eclat c-n" style="--x:-98;--y:54;--xm:-100;--ym:40;--r:-30;--t:20;--dur:.95s"><use href="#e3"/></svg>
-            <svg class="eclat c-r" style="--x:-110;--y:-6;--xm:-104;--ym:-14;--r:58;--t:12;--dur:1.05s"><use href="#e1"/></svg>
-            <svg class="eclat c-j o" style="--x:-84;--y:92;--r:10;--t:9;--dur:1.15s"><use href="#e4"/></svg>
-          </div>
-          <div class="grappe" style="--fd:2.9s;--fdl:-1.2s;--fx:-4px;--fy:-6px;--fr:1.2deg">
-            <svg class="eclat c-r" style="--x:-70;--y:-92;--xm:-92;--ym:-60;--r:-16;--t:15;--dur:1s"><use href="#e2"/></svg>
-            <svg class="eclat c-f" style="--x:-102;--y:-60;--xm:-108;--ym:-30;--r:40;--t:10;--dur:1.1s"><use href="#e5"/></svg>
-            <svg class="eclat c-n o" style="--x:-30;--y:-118;--r:-72;--t:8;--dur:1.2s"><use href="#e4"/></svg>
-            <svg class="eclat c-j" style="--x:8;--y:-100;--xm:40;--ym:-70;--r:26;--t:11;--dur:1.05s"><use href="#plus"/></svg>
-          </div>
+          <svg class="eclat c-r" style="--x:-109;--y:-38;--xm:-98;--ym:-205;--r:200;--t:12;--tp:1.40s"><use href="#k1"/></svg>
+          <svg class="eclat c-j" style="--x:-150;--y:60;--xm:88;--ym:-262;--r:0;--t:8;--tp:1.45s"><use href="#k3"/></svg>
+          <svg class="eclat c-n" style="--x:-110;--y:-60;--xm:99;--ym:-95;--r:45;--t:9;--tp:1.50s"><use href="#k2"/></svg>
+          <svg class="eclat c-r" style="--x:-60;--y:90;--xm:96;--ym:-120;--r:160;--t:10;--tp:1.55s"><use href="#k4"/></svg>
+          <svg class="eclat c-j" style="--x:-20;--y:-80;--xm:60;--ym:-330;--r:30;--t:11;--tp:1.60s"><use href="#plus"/></svg>
+          <svg class="eclat c-j" style="--x:40;--y:-90;--xm:-98;--ym:-95;--r:-120;--t:11;--tp:1.65s"><use href="#k1"/></svg>
+          <svg class="eclat c-r" style="--x:110;--y:-75;--xm:70;--ym:-74;--r:20;--t:14;--tp:1.70s"><use href="#k5"/></svg>
+          <svg class="eclat c-r" style="--x:160;--y:-30;--xm:100;--ym:-30;--r:300;--t:9;--tp:1.75s"><use href="#k2"/></svg>
+          <svg class="eclat c-n" style="--x:200;--y:40;--xm:100;--ym:40;--r:0;--t:7;--tp:1.80s"><use href="#k3"/></svg>
+          <svg class="eclat c-r" style="--x:150;--y:95;--xm:80;--ym:74;--r:-220;--t:12;--tp:1.85s"><use href="#k1"/></svg>
+          <svg class="eclat c-j" style="--x:90;--y:120;--xm:100;--ym:100;--r:90;--t:9;--tp:1.90s"><use href="#k4"/></svg>
+          <svg class="eclat c-r" style="--x:20;--y:135;--xm:55;--ym:118;--r:-60;--t:8;--tp:1.95s"><use href="#k2"/></svg>
+          <svg class="eclat c-j" style="--x:-40;--y:110;--xm:-88;--ym:74;--r:-30;--t:13;--tp:2.00s"><use href="#k5"/></svg>
+          <svg class="eclat c-n" style="--x:-120;--y:130;--xm:-100;--ym:20;--r:140;--t:10;--tp:2.05s"><use href="#k1"/></svg>
+          <svg class="eclat c-r" style="--x:-190;--y:100;--xm:-96;--ym:-40;--r:0;--t:9;--tp:2.10s"><use href="#k3"/></svg>
+          <svg class="eclat c-r" style="--x:-315;--y:12;--xm:92;--ym:140;--r:-15;--t:12;--tp:2.15s"><use href="#plus"/></svg>
+          <svg class="eclat c-j o" style="--x:-178;--y:-81;--r:70;--t:8;--tp:2.20s"><use href="#k2"/></svg>
+          <svg class="eclat c-r o" style="--x:-90;--y:20;--r:0;--t:6;--tp:2.25s"><use href="#k3"/></svg>
+          <svg class="eclat c-j o" style="--x:70;--y:150;--r:260;--t:10;--tp:2.30s"><use href="#k1"/></svg>
+          <svg class="eclat c-n o" style="--x:210;--y:-60;--r:10;--t:9;--tp:2.35s"><use href="#plus"/></svg>
+          <svg class="eclat c-j o" style="--x:130;--y:30;--r:0;--t:7;--tp:2.40s"><use href="#k3"/></svg>
+          <svg class="eclat c-n o" style="--x:-114;--y:26;--r:200;--t:8;--tp:2.45s"><use href="#k4"/></svg>
+          <svg class="eclat c-r o" style="--x:60;--y:-85;--r:20;--t:7;--tp:2.50s"><use href="#k2"/></svg>
+          <svg class="eclat c-n o" style="--x:180;--y:130;--r:40;--t:12;--tp:2.55s"><use href="#k5"/></svg>
         </div>
-        <div class="coeur"><!-- gen:vedette --><a class="vedette" href="#pronet-3go" aria-label="Exemple : ProNET 3 Go, 2,5 Go avant, 3 Go maintenant, toujours 975 francs"><span class="v-tete"><span><b>ProNET 3 Go</b> · 7 jours</span><span class="v-prix">975 F · même prix</span></span><span class="v-gain">+0,5 Go</span><span class="v-jauge" style="--r:0.833"><span class="v-avant">2,5 Go</span><span class="j-barre"><span class="j-gain"></span></span><span class="v-apres">3 Go</span></span></a><!-- /gen:vedette --></div>
+        <div class="slot">
+          <div class="trou" aria-hidden="true"></div>
+          <div class="coeur"><i class="pouls" aria-hidden="true"></i><!-- gen:vedette --><a class="vedette" href="#pronet-3go" aria-label="Exemple : ProNET 3 Go, 2,5 Go avant, 3 Go maintenant, toujours 975 francs"><span class="v-tete"><span><b>ProNET 3 Go</b> · 7 jours</span><span class="v-prix">975 F · même prix</span></span><span class="v-gain">+0,5 Go</span><span class="v-jauge" style="--r:0.833"><span class="v-avant">2,5 Go</span><span class="j-barre"><span class="j-gain"></span></span><span class="v-apres">3 Go</span></span></a><!-- /gen:vedette --></div>
+          <div class="cadre" aria-hidden="true"></div>
+          <div class="papier" aria-hidden="true">
+            <div class="pan pb1"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
+            <div class="pan pb2"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
+            <div class="pan pg"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
+            <div class="pan pd"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
+            <div class="pan ph2"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
+            <div class="pan ph1"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
+            <svg class="fentes m" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><path class="c1"/><path class="c2"/><path class="c3"/></svg>
+            <svg class="fentes d" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><path class="c1"/><path class="c2"/><path class="c3"/></svg>
+          </div>
+          <i class="fantome" aria-hidden="true"></i>
+          <i class="bout b1" aria-hidden="true"><i></i></i>
+          <i class="bout b2" aria-hidden="true"><i></i></i>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="offres" id="offres" aria-labelledby="t-offres">
     <div class="derive" aria-hidden="true">
-      <span class="dd c-r" style="--t:14;--r:28;--mt:540px;--ml:calc(100% - 13px);--dt:300px;--dl:3%"><svg style="--fd:4.4s;--fdl:-1s;--fx:3px;--fy:-6px;--fr:8deg"><use href="#e1"/></svg></span>
-      <span class="dd c-j" style="--t:11;--r:-40;--mt:1010px;--ml:2px;--dt:610px;--dl:calc(100% - 70px)"><svg style="--fd:3.6s;--fdl:-2s;--fx:-3px;--fy:5px;--fr:-10deg"><use href="#e3"/></svg></span>
-      <span class="dd c-n" style="--t:12;--r:65;--mt:1500px;--ml:calc(100% - 12px);--dt:880px;--dl:4%"><svg style="--fd:5s;--fdl:-.4s;--fx:4px;--fy:4px;--fr:6deg"><use href="#e5"/></svg></span>
-      <span class="dd c-r o" style="--t:10;--r:-15;--dt:450px;--dl:calc(50% - 5px)"><svg style="--fd:3.9s;--fdl:-2.6s;--fx:-2px;--fy:-5px;--fr:-6deg"><use href="#plus"/></svg></span>
-      <span class="dd c-f o" style="--t:13;--r:110;--dt:1050px;--dl:calc(100% - 50px)"><svg style="--fd:4.6s;--fdl:-1.4s;--fx:5px;--fy:-3px;--fr:9deg"><use href="#e2"/></svg></span>
+      <span class="dd c-r" style="--t:12;--r:28;--mt:540px;--ml:calc(100% - 13px);--dt:300px;--dl:3%"><svg style="--fd:4.4s;--fdl:-1s;--fx:6px"><use href="#k1"/></svg></span>
+      <span class="dd c-j" style="--t:9;--r:0;--mt:1010px;--ml:3px;--dt:610px;--dl:calc(100% - 70px)"><svg style="--fd:3.6s;--fdl:-2s;--fx:-5px"><use href="#k3"/></svg></span>
+      <span class="dd c-n" style="--t:9;--r:65;--mt:1500px;--ml:calc(100% - 12px);--dt:880px;--dl:4%"><svg style="--fd:5s;--fdl:-0.4s;--fx:6px"><use href="#k2"/></svg></span>
+      <span class="dd c-r" style="--t:11;--r:-15;--mt:1980px;--ml:3px;--dt:450px;--dl:calc(50% - 5px)"><svg style="--fd:3.9s;--fdl:-2.6s;--fx:-4px"><use href="#plus"/></svg></span>
+      <span class="dd c-j o" style="--t:13;--r:110;--dt:1050px;--dl:calc(100% - 50px)"><svg style="--fd:4.6s;--fdl:-1.4s;--fx:7px"><use href="#k5"/></svg></span>
+      <span class="dd c-r o" style="--t:9;--r:40;--dt:180px;--dl:calc(100% - 90px)"><svg style="--fd:4.2s;--fdl:-0.8s;--fx:-6px"><use href="#k4"/></svg></span>
+      <span class="dd c-n o" style="--t:10;--r:-50;--dt:760px;--dl:2%"><svg style="--fd:5.2s;--fdl:-3s;--fx:5px"><use href="#k1"/></svg></span>
+      <span class="dd c-j o" style="--t:8;--r:20;--dt:1180px;--dl:1.5%"><svg style="--fd:4s;--fdl:-1.8s;--fx:-5px"><use href="#k2"/></svg></span>
     </div>
     <div class="wrap sec-tete">
       <h2 id="t-offres">Les <span data-d="nb">8</span> offres améliorées</h2>
-      <p>Touchez une offre : son code s'ouvre directement dans votre clavier. Aucun paiement sur ce site.</p>
+      <p>Touchez une offre : son code s'ouvre directement<span class="m-cache"> dans votre clavier</span>.<span class="m-cache"> Aucun paiement sur ce site.</span></p>
     </div>
     <div class="barre-filtres">
       <div class="wrap"><!-- gen:filtres --><div class="filtres" role="group" aria-label="Filtrer les offres"><button class="chip" type="button" data-f="tous" aria-pressed="true">Toutes<span class="nb">8</span></button><button class="chip" type="button" data-f="ProNET" aria-pressed="false">Internet<span class="nb">3</span></button><button class="chip" type="button" data-f="ProMIX" aria-pressed="false">Appels + Internet<span class="nb">4</span></button><button class="chip" type="button" data-f="ProMINI" aria-pressed="false">Bonus<span class="nb">1</span></button></div><!-- /gen:filtres --></div>
@@ -634,6 +771,12 @@ html.pause .actif{--jeu:paused}
   </section>
 
   <section class="comment" aria-labelledby="t-comment">
+    <div class="derive" aria-hidden="true">
+      <span class="dd c-r" style="--t:11;--r:30;--mt:10px;--ml:calc(100% - 30px);--dt:40px;--dl:3%"><svg style="--fd:4.3s;--fdl:-1.2s;--fx:6px"><use href="#k1"/></svg></span>
+      <span class="dd c-j" style="--t:11;--r:0;--mt:470px;--ml:3px;--dt:330px;--dl:calc(100% - 40px)"><svg style="--fd:3.8s;--fdl:-2.2s;--fx:-5px"><use href="#plus"/></svg></span>
+      <span class="dd c-n o" style="--t:7;--r:0;--dt:30px;--dl:62%"><svg style="--fd:4.8s;--fdl:-0.6s;--fx:5px"><use href="#k3"/></svg></span>
+      <span class="dd c-r" style="--t:12;--r:-20;--mt:720px;--ml:calc(100% - 14px);--dt:420px;--dl:calc(100% - 30px)"><svg style="--fd:4.1s;--fdl:-1.6s;--fx:-6px"><use href="#k5"/></svg></span>
+    </div>
     <div class="wrap comment-grille">
       <div>
         <h2 id="t-comment">Activer une offre prend dix secondes</h2>
@@ -652,15 +795,16 @@ html.pause .actif{--jeu:paused}
             <div class="tel-appel"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 15.5c-1.2 0-2.4-.2-3.6-.6a1 1 0 0 0-1 .25l-2.2 2.2a15 15 0 0 1-6.6-6.6l2.2-2.2a1 1 0 0 0 .25-1A11.4 11.4 0 0 1 8.5 4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1 17 17 0 0 0 17 17 1 1 0 0 0 1-1v-3.5a1 1 0 0 0-1-1z"/></svg></div>
           </div>
         </div>
-        <button class="btn-pause btn-pause-tel" type="button" aria-pressed="false" aria-label="Pause des animations" title="Pause des animations" hidden>
-          <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-          <svg class="i-lecture" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
-        </button>
       </div>
     </div>
   </section>
 
   <section class="cata" aria-labelledby="t-cata">
+    <div class="derive" aria-hidden="true">
+      <span class="dd c-j" style="--t:11;--r:-35;--mt:12px;--ml:80%;--dt:24px;--dl:6%"><svg style="--fd:4.4s;--fdl:-1s;--fx:6px"><use href="#k1"/></svg></span>
+      <span class="dd c-r" style="--t:8;--r:0;--mt:14px;--ml:10%;--dt:20px;--dl:70%"><svg style="--fd:3.9s;--fdl:-2s;--fx:-5px"><use href="#k3"/></svg></span>
+      <span class="dd c-n o" style="--t:9;--r:120;--dt:190px;--dl:calc(100% - 46px)"><svg style="--fd:4.7s;--fdl:-0.5s;--fx:5px"><use href="#k4"/></svg></span>
+    </div>
     <div class="wrap">
       <div class="cata-boite">
         <div>
@@ -752,7 +896,13 @@ html.pause .actif{--jeu:paused}
 <script>var PROMOBILE = {"slogan":"Plus de valeur, au même prix","lancement":"2026-10-21","lancementTexte":"21 octobre 2026","adresse":"https://mouha7.github.io/promobile-nouvelles-offres/","vedette":"pronet-3go","ussd":"#175#","whatsapp":"221755250000","serviceClient":"1675","email":"contact@promobile.sn","siteOfficiel":"https://www.promobile.sn","catalogue":{"fichier":"Catalogue_Offres_Promobile.pdf","poidsAffiche":"moins de 1 Mo"},"familles":{"ProNET":{"prefixe":"PRO'","suffixe":"NET","libelle":"Offres Internet","court":"Internet"},"ProMIX":{"prefixe":"PRO'","suffixe":"MIX","libelle":"Offres Mix","court":"Appels + Internet"},"ProMINI":{"prefixe":"PRO'","suffixe":"MINI","libelle":"Bonus & Internet","court":"Bonus"}},"offres":[{"id":"promini-175","code":"#175#12#","famille":"ProMINI","nom":"ProMINI 175","ancienNom":"ProMINI 175","prix":175,"validite":"24 h","validiteLongue":"24 heures","gain":"Bonus ×2","gainDetail":"2 000 F de bonus au lieu de 1 000 F","details":[{"label":"Bonus appels","avant":"1 000 F","apres":"2 000 F tous réseaux","change":true},{"label":"Internet","avant":"175 Mo","apres":"175 Mo","change":false}]},{"id":"pronet-3go","code":"#175#221#","famille":"ProNET","nom":"ProNET 3 Go","ancienNom":"ProNET 2,5 Go","prix":975,"validite":"7 j","validiteLongue":"7 jours","gain":"+0,5 Go","gainDetail":"3 Go au lieu de 2,5 Go","details":[{"label":"Internet","avant":"2,5 Go","apres":"3 Go","change":true}]},{"id":"pronet-4go","code":"#175#231#","famille":"ProNET","nom":"ProNET 4 Go","ancienNom":"ProNET 3,5 Go","prix":1375,"validite":"30 j","validiteLongue":"30 jours","gain":"+0,5 Go","gainDetail":"4 Go au lieu de 3,5 Go","details":[{"label":"Internet","avant":"3,5 Go","apres":"4 Go","change":true}]},{"id":"pronet-m-6-5go","code":"#175#232#","famille":"ProNET","nom":"ProNET (M) 6,5 Go","ancienNom":"ProNET (M) 5,5 Go","prix":1975,"validite":"30 j","validiteLongue":"30 jours","gain":"+1 Go","gainDetail":"6,5 Go au lieu de 5,5 Go","details":[{"label":"Internet","avant":"5,5 Go","apres":"6,5 Go","change":true}]},{"id":"promix-475","code":"#175#31#","famille":"ProMIX","nom":"ProMIX 475","ancienNom":"ProMIX 475","prix":475,"validite":"24 h","validiteLongue":"24 heures","gain":"+20 min","gainDetail":"100 min au lieu de 80 min","details":[{"label":"Appels","avant":"80 min","apres":"100 min","change":true},{"label":"SMS","avant":"50","apres":"50","change":false},{"label":"Internet","avant":"500 Mo","apres":"500 Mo","change":false}]},{"id":"promix-975","code":"#175#32#","famille":"ProMIX","nom":"ProMIX 975","ancienNom":"ProMIX 975","prix":975,"validite":"7 j","validiteLongue":"7 jours","gain":"+0,5 Go","gainSecondaire":"+50 SMS","gainDetail":"2 Go et 100 SMS au lieu de 1,5 Go et 50 SMS","details":[{"label":"Appels","avant":"120 min","apres":"120 min","change":false},{"label":"SMS","avant":"50","apres":"100","change":true},{"label":"Internet","avant":"1,5 Go","apres":"2 Go","change":true}]},{"id":"promix-1375","code":"#175#331#","famille":"ProMIX","nom":"ProMIX 1375","ancienNom":"ProMIX 1375","prix":1375,"validite":"7 j","validiteLongue":"7 jours","gain":"+0,5 Go","gainDetail":"3 Go au lieu de 2,5 Go","details":[{"label":"Appels","avant":"150 min","apres":"150 min","change":false},{"label":"SMS","avant":"100","apres":"100","change":false},{"label":"Internet","avant":"2,5 Go","apres":"3 Go","change":true}]},{"id":"promix-1975","code":"#175#332#","famille":"ProMIX","nom":"ProMIX 1975","ancienNom":"ProMIX 1975","prix":1975,"validite":"7 j","validiteLongue":"7 jours","gain":"+120 min","gainDetail":"300 min au lieu de 180 min","details":[{"label":"Appels","avant":"180 min","apres":"300 min","change":true},{"label":"SMS","avant":"100","apres":"100","change":false},{"label":"Internet","avant":"3,5 Go","apres":"3,5 Go","change":false}]}]};</script>
 <!-- /gen:donnees -->
 
-<!-- Mouvement : révélations, mise en veille hors écran, téléphone, bouton pause. Indépendant des données. -->
+<!-- canvas-confetti 1.9.4 (ISC) : copie de assets/js/confetti.min.js, exécutée seulement avec html.anim -->
+<script>if(/(^|\s)anim(\s|$)/.test(document.documentElement.className)){
+/*! canvas-confetti 1.9.4 — (c) 2020 Kiril Vatev — licence ISC (voir assets/js/LICENSE-canvas-confetti.txt) */
+!function(t,e){!function t(e,a,n,r){var o=!!(e.Worker&&e.Blob&&e.Promise&&e.OffscreenCanvas&&e.OffscreenCanvasRenderingContext2D&&e.HTMLCanvasElement&&e.HTMLCanvasElement.prototype.transferControlToOffscreen&&e.URL&&e.URL.createObjectURL),i="function"==typeof Path2D&&"function"==typeof DOMMatrix,l=function(){if(!e.OffscreenCanvas)return!1;try{var t=new OffscreenCanvas(1,1),a=t.getContext("2d");a.fillRect(0,0,1,1);var n=t.transferToImageBitmap();a.createPattern(n,"no-repeat")}catch(t){return!1}return!0}();function s(){}function c(t){var n=a.exports.Promise,r=void 0!==n?n:e.Promise;return"function"==typeof r?new r(t):(t(s,s),null)}var h,f,u,d,m,g,p,b,M,v,y,w=(h=l,f=new Map,{transform:function(t){if(h)return t;if(f.has(t))return f.get(t);var e=new OffscreenCanvas(t.width,t.height);return e.getContext("2d").drawImage(t,0,0),f.set(t,e),e},clear:function(){f.clear()}}),x=(m=Math.floor(1e3/60),g={},p=0,"function"==typeof requestAnimationFrame&&"function"==typeof cancelAnimationFrame?(u=function(t){var e=Math.random();return g[e]=requestAnimationFrame((function a(n){p===n||p+m-1<n?(p=n,delete g[e],t()):g[e]=requestAnimationFrame(a)})),e},d=function(t){g[t]&&cancelAnimationFrame(g[t])}):(u=function(t){return setTimeout(t,m)},d=function(t){return clearTimeout(t)}),{frame:u,cancel:d}),C=(v={},function(){if(b)return b;if(!n&&o){var e=["var CONFETTI, SIZE = {}, module = {};","("+t.toString()+")(this, module, true, SIZE);","onmessage = function(msg) {","  if (msg.data.options) {","    CONFETTI(msg.data.options).then(function () {","      if (msg.data.callback) {","        postMessage({ callback: msg.data.callback });","      }","    });","  } else if (msg.data.reset) {","    CONFETTI && CONFETTI.reset();","  } else if (msg.data.resize) {","    SIZE.width = msg.data.resize.width;","    SIZE.height = msg.data.resize.height;","  } else if (msg.data.canvas) {","    SIZE.width = msg.data.canvas.width;","    SIZE.height = msg.data.canvas.height;","    CONFETTI = module.exports.create(msg.data.canvas);","  }","}"].join("\n");try{b=new Worker(URL.createObjectURL(new Blob([e])))}catch(t){return"undefined"!=typeof console&&"function"==typeof console.warn&&console.warn("🎊 Could not load worker",t),null}!function(t){function e(e,a){t.postMessage({options:e||{},callback:a})}t.init=function(e){var a=e.transferControlToOffscreen();t.postMessage({canvas:a},[a])},t.fire=function(a,n,r){if(M)return e(a,null),M;var o=Math.random().toString(36).slice(2);return M=c((function(n){function i(e){e.data.callback===o&&(delete v[o],t.removeEventListener("message",i),M=null,w.clear(),r(),n())}t.addEventListener("message",i),e(a,o),v[o]=i.bind(null,{data:{callback:o}})}))},t.reset=function(){for(var e in t.postMessage({reset:!0}),v)v[e](),delete v[e]}}(b)}return b}),I={particleCount:50,angle:90,spread:45,startVelocity:45,decay:.9,gravity:1,drift:0,ticks:200,x:.5,y:.5,shapes:["square","circle"],zIndex:100,colors:["#26ccff","#a25afd","#ff5e7e","#88ff5a","#fcff42","#ffa62d","#ff36ff"],disableForReducedMotion:!1,scalar:1};function T(t,e,a){return function(t,e){return e?e(t):t}(t&&null!=t[e]?t[e]:I[e],a)}function E(t){return t<0?0:Math.floor(t)}function P(t){return parseInt(t,16)}function S(t){return t.map(O)}function O(t){var e=String(t).replace(/[^0-9a-f]/gi,"");return e.length<6&&(e=e[0]+e[0]+e[1]+e[1]+e[2]+e[2]),{r:P(e.substring(0,2)),g:P(e.substring(2,4)),b:P(e.substring(4,6))}}function k(t){t.width=document.documentElement.clientWidth,t.height=document.documentElement.clientHeight}function B(t){var e=t.getBoundingClientRect();t.width=e.width,t.height=e.height}function F(t,e){e.x+=Math.cos(e.angle2D)*e.velocity+e.drift,e.y+=Math.sin(e.angle2D)*e.velocity+e.gravity,e.velocity*=e.decay,e.flat?(e.wobble=0,e.wobbleX=e.x+10*e.scalar,e.wobbleY=e.y+10*e.scalar,e.tiltSin=0,e.tiltCos=0,e.random=1):(e.wobble+=e.wobbleSpeed,e.wobbleX=e.x+10*e.scalar*Math.cos(e.wobble),e.wobbleY=e.y+10*e.scalar*Math.sin(e.wobble),e.tiltAngle+=.1,e.tiltSin=Math.sin(e.tiltAngle),e.tiltCos=Math.cos(e.tiltAngle),e.random=Math.random()+2);var a=e.tick++/e.totalTicks,n=e.x+e.random*e.tiltCos,r=e.y+e.random*e.tiltSin,o=e.wobbleX+e.random*e.tiltCos,l=e.wobbleY+e.random*e.tiltSin;if(t.fillStyle="rgba("+e.color.r+", "+e.color.g+", "+e.color.b+", "+(1-a)+")",t.beginPath(),i&&"path"===e.shape.type&&"string"==typeof e.shape.path&&Array.isArray(e.shape.matrix))t.fill(function(t,e,a,n,r,o,i){var l=new Path2D(t),s=new Path2D;s.addPath(l,new DOMMatrix(e));var c=new Path2D;return c.addPath(s,new DOMMatrix([Math.cos(i)*r,Math.sin(i)*r,-Math.sin(i)*o,Math.cos(i)*o,a,n])),c}(e.shape.path,e.shape.matrix,e.x,e.y,.1*Math.abs(o-n),.1*Math.abs(l-r),Math.PI/10*e.wobble));else if("bitmap"===e.shape.type){var s=Math.PI/10*e.wobble,c=.1*Math.abs(o-n),h=.1*Math.abs(l-r),f=e.shape.bitmap.width*e.scalar,u=e.shape.bitmap.height*e.scalar,d=new DOMMatrix([Math.cos(s)*c,Math.sin(s)*c,-Math.sin(s)*h,Math.cos(s)*h,e.x,e.y]);d.multiplySelf(new DOMMatrix(e.shape.matrix));var m=t.createPattern(w.transform(e.shape.bitmap),"no-repeat");m.setTransform(d),t.globalAlpha=1-a,t.fillStyle=m,t.fillRect(e.x-f/2,e.y-u/2,f,u),t.globalAlpha=1}else if("circle"===e.shape)t.ellipse?t.ellipse(e.x,e.y,Math.abs(o-n)*e.ovalScalar,Math.abs(l-r)*e.ovalScalar,Math.PI/10*e.wobble,0,2*Math.PI):function(t,e,a,n,r,o,i,l,s){t.save(),t.translate(e,a),t.rotate(o),t.scale(n,r),t.arc(0,0,1,i,l,s),t.restore()}(t,e.x,e.y,Math.abs(o-n)*e.ovalScalar,Math.abs(l-r)*e.ovalScalar,Math.PI/10*e.wobble,0,2*Math.PI);else if("star"===e.shape)for(var g=Math.PI/2*3,p=4*e.scalar,b=8*e.scalar,M=e.x,v=e.y,y=5,x=Math.PI/y;y--;)M=e.x+Math.cos(g)*b,v=e.y+Math.sin(g)*b,t.lineTo(M,v),g+=x,M=e.x+Math.cos(g)*p,v=e.y+Math.sin(g)*p,t.lineTo(M,v),g+=x;else t.moveTo(Math.floor(e.x),Math.floor(e.y)),t.lineTo(Math.floor(e.wobbleX),Math.floor(r)),t.lineTo(Math.floor(o),Math.floor(l)),t.lineTo(Math.floor(n),Math.floor(e.wobbleY));return t.closePath(),t.fill(),e.tick<e.totalTicks}function A(t,a){var i,l=!t,s=!!T(a||{},"resize"),h=!1,f=T(a,"disableForReducedMotion",Boolean),u=o&&!!T(a||{},"useWorker")?C():null,d=l?k:B,m=!(!t||!u)&&!!t.__confetti_initialized,g="function"==typeof matchMedia&&matchMedia("(prefers-reduced-motion)").matches;function p(e,a,o){for(var l,s,h,f,u,m=T(e,"particleCount",E),g=T(e,"angle",Number),p=T(e,"spread",Number),b=T(e,"startVelocity",Number),M=T(e,"decay",Number),v=T(e,"gravity",Number),y=T(e,"drift",Number),C=T(e,"colors",S),I=T(e,"ticks",Number),P=T(e,"shapes"),O=T(e,"scalar"),k=!!T(e,"flat"),B=function(t){var e=T(t,"origin",Object);return e.x=T(e,"x",Number),e.y=T(e,"y",Number),e}(e),A=m,R=[],N=t.width*B.x,z=t.height*B.y;A--;)R.push((l={x:N,y:z,angle:g,spread:p,startVelocity:b,color:C[A%C.length],shape:P[(f=0,u=P.length,Math.floor(Math.random()*(u-f))+f)],ticks:I,decay:M,gravity:v,drift:y,scalar:O,flat:k},s=void 0,h=void 0,s=l.angle*(Math.PI/180),h=l.spread*(Math.PI/180),{x:l.x,y:l.y,wobble:10*Math.random(),wobbleSpeed:Math.min(.11,.1*Math.random()+.05),velocity:.5*l.startVelocity+Math.random()*l.startVelocity,angle2D:-s+(.5*h-Math.random()*h),tiltAngle:(.5*Math.random()+.25)*Math.PI,color:l.color,shape:l.shape,tick:0,totalTicks:l.ticks,decay:l.decay,drift:l.drift,random:Math.random()+2,tiltSin:0,tiltCos:0,wobbleX:0,wobbleY:0,gravity:3*l.gravity,ovalScalar:.6,scalar:l.scalar,flat:l.flat}));return i?i.addFettis(R):(i=function(t,e,a,o,i){var l,s,h=e.slice(),f=t.getContext("2d"),u=c((function(e){function c(){l=s=null,f.clearRect(0,0,o.width,o.height),w.clear(),i(),e()}l=x.frame((function e(){!n||o.width===r.width&&o.height===r.height||(o.width=t.width=r.width,o.height=t.height=r.height),o.width||o.height||(a(t),o.width=t.width,o.height=t.height),f.clearRect(0,0,o.width,o.height),(h=h.filter((function(t){return F(f,t)}))).length?l=x.frame(e):c()})),s=c}));return{addFettis:function(t){return h=h.concat(t),u},canvas:t,promise:u,reset:function(){l&&x.cancel(l),s&&s()}}}(t,R,d,a,o),i.promise)}function b(a){var n=f||T(a,"disableForReducedMotion",Boolean),r=T(a,"zIndex",Number);if(n&&g)return c((function(t){t()}));l&&i?t=i.canvas:l&&!t&&(t=function(t){var e=document.createElement("canvas");return e.style.position="fixed",e.style.top="0px",e.style.left="0px",e.style.pointerEvents="none",e.style.zIndex=t,e}(r),document.body.appendChild(t)),s&&!m&&d(t);var o={width:t.width,height:t.height};function b(){if(u){var e={getBoundingClientRect:function(){if(!l)return t.getBoundingClientRect()}};return d(e),void u.postMessage({resize:{width:e.width,height:e.height}})}o.width=o.height=null}function M(){i=null,s&&(h=!1,e.removeEventListener("resize",b)),l&&t&&(document.body.contains(t)&&document.body.removeChild(t),t=null,m=!1)}return u&&!m&&u.init(t),m=!0,u&&(t.__confetti_initialized=!0),s&&!h&&(h=!0,e.addEventListener("resize",b,!1)),u?u.fire(a,o,M):p(a,o,M)}return b.reset=function(){u&&u.reset(),i&&i.reset()},b}function R(){return y||(y=A(null,{useWorker:!0,resize:!0})),y}a.exports=function(){return R().apply(this,arguments)},a.exports.reset=function(){R().reset()},a.exports.create=A,a.exports.shapeFromPath=function(t){if(!i)throw new Error("path confetti are not supported in this browser");var e,a;"string"==typeof t?e=t:(e=t.path,a=t.matrix);var n=new Path2D(e),r=document.createElement("canvas").getContext("2d");if(!a){for(var o,l,s=1e3,c=s,h=s,f=0,u=0,d=0;d<s;d+=2)for(var m=0;m<s;m+=2)r.isPointInPath(n,d,m,"nonzero")&&(c=Math.min(c,d),h=Math.min(h,m),f=Math.max(f,d),u=Math.max(u,m));o=f-c,l=u-h;var g=Math.min(10/o,10/l);a=[g,0,0,g,-Math.round(o/2+c)*g,-Math.round(l/2+h)*g]}return{type:"path",path:e,matrix:a}},a.exports.shapeFromText=function(t){var e,a=1,n="#000000",r='"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "EmojiOne Color", "Android Emoji", "Twemoji Mozilla", "system emoji", sans-serif';"string"==typeof t?e=t:(e=t.text,a="scalar"in t?t.scalar:a,r="fontFamily"in t?t.fontFamily:r,n="color"in t?t.color:n);var o=10*a,i=o+"px "+r,l=new OffscreenCanvas(o,o),s=l.getContext("2d");s.font=i;var c=s.measureText(e),h=Math.ceil(c.actualBoundingBoxRight+c.actualBoundingBoxLeft),f=Math.ceil(c.actualBoundingBoxAscent+c.actualBoundingBoxDescent),u=c.actualBoundingBoxLeft+2,d=c.actualBoundingBoxAscent+2;h+=4,f+=4,(s=(l=new OffscreenCanvas(h,f)).getContext("2d")).font=i,s.fillStyle=n,s.fillText(e,u,d);var m=1/a;return{type:"bitmap",bitmap:l.transferToImageBitmap(),matrix:[m,0,0,m,-h*m/2,-f*m/2]}}}(function(){return void 0!==t?t:"undefined"!=typeof self?self:this||{}}(),e,!1),t.confetti=e.exports}(window,{});
+}</script>
+
+<!-- Mouvement : révélations, mise en veille hors écran, téléphone qui fait défiler les codes. -->
 <script>
 (function(){
   "use strict";
@@ -772,43 +922,67 @@ html.pause .actif{--jeu:paused}
   }, { rootMargin: "0px 0px -10% 0px", threshold: 0.2 });
   $$(".carte").forEach(function(el){ io.observe(el); });
 
-  /* Pause demandée par le visiteur (mémorisée) */
-  var PAUSE = false;
-  try { PAUSE = localStorage.getItem("pm_pause") === "1"; } catch (e) {}
-  var boutons = $$(".btn-pause");
-
-  /* Téléphone : tape le code, sonne, efface, recommence — seulement s'il est à l'écran */
+  /* Téléphone : affiche une offre, tape son code, sonne, efface (comme la touche retour), passe à l'offre
+     suivante — seulement tant qu'il est à l'écran ; il repart de l'offre vedette à chaque retour. */
   var tel = document.querySelector(".tel");
-  var chiffres = tel ? Array.prototype.slice.call(tel.querySelectorAll(".tel-code span")) : [];
+  var leg = tel ? tel.querySelector(".tel-leg") : null;
+  var boite = tel ? tel.querySelector(".tel-code") : null;
   var appel = tel ? tel.querySelector(".tel-appel") : null;
-  var telVisible = false, gen = 0, telT = null;
+  var D = window.PROMOBILE;
+  var liste = (D && D.offres ? D.offres : []).filter(function(o){ return o.code; })
+    .map(function(o){ return { nom: o.nom, code: o.code }; });
+  var depart = 0;
+  if (leg) { liste.forEach(function(o, i){ if (o.nom === leg.textContent) { depart = i; } }); }
+  var idx = depart, chiffres = [], telVisible = false, gen = 0, telT = null;
+
+  function poser(o){
+    if (!boite || !o) { return; }
+    boite.textContent = "";
+    chiffres = o.code.split("").map(function(c){
+      var s = document.createElement("span"); s.textContent = c; boite.appendChild(s); return s;
+    });
+    if (leg) { leg.textContent = o.nom; }
+  }
+  if (boite) { chiffres = Array.prototype.slice.call(boite.querySelectorAll("span")); }
+  function attendre(ms, g, suite){ telT = setTimeout(function(){ if (g === gen) { suite(); } }, ms); }
+
   function telStop(){
     gen++; clearTimeout(telT); telT = null;
     if (!tel) { return; }
     tel.classList.remove("tape");
-    chiffres.forEach(function(c){ c.classList.remove("on"); });
+    if (leg) { leg.classList.remove("sort"); }
     if (appel) { appel.classList.remove("sonne"); }
+    idx = depart;
+    if (liste.length) { poser(liste[depart]); }
+    chiffres.forEach(function(c){ c.classList.remove("on"); });
   }
   function telStart(){
-    if (!tel || telT || PAUSE || !telVisible || document.hidden) { return; }
+    if (!tel || telT || !telVisible || document.hidden) { return; }
     var g = ++gen;
     tel.classList.add("tape");
-    (function cycle(){
-      var i = 0;
-      chiffres.forEach(function(c){ c.classList.remove("on"); });
-      if (appel) { appel.classList.remove("sonne"); }
-      function suivant(){
-        if (g !== gen) { return; }
-        if (i < chiffres.length) { chiffres[i++].classList.add("on"); telT = setTimeout(suivant, 180); return; }
-        if (appel) { void appel.offsetWidth; appel.classList.add("sonne"); }
-        telT = setTimeout(function(){
-          if (g !== gen) { return; }
-          chiffres.forEach(function(c){ c.classList.remove("on"); });
-          telT = setTimeout(function(){ if (g === gen) { cycle(); } }, 700);
-        }, 2200);
-      }
-      telT = setTimeout(suivant, 400);
-    })();
+    function offre(){
+      var o = liste.length ? liste[idx % liste.length] : null;
+      if (leg && o) { leg.classList.add("sort"); }
+      attendre(o ? 220 : 0, g, function(){
+        if (o) { poser(o); }
+        chiffres.forEach(function(c){ c.classList.remove("on"); });
+        if (leg) { leg.classList.remove("sort"); }
+        var i = 0;
+        (function taper(){
+          if (i < chiffres.length) { chiffres[i++].classList.add("on"); attendre(160, g, taper); return; }
+          if (appel) { appel.classList.remove("sonne"); void appel.offsetWidth; appel.classList.add("sonne"); }
+          attendre(1700, g, function effacer(){
+            var j = chiffres.length;
+            (function retour(){
+              if (j > 0) { chiffres[--j].classList.remove("on"); attendre(60, g, retour); return; }
+              idx++;
+              attendre(300, g, offre);
+            })();
+          });
+        })();
+      });
+    }
+    attendre(350, g, offre);
   }
 
   /* Mise en veille : les boucles ne tournent que si leur zone est à l'écran (.actif) */
@@ -817,30 +991,120 @@ html.pause .actif{--jeu:paused}
       var el = en.target, vis = en.isIntersecting;
       el.classList.toggle("actif", vis);
       if (el.classList.contains("dd") && vis) { el.classList.add("vu"); }
-      if (el === tel) { telVisible = vis; if (vis) { telStop(); telStart(); } else { telStop(); } }
+      if (el === tel) { telVisible = vis; telStop(); if (vis) { telStart(); } }
     });
   }
-  /* Le héros reste « actif » tant que ses éclats tombés (sous lui) sont visibles */
-  var hero = document.getElementById("hero");
-  if (hero) { new IntersectionObserver(suivre, { rootMargin: "160px 0px 0px 0px", threshold: 0 }).observe(hero); }
   var zones = new IntersectionObserver(suivre, { threshold: 0 });
   $$(".derive,.dd").forEach(function(el){ zones.observe(el); });
   if (tel) { zones.observe(tel); }
   document.addEventListener("visibilitychange", function(){ if (document.hidden) { telStop(); } else { telStart(); } });
 
-  function majPause(){
-    h.classList.toggle("pause", PAUSE);
-    boutons.forEach(function(b){ b.hidden = false; b.setAttribute("aria-pressed", PAUSE ? "true" : "false"); });
-    if (PAUSE) { telStop(); } else { telStart(); }
+  /* ---------- Héros : la carte crève la page ----------
+     L'intro est 100 % CSS (.go posée dans <head>). Ici, calé sur les vraies animations : confettis quand la carte passe
+     devant la page (début de « choc »), fin de l'intro (fin du 2e éclat), battement après l'apparition du nouveau volume,
+     rejoué quand la carte revient à l'écran. */
+  var hero = document.getElementById("hero");
+  var coeur = hero ? hero.querySelector(".coeur") : null;
+  var fete = null, cv = null, finie = false, batPret = false, sorti = false, kMed = 16.7, tire = false;
+  function nettoyer(){
+    if (fete) { try { fete.reset(); } catch (e) {} }
+    if (cv && cv.parentNode) { cv.parentNode.removeChild(cv); }
+    fete = cv = null;
+    if (hero && finie) { hero.classList.remove("en-fete"); }
   }
-  boutons.forEach(function(b){
-    b.addEventListener("click", function(){
-      PAUSE = !PAUSE;
-      try { localStorage.setItem("pm_pause", PAUSE ? "1" : "0"); } catch (e) {}
-      majPause();
+  function battre(){
+    batPret = true;
+    hero.classList.remove("bat");
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ hero.classList.add("bat"); }); });   /* sans reflux forcé */
+  }
+  function finir(){
+    if (finie || !hero) { return; }
+    finie = true;
+    hero.classList.add("fini");
+    if (!cv) { hero.classList.remove("en-fete"); }
+  }
+  function cadence(){   /* intervalle médian entre images : la physique des confettis avance image par image */
+    var t = [], p = 0;
+    requestAnimationFrame(function m(ts){
+      if (p) { t.push(ts - p); }
+      p = ts;
+      if (t.length < 9) { requestAnimationFrame(m); } else { t.sort(function(a, b){ return a - b; }); kMed = t[4]; }
     });
-  });
-  majPause();
+  }
+  function feu(){
+    var C = window.confetti;
+    if (!C || document.hidden || !coeur) { return; }
+    var r0 = coeur.getBoundingClientRect();
+    if (r0.bottom < 0 || r0.top > innerHeight) { return; }
+    var M = !matchMedia("(min-width:880px)").matches,
+        i = kMed, k = Math.min(1.8, Math.max(1, i * (Math.floor(15 / i) + 1) / 16.67)),   /* la bibliothèque avance au plus toutes les 15 ms */
+        leger = (navigator.deviceMemory || 4) <= 2,
+        N = M ? (leger ? 120 : 170) : (leger ? 160 : 240),
+        TOUS = ["#E30613", "#FFCF00", "#E30613", "#FFCF00", "#14181F", "#B9050F"],
+        CLAIRS = ["#E30613", "#FFCF00", "#E30613", "#FFCF00", "#B9050F"];
+    cv = document.createElement("canvas");
+    cv.className = "fete";
+    cv.setAttribute("aria-hidden", "true");
+    var slot = coeur.parentNode;
+    slot.parentNode.insertBefore(cv, slot);          /* dans .scene, juste avant .slot : derrière la carte */
+    fete = C.create(cv, { resize: true, useWorker: false });
+    function tir(part, o){
+      if (!fete || !cv) { return; }
+      var r = coeur.getBoundingClientRect(), R = cv.getBoundingClientRect(), W = R.width || innerWidth, H = R.height || innerHeight;
+      if (r.bottom < 0 || r.top > innerHeight) { return; }
+      var p = { particleCount: Math.max(2, Math.round(N * part)), colors: TOUS, spread: 360,
+                origin: { x: (r.left + r.width / 2 - R.left) / W, y: (r.top + r.height / 2 - R.top) / H },
+                startVelocity: M ? 24 : 34, ticks: M ? 130 : 190, gravity: M ? 1.25 : 1, decay: M ? .905 : .91, scalar: M ? .92 : 1.05 };
+      for (var c in o) { if (c !== "haut") { p[c] = o[c]; } }
+      if (o.haut) { p.origin = { x: (r.left + r.width * o.haut - R.left) / W, y: (r.top + 8 - R.top) / H }; }
+      p.startVelocity *= k; p.gravity *= k; p.decay = Math.pow(p.decay, k); p.ticks = Math.round(p.ticks / k);
+      fete(p);
+    }
+    tir(M ? .2 : .25, {});                                                                  /* souffle à 360° derrière la carte */
+    setTimeout(function(){                                                                  /* deux jets latéraux : le titre reste lisible */
+      tir(M ? .16 : .13, { angle: 115, spread: 40, startVelocity: M ? 36 : 50, colors: CLAIRS, haut: .35 });
+      tir(M ? .16 : .12, { angle: 65, spread: 40, startVelocity: M ? 36 : 50, colors: CLAIRS, haut: .65 });
+    }, 60);
+    setTimeout(function(){                                                                  /* coups de canon aux coins */
+      tir(M ? .12 : .18, { angle: M ? 150 : 155, spread: 45, startVelocity: M ? 30 : 58, haut: .08 });
+      tir(M ? .12 : .10, { angle: M ? 30 : 35, spread: 45, startVelocity: M ? 30 : 42, haut: .92 });
+    }, 140);
+    setTimeout(function(){ tir(.08, { startVelocity: M ? 18 : 26, shapes: ["star"], colors: ["#FFCF00", "#FFCF00", "#E30613"], scalar: M ? 1.1 : 1.4, gravity: M ? .9 : .8, ticks: M ? 150 : 210 }); }, 260);
+    setTimeout(function(){ tir(M ? .16 : .14, { startVelocity: M ? 14 : 20, scalar: M ? .7 : .9 }); }, 380);   /* anneau autour de la carte */
+    setTimeout(function(){ if (cv) { cv.classList.add("sort"); } }, 3600);
+    setTimeout(function(){ finie = true; nettoyer(); }, 4050);                             /* plus rien, moins de 5 s après le début */
+  }
+  function demarrer(I){
+    if (!hero || !coeur) { return; }
+    if (!I.go) { finie = true; sorti = true; batPret = true; return; }   /* pas d'intro : le cœur battra à la 1re vue */
+    cadence();
+    var pouls = hero.querySelector(".pouls"), b2 = hero.querySelector(".b2"), apres = hero.querySelector(".v-apres");
+    function tirer(){
+      if (tire) { return; }
+      tire = true;
+      var essais = 0;
+      (function attendre(){ if (window.confetti || essais++ > 8) { feu(); } else { setTimeout(attendre, 30); } })();
+    }
+    hero.addEventListener("animationstart", function(e){ if (e.animationName === "choc") { tirer(); } });
+    hero.addEventListener("animationend", function(e){
+      if (e.animationName === "bout-y" && e.target === b2) { finir(); }
+      if (e.animationName === "surgit" && e.target === apres && !batPret) { battre(); }
+    });
+    /* script arrivé en retard (3G) : rattraper ce qui a déjà commencé */
+    (pouls && pouls.getAnimations ? pouls.getAnimations() : []).forEach(function(a){
+      if (a.animationName === "choc" && a.currentTime > 0) { if (a.currentTime < 900) { tirer(); } else { tire = true; } }
+    });
+    setTimeout(function(){ finir(); if (!batPret) { battre(); } }, 4200);   /* filet de sécurité */
+  }
+  if (hero && coeur) {
+    new IntersectionObserver(function(en){      /* rejoue le battement quand la carte revient à l'écran */
+      var e = en[en.length - 1];
+      if (!e.isIntersecting) { sorti = true; return; }
+      if (e.intersectionRatio >= .5 && sorti && batPret) { sorti = false; battre(); }
+    }, { threshold: [0, .5] }).observe(coeur);
+    document.addEventListener("visibilitychange", function(){ if (document.hidden) { finie = true; nettoyer(); } });
+    if (window.pmIntro) { demarrer(window.pmIntro); } else { window.pmHero = demarrer; }
+  }
 })();
 </script>
 
@@ -955,6 +1219,7 @@ html.pause .actif{--jeu:paused}
       : "Le clavier ne s'ouvre pas ? Copiez le code, ouvrez Téléphone, collez-le et appelez.";
     clearTimeout(secoursT);
     feuille.showModal();
+    var tst = $("#toast"); if (tst) { feuille.appendChild(tst); }
     track("offre_clic", { offre: courante.id });
     return true;
   }
@@ -970,7 +1235,7 @@ html.pause .actif{--jeu:paused}
   if (feuille) {
     $("#f-fermer").addEventListener("click", fermer);
     feuille.addEventListener("click", function(e){ if (e.target === feuille) { fermer(); } });
-    feuille.addEventListener("close", function(){ clearTimeout(secoursT); });
+    feuille.addEventListener("close", function(){ clearTimeout(secoursT); var tst = $("#toast"); if (tst) { document.body.appendChild(tst); } });
   }
 
   /* Le clavier s'est-il ouvert ? Si la page a été masquée, oui : pas de fausse alerte au retour. */

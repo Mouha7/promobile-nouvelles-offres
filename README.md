@@ -3,10 +3,10 @@
 « Plus de valeur, au même prix » : page unique présentant les 8 offres améliorées
 (ProMINI, ProNET, ProMIX) lancées le 21 octobre 2026, avec activation en un geste
 (code USSD direct par offre, ex. `#175#221#`, ou WhatsApp) et téléchargement du catalogue PDF.
-En haut de page, l'offre vedette est « lancée » et casse le mur (animation CSS, pause possible).
+En haut de page, l'offre vedette crève la page blanche, passe devant et bat ; confettis sur toute la page.
 
 - **Avant → Après** : chaque carte montre l'ancien volume et ce qui s'ajoute, au même prix.
-- **Statique et léger** : environ 66 Ko au premier chargement, polices et animations comprises ; lisible à 320 px.
+- **Statique et léger** : environ 76 Ko au premier chargement, polices, animations et confettis compris ; lisible à 320 px.
 - **Une seule source de vérité** : `offres.js` alimente les cartes, les messages WhatsApp, le
   référencement (JSON-LD, sitemap) et le PDF. `tools/build_page.py` (Python standard, sans
   dépendance) réécrit les zones générées de `index.html`.

@@ -114,16 +114,26 @@ vérifiée par fichier HTML (un TXT est impossible sur un sous-domaine en CNAME)
 **Aperçu WhatsApp** : WhatsApp garde l'image en cache. Pour la changer, renommer le fichier
 (`og-image-v2.png`, et mettre à jour `tools/build_page.py`) et partager le lien avec `?v=2`.
 
-## 7. Animations et bouton pause
+## 7. Animations
 
-Au chargement, la carte du haut (l'offre `vedette`) est lancée, casse le « mur » et se relève ; les
-éclats restent en suspension et la carte bat doucement. Le téléphone de « Comment activer » tape le
-code de l'offre vedette tant que la section est à l'écran. Tout s'arrête hors de l'écran (batterie).
+**Intro du haut de page (environ 1,5 s, à chaque chargement)** : la zone de la carte est d'abord vide et blanche ;
+une ombre pousse derrière la page, la page se fissure, se déchire, et la carte (l'offre `vedette`) la crève et passe
+devant. Des confettis (bibliothèque canvas-confetti 1.9.4, licence ISC, intégrée à la page) jaillissent de derrière la
+carte et se répandent sur toute la page pendant environ 3 s, puis disparaissent. Les lambeaux de papier restent en
+collerette autour de la carte, et quelques confettis restent posés dans les marges, immobiles.
 
-Deux petits boutons **pause** (en haut à droite du slogan, et sur le téléphone) arrêtent toutes ces
-animations : c'est une **exigence d'accessibilité** (WCAG 2.2.2, tout mouvement de plus de 5 s doit
-pouvoir être mis en pause). Le choix est mémorisé sur le téléphone du visiteur. Les personnes qui ont
-activé « Supprimer les animations » dans leur téléphone voient la page immobile, au complet.
+**Battement** : la carte bat 3 fois (environ 2 s) après l'apparition du nouveau volume, puis s'arrête ; elle rebat
+chaque fois qu'on revient en haut de la page. Ainsi, aucun mouvement automatique ne dure plus de 5 s (règle WCAG 2.2.2),
+sans bouton pause. Seul le téléphone de « Comment activer » tape les codes en boucle tant qu'il est à l'écran (demandé
+explicitement) ; il s'arrête hors de l'écran.
+
+**Accessibilité et performances** : les personnes qui ont activé « Supprimer les animations » dans leur téléphone
+voient directement la composition finale, immobile (carte posée dans sa collerette). Le titre n'est jamais animé
+(il reste l'élément affiché le plus vite). Sur les téléphones à faible mémoire, les confettis sont moins nombreux.
+
+Réglages (dans `index.html`, CSS de `.hero`) : les temps de l'intro (`--tc` fissure, `--tz` passage devant, etc.)
+et, dans le script de mouvement, le nombre de confettis (`N`). La forme de la déchirure est calculée dans `<head>`
+(fonction `dechirure`, graine fixe : elle est identique à chaque visite).
 
 ## 8. Mesure (F5) — sans données personnelles
 
