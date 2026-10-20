@@ -45,8 +45,7 @@ Champs d'une offre :
 | `gain`           | l'élément le plus visible de la carte                  | `"+0,5 Go"`                |
 | `gainSecondaire` | facultatif, pastille jaune à côté du gain              | `"+50 SMS"`                |
 | `gainDetail`     | phrase pour le référencement                           | `"3 Go au lieu de 2,5 Go"` |
-| `details`        | lignes avant → après ; `change: true` = jauge rouge    | voir le fichier            |
-| `jauge`          | facultatif, sur une ligne qui ne change pas : la montre quand même en barre (pleine, « inclus ») au lieu de « Toujours inclus » | `true` |
+| `details`        | une barre par ligne ; `change: true` = avant → après en rouge, sinon barre pleine « inclus » | voir le fichier |
 
 Les lignes `change: true` doivent avoir des valeurs lisibles (`"2,5 Go"`, `"1 000 F"`, `"80 min"`,
 `"50"`), la même unité avant et après, et une valeur après plus grande : c'est ce qui dessine la
@@ -64,8 +63,8 @@ Textes de campagne (facultatifs : un champ absent fait disparaître l'élément)
 - `sloganWolof` : le slogan du moment sous le titre, sur un coup de surligneur jaune (ex. `"Doss Bi Yokati Na !!!"`).
   La ponctuation finale s'affiche en rouge. `sloganWolofSens` donne sa traduction, lue par les lecteurs d'écran et
   affichée au survol.
-- `reseau` : la ligne en pied de la carte phare. `badge` (`"4G+"`), `court` (le texte affiché, sur une ligne : le
-  garder court) et `complet` (la phrase entière, lue par les lecteurs d'écran). Garder la source du chiffre de
+- `reseau` : la ligne en pied de la carte phare. `badge` (`"4G+"`), `court` (la phrase affichée), `chiffre`
+  (facultatif, en jaune après un point ; le tout tient sur une ligne : rester court) et `complet` (la phrase entière, lue par les lecteurs d'écran). Garder la source du chiffre de
   couverture annoncé.
 - `recharge` : la 4e étape de « Comment activer ». `titre`, `texte` et `canaux`. Chaque canal a un `id` (`wave`,
   `maxit`, `promobile`, `en-ligne`), un `nom`, un `detail` (sous-titre), une `icone` facultative (image carrée,

@@ -171,8 +171,8 @@ def html_jauge(j: dict, classe: str = "jauge") -> str:
 
 
 def html_jauge_inclus(x: dict) -> str:
-    """Ligne qui ne change pas mais qu'on veut voir en barre (« jauge »: true) : barre pleine, grise (ce qu'on avait
-    déjà), mention « inclus » ; sans cela, l'information passerait inaperçue dans « Toujours inclus »."""
+    """Ligne qui ne change pas : barre pleine, grise (ce qu'on avait déjà), mention « inclus ». Les visiteurs lisent
+    d'abord les formes : sans barre, une ligne incluse passerait inaperçue."""
     return (f'<li class="jauge egal" style="--r:1">'
             f'<span class="j-lab">{e(x["label"])}</span>'
             f'<span class="j-val"><b>{e(x["apres"])}</b><span class="j-inclus">inclus</span></span>'
@@ -184,18 +184,8 @@ def html_carte(d: dict, o: dict) -> str:
     verifier_gain(o, js)
     duree(o)
     plus = f'<span class="gain-plus">{e(o["gainSecondaire"])}</span>' if o.get("gainSecondaire") else ""
-    suite, lignes = iter(js), []
-    for x in o["details"]:                          # dans l'ordre du fichier : jauges avant/après et lignes « jauge »
-        if x.get("change"):
-            lignes.append(html_jauge(next(suite)))
-        elif x.get("jauge"):
-            lignes.append(html_jauge_inclus(x))
-    fixes = [x for x in o["details"] if not x.get("change") and not x.get("jauge")]
-    inclus = ""
-    if fixes:
-        items = f'<span class="sep" aria-hidden="true"> · </span>'.join(
-            f'{e(x["label"])}{NBSP}<b>{e(x["apres"])}</b>' for x in fixes)
-        inclus = f'<p class="inclus">Toujours inclus : {items}</p>'
+    suite = iter(js)                                # dans l'ordre du fichier : chaque ligne a sa barre
+    lignes = [html_jauge(next(suite)) if x.get("change") else html_jauge_inclus(x) for x in o["details"]]
     return (
         f'<article class="carte" id="{e(o["id"])}" data-id="{e(o["id"])}" data-famille="{e(o["famille"])}" '
         f'style="view-transition-name:c-{e(o["id"])}">'
@@ -204,7 +194,6 @@ def html_carte(d: dict, o: dict) -> str:
         f'<div class="gain-ligne"><p class="gain"><span class="gain-val">{e(o["gain"])}</span>{plus}</p>'
         f'<p class="prix"><span class="sr">Prix : </span>{fcfa(o["prix"])}<small>F</small></p></div>'
         f'<ul class="jauges">{"".join(lignes)}</ul>'
-        f'{inclus}'
         f'<a class="activer" href="{tel(o["code"])}" data-code="{e(o["code"])}" aria-label="Activer {e(o["nom"])} '
         f'avec {e(o["code"])}, {e(fcfa(o["prix"]))} francs, {e(o["validiteLongue"])}">'
         f'<span class="act-txt">Activer<span class="act-sous">{e(o["code"])} ou WhatsApp</span></span>{FLECHE}</a>'
@@ -243,8 +232,10 @@ def html_vedette(d: dict) -> str:
     r = d.get("reseau")
     if r and not all(r.get(k) for k in ("badge", "court", "complet")):
         raise Erreur("« reseau » : il faut « badge », « court » et « complet »")
+    chiffre = (f'<span class="sep" aria-hidden="true"> · </span><strong>{e(typo(r["chiffre"]))}</strong>'
+               if r and r.get("chiffre") else "")
     ligne = (f'<span class="v-reseau" title="{e(typo(r["complet"]))}">{SIGNAL}<b>{e(r["badge"])}</b>'
-             f'<span>{e(typo(r["court"]))}</span></span>') if r else ""
+             f'<span>{e(typo(r["court"]))}{chiffre}</span></span>') if r else ""
     complet = f'. {e(typo(r["complet"]))}' if r else ""
     return (
         f'<a class="vedette" href="#{e(o["id"])}" aria-label="Exemple : {e(o["nom"])}, '
