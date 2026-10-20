@@ -238,7 +238,7 @@ def html_vedette(d: dict) -> str:
              f'<span>{e(typo(r["court"]))}{chiffre}</span></span>') if r else ""
     complet = f'. {e(typo(r["complet"]))}' if r else ""
     return (
-        f'<a class="vedette" href="#{e(o["id"])}" aria-label="Exemple : {e(o["nom"])}, '
+        f'<a class="vedette" href="#{e(o["id"])}" aria-label="Activer {e(o["nom"])} : '
         f'{e(j["avant"])} avant, {e(j["apres"])} maintenant, toujours {e(fcfa(o["prix"]))} francs{complet}">'
         f'<span class="v-tete"><span><b>{e(o["nom"])}</b> · {e(o["validiteLongue"])}</span>'
         f'<span class="v-prix">{fcfa(o["prix"])}{NBSP}F · même prix</span></span>'
