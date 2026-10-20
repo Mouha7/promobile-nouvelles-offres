@@ -29,7 +29,7 @@ var PROMOBILE = {
   "email": "contact@promobile.sn",
   "siteOfficiel": "https://www.promobile.sn",
 
-  "sloganWolof": "Dose Bi Yokati Na !!!",
+  "sloganWolof": "Dose Bi Yokkuti Na !!!",
   "sloganWolofSens": "le niveau a augmenté",
 
   "reseau": {
