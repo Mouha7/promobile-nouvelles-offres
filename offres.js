@@ -130,8 +130,8 @@ var PROMOBILE = {
       "nom": "ProMIX 475",
       "ancienNom": "ProMIX 475",
       "prix": 475,
-      "validite": "24 h",
-      "validiteLongue": "24 heures",
+      "validite": "48 h",
+      "validiteLongue": "48 heures",
       "gain": "+20 min",
       "gainDetail": "100 min au lieu de 80 min",
       "details": [
@@ -165,8 +165,8 @@ var PROMOBILE = {
       "nom": "ProMIX 1375",
       "ancienNom": "ProMIX 1375",
       "prix": 1375,
-      "validite": "7 j",
-      "validiteLongue": "7 jours",
+      "validite": "30 j",
+      "validiteLongue": "30 jours",
       "gain": "+0,5 Go",
       "gainDetail": "3 Go au lieu de 2,5 Go",
       "details": [
@@ -182,8 +182,8 @@ var PROMOBILE = {
       "nom": "ProMIX 1975",
       "ancienNom": "ProMIX 1975",
       "prix": 1975,
-      "validite": "7 j",
-      "validiteLongue": "7 jours",
+      "validite": "30 j",
+      "validiteLongue": "30 jours",
       "gain": "+120 min",
       "gainDetail": "300 min au lieu de 180 min",
       "details": [
