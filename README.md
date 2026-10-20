@@ -3,7 +3,7 @@
 « Plus de valeur, au même prix » : page unique présentant les 8 offres améliorées
 (ProMINI, ProNET, ProMIX) lancées le 21 octobre 2026, avec activation en un geste
 (code USSD direct par offre, ex. `#175#221#`, ou WhatsApp) et téléchargement du catalogue PDF.
-En haut de page, l'offre vedette crève la page blanche, passe devant et bat ; confettis sur toute la page.
+En haut de page, l'offre vedette crève la page blanche, passe devant et bat en continu ; confettis sur toute la page.
 
 - **Avant → Après** : chaque carte montre l'ancien volume et ce qui s'ajoute, au même prix.
 - **Statique et léger** : environ 76 Ko au premier chargement, polices, animations et confettis compris ; lisible à 320 px.

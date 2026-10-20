@@ -116,16 +116,16 @@ vérifiée par fichier HTML (un TXT est impossible sur un sous-domaine en CNAME)
 
 ## 7. Animations
 
-**Intro du haut de page (environ 1,5 s, à chaque chargement)** : la zone de la carte est d'abord vide et blanche ;
+**Intro du haut de page (environ 3 s, à chaque chargement)** : la zone de la carte est d'abord vide et blanche ;
 une ombre pousse derrière la page, la page se fissure, se déchire, et la carte (l'offre `vedette`) la crève et passe
 devant. Des confettis (bibliothèque canvas-confetti 1.9.4, licence ISC, intégrée à la page) jaillissent de derrière la
-carte et se répandent sur toute la page pendant environ 3 s, puis disparaissent. Les lambeaux de papier restent en
-collerette autour de la carte, et quelques confettis restent posés dans les marges, immobiles.
+carte et se répandent sur toute la page pendant environ 3 s. Les lambeaux de papier restent en collerette autour de
+la carte, et des confettis restent posés autour d'elle et dans les marges, où ils flottent doucement.
 
-**Battement** : la carte bat 3 fois (environ 2 s) après l'apparition du nouveau volume, puis s'arrête ; elle rebat
-chaque fois qu'on revient en haut de la page. Ainsi, aucun mouvement automatique ne dure plus de 5 s (règle WCAG 2.2.2),
-sans bouton pause. Seul le téléphone de « Comment activer » tape les codes en boucle tant qu'il est à l'écran (demandé
-explicitement) ; il s'arrête hors de l'écran.
+**Page vivante** (choix du client) : après l'apparition du nouveau volume, la carte bat en continu ; les confettis
+posés flottent et le téléphone de « Comment activer » tape les codes en boucle. Chaque zone ne s'anime que lorsqu'elle
+est à l'écran et se met en pause dès qu'on la quitte (batterie), jusqu'au retour. Note : sans bouton pause, ces
+mouvements continus ne respectent pas la règle d'accessibilité WCAG 2.2.2 ; c'est un choix assumé.
 
 **Accessibilité et performances** : les personnes qui ont activé « Supprimer les animations » dans leur téléphone
 voient directement la composition finale, immobile (carte posée dans sa collerette). Le titre n'est jamais animé
