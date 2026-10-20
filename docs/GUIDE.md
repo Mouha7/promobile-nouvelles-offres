@@ -116,26 +116,32 @@ vérifiée par fichier HTML (un TXT est impossible sur un sous-domaine en CNAME)
 
 ## 7. Animations
 
-**Intro du haut de page (environ 3 s, à chaque chargement)** : la zone de la carte est d'abord vide et blanche ;
-une ombre pousse derrière la page, la page se fissure, se déchire, et la carte (l'offre `vedette`) la crève et passe
-devant. Des confettis (bibliothèque canvas-confetti 1.9.4, licence ISC, intégrée à la page) jaillissent de derrière la
-carte ; en même temps, une pluie tombe sur toute la largeur et deux canons tirent depuis les coins bas de l'écran,
-si bien que tout l'écran est couvert pendant environ 3 s. Les lambeaux de papier restent en collerette autour de
-la carte, et des confettis restent posés autour d'elle et dans les marges, où ils flottent doucement.
+**Intro du haut de page (environ 3 s, à chaque chargement)** : un portable couché, dessiné en CSS, est posé sous le
+titre, écran éteint. L'écran s'allume (éclat rouge et jaune, rayons) ; la carte de l'offre `vedette` arrive du fond de
+l'écran, grandit jusqu'à pousser sur la vitre, la traverse (onde lumineuse, petit recul du portable) et vient se poser
+au-dessus du portable, plus large que lui. Des confettis (bibliothèque canvas-confetti 1.9.4, licence ISC, intégrée
+à la page) partent de l'écran ; en même temps, une pluie tombe sur toute la largeur et deux canons tirent depuis les
+coins bas de l'écran, si bien que tout l'écran est couvert pendant environ 3 s. Des confettis restent ensuite posés
+autour de la carte et dans les marges, où ils flottent doucement.
 
-**Page vivante** (choix du client) : après l'apparition du nouveau volume, la carte bat en continu ; les confettis
-posés flottent et le téléphone de « Comment activer » tape les codes en boucle. Chaque zone ne s'anime que lorsqu'elle
-est à l'écran et se met en pause dès qu'on la quitte (batterie), jusqu'au retour. Note : sans bouton pause, ces
-mouvements continus ne respectent pas la règle d'accessibilité WCAG 2.2.2 ; c'est un choix assumé.
+**Page vivante** (choix du client) : après l'apparition du nouveau volume, la carte bat en continu et la lueur de
+l'écran pulse avec elle ; les rayons tournent lentement, les confettis posés flottent et le téléphone de « Comment
+activer » tape les codes en boucle. Chaque zone ne s'anime que lorsqu'elle est à l'écran et se met en pause dès qu'on
+la quitte (batterie), jusqu'au retour. Note : sans bouton pause, ces mouvements continus ne respectent pas la règle
+d'accessibilité WCAG 2.2.2 ; c'est un choix assumé.
 
 **Accessibilité et performances** : les personnes qui ont activé « Supprimer les animations » dans leur téléphone
-voient directement la composition finale, immobile (carte posée dans sa collerette). Le titre n'est jamais animé
-(il reste l'élément affiché le plus vite). Sur les téléphones à faible mémoire, les confettis sont moins nombreux.
+voient directement la composition finale, immobile (carte posée sur le portable allumé). Le titre n'est jamais animé
+(il reste l'élément affiché le plus vite). Le portable est fait de quelques blocs CSS, sans image, et seules des
+propriétés légères pour le processeur graphique sont animées. Sur les téléphones à faible mémoire, les confettis
+sont moins nombreux. Sur mobile, le bloc fait environ 85 px de plus qu'une carte seule : la barre de filtres reste
+dans le premier écran à partir de 640 px de haut.
 
-Réglages (dans `index.html`, CSS de `.hero`) : les temps de l'intro (`--tc` fissure, `--tz` passage devant, etc.)
-et, dans le script de mouvement (fonction `feu`), le nombre de confettis (`N`), leur vitesse (`startVelocity`) et
-leur durée de vie (`ticks`). La vitesse des confettis posés se règle par `--fd` (durée d'un aller). La forme de la déchirure est calculée dans `<head>`
-(fonction `dechirure`, graine fixe : elle est identique à chaque visite).
+Réglages (dans `index.html`, CSS de `.hero`) : les temps de l'intro (`--ta` écran allumé, `--tk` arrivée de la carte,
+`--tz` passage devant la vitre, à garder égal à `--tk` + `--dk` / 2, etc.), la taille de la carte dans l'écran
+(`--s0` au fond, `--si` contre la vitre) et le chevauchement carte / portable (`--ov`). Dans le script de mouvement
+(fonction `feu`) : le nombre de confettis (`N`), leur vitesse (`startVelocity`) et leur durée de vie (`ticks`). La
+vitesse des confettis posés se règle par `--fd` (durée d'un aller).
 
 ## 8. Mesure (F5) — sans données personnelles
 
