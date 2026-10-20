@@ -133,9 +133,12 @@ vérifiée par fichier HTML (un TXT est impossible sur un sous-domaine en CNAME)
 
 ## 7. Animations
 
-**Intro du haut de page (environ 3 s, à chaque chargement)** : la zone de la carte est d'abord vide et blanche ;
-une ombre pousse derrière la page, la page se fissure, se déchire, et la carte (l'offre `vedette`) la crève et passe
-devant. Des confettis (bibliothèque canvas-confetti 1.9.4, licence ISC, intégrée à la page) jaillissent de derrière la
+**Intro du haut de page (environ 4 s, à chaque chargement)** : la zone de la carte est d'abord vide et blanche ;
+une ombre pousse derrière la page, puis **la page se fissure selon la frontière exacte du Sénégal** (clin d'œil) : la
+pièce de papier en forme de pays est éjectée et laisse un trou rouge en forme de Sénégal, où la Gambie reste en
+papier blanc. La page se déchire ensuite tout autour, et la carte (l'offre `vedette`) la crève et passe devant.
+**Téléphone et ordinateur jouent exactement la même scène** : elle est réduite proportionnellement sur téléphone
+(même carte avec le « +0,5 Go », mêmes lambeaux, même rythme) ; seule la place du texte change. Des confettis (bibliothèque canvas-confetti 1.9.4, licence ISC, intégrée à la page) jaillissent de derrière la
 carte ; en même temps, une pluie tombe sur toute la largeur et deux canons tirent depuis les coins bas de l'écran,
 si bien que tout l'écran est couvert pendant environ 3 s. Les lambeaux de papier restent en collerette autour de
 la carte, et des confettis restent posés autour d'elle et dans les marges, où ils flottent doucement.
@@ -145,7 +148,8 @@ Si la page s'ouvre ailleurs qu'en haut (lien vers `#offres` ou vers une offre), 
 et l'intro se joue quand on remonte jusqu'à elle. Un rechargement repart toujours du haut de la page.
 
 **Page vivante** (choix du client) : après l'apparition du nouveau volume, la carte bat en continu ; les confettis
-posés flottent et le téléphone de « Comment activer » tape les codes en boucle. Chaque zone ne s'anime que lorsqu'elle
+posés flottent et le téléphone de « Comment activer » (complet, sur mobile aussi) tape les codes en boucle,
+touche par touche. Chaque zone ne s'anime que lorsqu'elle
 est à l'écran et se met en pause dès qu'on la quitte (batterie), jusqu'au retour. Note : sans bouton pause, ces
 mouvements continus ne respectent pas la règle d'accessibilité WCAG 2.2.2 ; c'est un choix assumé.
 
@@ -153,10 +157,17 @@ mouvements continus ne respectent pas la règle d'accessibilité WCAG 2.2.2 ; c'
 voient directement la composition finale, immobile (carte posée dans sa collerette). Le titre n'est jamais animé
 (il reste l'élément affiché le plus vite). Sur les téléphones à faible mémoire, les confettis sont moins nombreux.
 
-Réglages (dans `index.html`, CSS de `.hero`) : les temps de l'intro (`--tc` fissure, `--tz` passage devant, etc.)
-et, dans le script de mouvement (fonction `feu`), le nombre de confettis (`N`), leur vitesse (`startVelocity`) et
-leur durée de vie (`ticks`). La vitesse des confettis posés se règle par `--fd` (durée d'un aller). La forme de la déchirure est calculée dans `<head>`
-(fonction `dechirure`, graine fixe : elle est identique à chaque visite).
+Réglages (dans `index.html`, CSS de `.hero`) : les temps de l'intro (`--tsn` fissure « Sénégal », `--tv0` éjection
+de la pièce, `--tc` ouverture des lambeaux, `--tz` passage devant, etc.) et, dans le script de mouvement (fonction
+`feu`), le nombre de confettis (`N`), leur vitesse (`startVelocity`) et leur durée de vie (`ticks`). La vitesse des
+confettis posés se règle par `--fd` (durée d'un aller). Les tailles de la carte du haut sont en `cqw` (pourcentage de
+la largeur de la scène) : elles suivent la scène sur tous les écrans.
+
+La frontière vient de **Natural Earth 1:10m** (domaine public), conservée dans `tools/data/senegal.geojson`.
+`tools/build_dechirure.py` la projette, la simplifie (constante `TOLERANCE`) et la place sans déformation dans la
+boîte du papier (rapport `BOITE` = 1,82, le même que `.papier{aspect-ratio}` dans le CSS). `build_page.py` l'appelle
+et écrit la zone `gen:papier`. Les lambeaux et les fissures qui partent du centre sont calculés dans `<head>`
+(fonction `dechirure`, graine fixe : identiques à chaque visite).
 
 ## 8. Mesure (F5) — sans données personnelles
 

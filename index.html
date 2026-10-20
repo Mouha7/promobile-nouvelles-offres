@@ -66,8 +66,7 @@
     }
     function poly(a){return "polygon("+a.map(function(p){return p[0].toFixed(1)+"% "+p[1].toFixed(1)+"%";}).join(",")+")";}
     function ch(a){return "M"+a.map(function(p){return p[0].toFixed(1)+" "+p[1].toFixed(1);}).join("L");}
-    [["m",{W:308,H:103,P:[43,56],L:[8.5,47],R:[91,52],F:[67,50],T:[76,0]}],
-     ["d",{W:455,H:248,P:[44,54],L:[13,49],R:[86,45],F:[66,47],T:[73,0],G:[27,52],B:[21,100]}]].forEach(function(x){
+    [["",{W:453,H:249,P:[44,54],L:[13,49],R:[86,45],F:[66,47],T:[73,0],G:[27,52],B:[21,100]}]].forEach(function(x){
       var id=x[0],k=x[1],P=k.P,L=k.L,R=k.R,F=k.F,T=k.T,G=k.G,B=k.B,TL=[0,0],TR=[100,0],BR=[100,100],BL=[0,100],
           lg=G&&f(L,G,k),gp=G&&f(G,P,k),gb=G&&f(G,B,k),lp=G?lg.concat([G],gp):f(L,P,k),
           pf=f(P,F,k),fr=f(F,R,k),ft=f(F,T,k),lt=f(L,TL,k),lb=f(L,BL,k),rt=f(R,TR,k),rb=f(R,BR,k),
@@ -78,7 +77,7 @@
              pb1:G?[BL].concat(v(lb),[L],lg,[G],gb,[B]):[BL].concat(v(lb),[L],lp,[P],pf,[F],fr,[R],rb,[BR]),
              pb2:G&&[B,BR].concat(v(rb),[R],v(fr),[F],v(pf),[P],v(gp),[G],gb)},
           fk=[[L].concat(lt,[TL]),[L].concat(lb,[BL]),[R].concat(rt,[TR]),[R].concat(rb,[BR]),[F].concat(ft,[T])],
-          svg=pap.querySelector(".fentes."+id),n,el;
+          svg=pap.querySelector(".fentes"),n,el;
       for(n in z){el=pap.querySelector("."+n);if(el&&z[n]){el.style.setProperty("--c"+id,poly(z[n]));}}
       if(G){fk.push([G].concat(gb,[B]));}
       svg.querySelector(".c1").setAttribute("d",ch(lp.slice(-Math.ceil(lp.length*.35)).concat([P],pf.slice(0,Math.ceil(pf.length*.5)))));
@@ -104,8 +103,8 @@
       var co=hero.querySelector(".coeur"),an=co&&co.getAnimations?co.getAnimations():[],
           slot=hero.querySelector(".slot"),b=slot.getBoundingClientRect(),io;
       if(!ok||(an[0]&&an[0].currentTime>2600)){lancer(false);return;}   /* déchirure impossible, ou héros lu très tard */
-      if(b.bottom>0&&b.top<innerHeight&&!/^#(offres|grille|t-[\w-]+|pro[\w-]+)$/i.test(location.hash)){lancer(true);return;}
-      /* héros hors de l'écran : zone blanche jusqu'à ce que la carte soit visible à 60 %, puis l'intro */
+      if(Math.min(b.bottom,innerHeight)-Math.max(b.top,0)>=.6*b.height&&!/^#(offres|grille|t-[\w-]+|pro[\w-]+)$/i.test(location.hash)){lancer(true);return;}
+      /* carte pas assez visible (lien #…, petit écran) : zone blanche jusqu'à ce qu'elle le soit à 60 %, puis l'intro */
       /* observé 700 ms après « load » : le saut vers l'ancre est animé (défilement doux) et ne part qu'au chargement */
       hero.classList.add("guette");
       function guetter(){
@@ -126,7 +125,7 @@
    Charte Promobile : blanc, rouge #E30613, noir bleuté #14181F, accent jaune #FFCF00 (ruban « Nouvelle offre »
    de promobile.sn). Poppins pour le texte, Barlow Condensed (proche du DIN du site officiel) pour les chiffres.
    Concept « Avant → Après » : chaque carte montre l'ancien volume (gris) et ce qui s'ajoute (rouge), au même prix.
-   Héros : la carte vedette crève la page blanche (fissure, lambeaux de papier, cavité rouge), passe devant et bat ;
+   Héros : la page se fissure selon la frontière du Sénégal, la carte vedette la crève, passe devant et bat ;
    confettis (canvas) sur toute la page.
    ---------------------------------------------------------------- */
 @font-face{font-family:"Poppins";font-style:normal;font-weight:400;font-display:swap;src:url("assets/fonts/poppins-latin-400-normal.woff2") format("woff2")}
@@ -251,86 +250,95 @@ h1,h2,h3{text-wrap:balance}
 .doss em{font-style:normal;color:var(--rouge)}
 .doss span[lang]::after{content:"";position:absolute;right:-.36em;top:.12em;width:.4em;height:.8em;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 24' fill='none' stroke='%23E30613' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M2 7 9 2.5M2.5 12H11M2 17l7 4.5'/%3E%3C/svg%3E") center/contain no-repeat}
 .sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
-.cta-offres{display:none}
+.cta-offres{display:inline-flex}
 .cta-offres svg{width:20px;height:20px}
 
 /* Démonstrateur « Avant → Après » : une offre réelle rejouée une fois au chargement */
 .vedette{
-  display:grid;gap:.55rem;text-decoration:none;color:#fff;background:var(--noir);
-  border-radius:var(--rayon);padding:.85rem 1rem 1rem;position:relative;overflow:hidden;isolation:isolate;
+  display:grid;gap:16px;gap:3.35cqw;text-decoration:none;color:#fff;background:var(--noir);
+  border-radius:var(--rayon);padding:25px 25px 27px;padding:5.36cqw 5.36cqw 5.69cqw;position:relative;overflow:hidden;isolation:isolate;
 }
 .vedette::after{content:"";position:absolute;z-index:-1;inset:auto -20% -60% auto;width:70%;aspect-ratio:1;background:radial-gradient(closest-side,rgba(227,6,19,.35),rgba(227,6,19,0));pointer-events:none}
-.v-tete{display:flex;justify-content:space-between;align-items:baseline;gap:.75rem;font-size:.8rem;color:rgba(255,255,255,.72)}
+.v-tete{display:flex;justify-content:space-between;align-items:baseline;gap:.75rem;font-size:14.7px;font-size:max(11px,3.08cqw);color:rgba(255,255,255,.72)}
 .v-tete b{color:#fff;font-weight:600}
 .v-prix{color:var(--jaune);font-weight:600;white-space:nowrap}
-.v-gain{display:none;font-family:var(--chiffres);font-weight:700;color:var(--rouge);font-size:4.5rem;line-height:.85;letter-spacing:-.01em}
-.v-jauge{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.65rem;font-family:var(--chiffres);font-weight:700;line-height:1}
-.v-avant{position:relative;font-size:1.3rem;color:rgba(255,255,255,.6)}
+.v-gain{font-family:var(--chiffres);font-weight:700;color:var(--rouge);font-size:72px;font-size:15.06cqw;line-height:.85;letter-spacing:-.01em}
+.v-jauge{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;gap:2.18cqw;font-family:var(--chiffres);font-weight:700;line-height:1}
+.v-avant{position:relative;font-size:27px;font-size:5.69cqw;color:rgba(255,255,255,.6)}
 .v-avant::after{content:"";position:absolute;left:-2px;right:-2px;top:52%;height:2px;background:currentColor;transform-origin:left}
-.v-apres{font-size:1.9rem;color:#fff}
-.vedette .j-barre{height:.7rem;background:rgba(255,255,255,.12)}
+.v-apres{font-size:42px;font-size:8.7cqw;color:#fff}
+.vedette .j-barre{height:14px;height:3.01cqw;background:rgba(255,255,255,.12)}
 .vedette .j-barre::before{background:rgba(255,255,255,.4)}
 /* Argument réseau en pied de carte : une seule ligne (sur les plus petits écrans, l'icône s'efface) */
-.v-reseau{display:flex;align-items:center;gap:.4rem;margin-top:.05rem;padding-top:.5rem;border-top:1px solid rgba(255,255,255,.13);font-size:.74rem;line-height:1.2;color:rgba(255,255,255,.82);white-space:nowrap}
-.v-reseau svg{width:14px;height:14px;flex:none;fill:var(--jaune)}
+.v-reseau{display:flex;align-items:center;gap:8px;gap:1.67cqw;margin-top:.05rem;padding-top:13px;padding-top:2.85cqw;border-top:1px solid rgba(255,255,255,.13);font-size:14px;font-size:max(10.5px,3.01cqw);line-height:1.2;color:rgba(255,255,255,.82);white-space:nowrap}
+.v-reseau svg{width:16px;height:16px;width:max(12px,3.35cqw);height:max(12px,3.35cqw);flex:none;fill:var(--jaune)}
 .v-reseau b{font-family:var(--chiffres);font-weight:700;font-size:1.08em;letter-spacing:.02em;line-height:1.1;color:var(--noir);background:var(--jaune);border-radius:5px;padding:.08em .36em}
-@media (max-width:359px){.v-reseau{font-size:.7rem;gap:.35rem}.v-reseau svg{display:none}}
+@media (max-width:359px){.v-reseau svg{display:none}}
 
-/* Scène : la carte vedette est cachée derrière la page blanche ; elle la crève (fissure, cavité rouge, lambeaux de
-   papier repliés vers l'avant en 3D, éclats), passe devant, puis bat. Confettis (canvas) derrière la carte, sur toute la page.
-   Tout est absolu ou fixe : la mise en page ne bouge jamais. Polygones des lambeaux : calculés dans <head> (graine fixe).
-   .slot : trou 1 < carte 2 (7 à --tz) < cadre 3 < papier 4 < fantôme 5 < éclats 8.  Héros : confettis posés 1 < texte 2
-   < canvas 3 < .slot 4. */
+/* Scène : la carte vedette est cachée derrière la page blanche. La page se fissure selon la frontière du Sénégal
+   (easter egg, tools/build_dechirure.py), la pièce « Sénégal » est éjectée et laisse un trou rouge en forme de pays
+   (la Gambie reste en papier), puis les lambeaux, évidés de cette forme, s'ouvrent ; la carte passe devant, puis bat.
+   UNE seule composition, mise à l'échelle par la largeur de .slot (unités cqw) : le téléphone voit la même scène que
+   l'ordinateur. Tout est absolu ou fixe : la mise en page ne bouge jamais.
+   .slot : trou 1 < carte 2 (7 à --tz) < papier 4 [cadre, lambeaux, pièce, fissures] < fantôme 5 < éclats 8.
+   Héros : confettis posés 1 < texte 2 < canvas 3 < .slot 4. */
 .hero{
-  /* horloge de l'intro (depuis .go) */
-  --ta:600ms;--dg:440ms;--tc:1000ms;--dp:1000ms;--tf:1150ms;--db:1100ms;--tk:1050ms;--dk:950ms;--tz:1320ms;--do:700ms;
-  --dt:600ms;--df:400ms;--tj:1700ms;--tb:2500ms;--ts:2650ms;--tv:2800ms;--tpo:1.3s;
-  /* jaillissement de la carte (mobile : 1.05 maxi, pas de rotateY) */
-  --kp:520px;--ky0:6px;--kx0:24deg;--kr0:0deg;--ks0:.6;--ky1:-4px;--kx1:-3deg;--kr1:0deg;--ks1:1.05;--ky2:1px;--kr2:0deg;--ks2:.985;--ky3:0px;--ks3:1;
+  /* horloge de l'intro (depuis .go) : ombre, fissure « Sénégal » (--tsn), éjection de la pièce (--tv0), ouverture des
+     lambeaux (--tc), carte (--tk), passage devant (--tz), contenu */
+  --ta:600ms;--dg:900ms;--tsn:1000ms;--dsn:700ms;--tv0:1500ms;--dv:620ms;--tc:2150ms;--dp:1200ms;--tf:2350ms;--db:1500ms;
+  --tk:2250ms;--dk:1300ms;--tz:2530ms;--do:750ms;--dt:1430ms;--df:450ms;--tj:3300ms;--tb:3950ms;--ts:4100ms;--tv:4250ms;--tpo:2.5s;
+  /* jaillissement de la carte */
+  --kp:188cqw;--ky0:2.5cqw;--kx0:12deg;--kr0:-10deg;--ks0:.8;--ky1:-2.1cqw;--kx1:-2deg;--kr1:3deg;--ks1:1.1;--ky2:.63cqw;--kr2:-1deg;--ks2:.98;--ky3:-.21cqw;--ks3:1.006;
   /* cadre blanc qui masque la carte autour du trou tant qu'elle est derrière la page */
-  --cs:calc(12px + 2.5vw)}
-.scene{position:relative;margin-block:18px 16px}
-.slot{position:relative;z-index:4}
+  --cs:9.2cqw}
+.scene{position:relative;margin-block:18px 64px;max-width:520px}
+.slot{position:relative;z-index:4;rotate:-1.5deg;container-type:inline-size}
 .coeur{position:relative;z-index:7}
-.coeur::after{content:"";position:absolute;z-index:-1;inset:12px 4% 0;border-radius:var(--rayon);box-shadow:0 16px 30px -10px rgba(20,24,31,.5);pointer-events:none}
-.pouls{position:absolute;inset:0;z-index:-1;border-radius:var(--rayon);box-shadow:0 0 0 2px rgba(227,6,19,.55),0 0 16px 3px rgba(227,6,19,.28);opacity:0;pointer-events:none;--rx:1.07;--ry:1.26;--sx:1.2;--sy:1.7}
+.coeur::after{content:"";position:absolute;z-index:-1;inset:18px 11% 0;inset:3.77cqw 11% 0;border-radius:var(--rayon);box-shadow:0 5.86cqw 10.9cqw -3.77cqw rgba(20,24,31,.5);pointer-events:none}
+.pouls{position:absolute;inset:0;z-index:-1;border-radius:var(--rayon);box-shadow:0 0 0 2px rgba(227,6,19,.55),0 0 16px 3px rgba(227,6,19,.28);opacity:0;pointer-events:none;--rx:1.05;--ry:1.1;--sx:1.14;--sy:1.26}
 .trou,.cadre,.papier,.fantome,.bout,.debris{position:absolute;pointer-events:none}
-.papier{inset:10px}
-.trou{inset:12px}
-.cadre{inset:calc(10px - var(--cs) + 1px)}
-.trou,.cadre,.papier,.fantome,.bout,.pb2,.fentes.d{display:none}
+/* boîte du papier : rapport fixe 1,82 (celui de tools/build_dechirure.py), centrée : le Sénégal n'est jamais déformé */
+.trou,.papier{top:2.5cqw;bottom:2.5cqw;left:0;right:0;margin-inline:auto;aspect-ratio:1.82}
+.trou,.cadre,.papier,.fantome,.bout,.piece{display:none}
 .papier.pret{display:block}
-.trou{z-index:1;opacity:0;background:radial-gradient(130% 160% at 43% 56%,#F2242C,#E30613 55%,#A8000F);box-shadow:inset 0 4px 12px rgba(0,0,0,.45);clip-path:polygon(0 6%,2% 0,27% 2%,55% 0,97% 1.5%,100% 6%,99.3% 50%,100% 94%,96.5% 100%,60% 98%,22% 100%,1.5% 97.5%,0 92%,.7% 46%)}
+.trou{z-index:1;opacity:0;background:radial-gradient(120% 140% at 44% 54%,#F2242C,#E30613 55%,#A8000F);box-shadow:inset 0 4px 12px rgba(0,0,0,.45);clip-path:polygon(0 6%,2% 0,27% 2%,55% 0,97% 1.5%,100% 6%,99.3% 50%,100% 94%,96.5% 100%,60% 98%,22% 100%,1.5% 97.5%,0 92%,.7% 46%)}
 /* la « page » autour du trou : un anneau blanc (fond, pas une ombre : même teinte que la page en mode sombre forcé) */
-.cadre{z-index:3;opacity:0;background:var(--fond);clip-path:polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,var(--cs) var(--cs),var(--cs) calc(100% - var(--cs)),calc(100% - var(--cs)) calc(100% - var(--cs)),calc(100% - var(--cs)) var(--cs),var(--cs) var(--cs))}
-.papier{z-index:4;perspective:100vw;perspective-origin:43% 56%}
-.pan{position:absolute;inset:0}
-.pan i{position:absolute;inset:0;clip-path:var(--cm)}
-.ombre{background:rgba(20,24,31,.4);translate:var(--ox,0) var(--oy,0)}
+.cadre{inset:calc(1px - var(--cs));opacity:0;background:var(--fond);clip-path:polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,var(--cs) var(--cs),var(--cs) calc(100% - var(--cs)),calc(100% - var(--cs)) calc(100% - var(--cs)),calc(100% - var(--cs)) var(--cs),var(--cs) var(--cs))}
+.papier{z-index:4;perspective:159cqw;perspective-origin:44% 54%}
+/* lambeaux : chacun garde son pétale (--c, <head>) MOINS le Sénégal (--hors) ; la pièce « Sénégal » (--sn) part seule */
+.pan{position:absolute;inset:0;clip-path:var(--hors)}
+.pan i,.piece i{position:absolute;inset:0}
+.pan i{clip-path:var(--c)}
+.piece{position:absolute;inset:0;clip-path:var(--sn);transform-origin:44% 54%}
+.piece .ton{--sh:0}   /* papier intact : blanc pur avant la fissure */
+.ombre{background:rgba(20,24,31,.32);translate:var(--ox,0) var(--oy,0)}
 .face{background:var(--fond)}
 .ton{background:linear-gradient(var(--sens),rgba(20,24,31,.04),rgba(20,24,31,.34) var(--te));opacity:var(--sh)}
-.ph1,.ph2{transform-origin:50% 0;--oy:2px;--sens:to bottom;--te:56%}
-.pb1,.pb2{transform-origin:50% 100%;--oy:-2px;--sens:to top;--te:53%}
-.pg{transform-origin:0 50%;--ox:2px;--sens:to right;--te:9%}
-.pd{transform-origin:100% 50%;--ox:-2px;--sens:to left;--te:9%}
+.ph1,.ph2{transform-origin:50% 0;--oy:1.5px;--sens:to bottom;--te:54%}
+.pb1,.pb2{transform-origin:50% 100%;--oy:-1.5px;--sens:to top;--te:55%}
+.pg{transform-origin:0 50%;--ox:1.5px;--sens:to right;--te:14%}
+.pd{transform-origin:100% 50%;--ox:-1.5px;--sens:to left;--te:15%}
 /* angles : pré-ouverture / pic / rebond / repos (collerette) ; décalages irréguliers, durées propres à chaque lambeau */
-.pb1{--o:0ms;--m:1.1;--a0:-9deg;--a1:-132deg;--a2:-112deg;--a3:-118deg;--sh:.55;transform:rotateX(-118deg)}
-.ph1{--o:20ms;--m:1.05;--a0:9deg;--a1:120deg;--a2:106deg;--a3:112deg;--sh:.9;transform:rotateX(112deg)}
-.ph2{--o:35ms;--m:.95;--a0:8deg;--a1:124deg;--a2:108deg;--a3:114deg;--sh:.85;transform:rotateX(114deg)}
-.pg{--o:50ms;--m:.85;--a0:-8deg;--a1:-134deg;--a2:-114deg;--a3:-120deg;--sh:.95;transform:rotateY(-120deg)}
-.pd{--o:65ms;--m:.85;--a0:8deg;--a1:130deg;--a2:112deg;--a3:118deg;--sh:.6;transform:rotateY(118deg)}
+.pb1{--o:0ms;--m:1.1;--a0:-9deg;--a1:-112deg;--a2:-100deg;--a3:-104deg;--sh:.55;transform:rotateX(-104deg)}
+.ph1{--o:20ms;--m:1.05;--a0:8deg;--a1:118deg;--a2:100deg;--a3:106deg;--sh:.9;transform:rotateX(106deg)}
+.pb2{--o:35ms;--m:1;--a0:-8deg;--a1:-114deg;--a2:-100deg;--a3:-104deg;--sh:.5;transform:rotateX(-104deg)}
+.ph2{--o:50ms;--m:.95;--a0:7deg;--a1:126deg;--a2:104deg;--a3:110deg;--sh:.85;transform:rotateX(110deg)}
+.pg{--o:65ms;--m:.85;--a0:-8deg;--a1:-140deg;--a2:-118deg;--a3:-124deg;--sh:.95;transform:rotateY(-124deg)}
+.pd{--o:80ms;--m:.85;--a0:8deg;--a1:136deg;--a2:114deg;--a3:120deg;--sh:.6;transform:rotateY(120deg)}
 .fentes{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.fentes path{fill:none;stroke:#2B3038;stroke-width:1.3;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:0}
+.fentes path{fill:none;stroke:#2B3038;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:0}
+.frontiere{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.frontiere path{fill:none;stroke:#2B3038;stroke-width:.75;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:1 2;stroke-dashoffset:1;opacity:0}
 .c1{--o:-60ms}.c2{--o:0ms}.c3{--o:70ms}
-.fantome{z-index:5;inset:24px 18%;border-radius:30px;background:var(--noir);box-shadow:0 0 26px 18px var(--noir);opacity:0}
+.fantome{z-index:5;inset:9.6cqw 20%;border-radius:8.4cqw;background:var(--noir);box-shadow:0 0 9.2cqw 5.9cqw var(--noir);opacity:0}
 .bout{z-index:8;left:var(--bx);top:var(--by);width:0;height:0;opacity:0}
 .bout i{position:absolute;width:13px;height:10px;margin:-5px 0 0 -6px;background:linear-gradient(140deg,#fff 40%,#c4c4c4);clip-path:polygon(0 25%,100% 0,72% 100%)}
-.b1{--bx:66%;--by:50%;--o:0ms;--dx:58px;--h:-34px;--f:120px;--rot:470deg}
-.b2{--bx:11%;--by:48%;--o:25ms;--dx:-34px;--h:-26px;--f:130px;--rot:-390deg}
+.b1{--bx:65%;--by:47%;--o:0ms;--dx:25cqw;--h:-13.4cqw;--f:48cqw;--rot:540deg}
+.b2{--bx:28%;--by:52%;--o:25ms;--dx:-20cqw;--h:-10.5cqw;--f:54cqw;--rot:-430deg}
 .fete{position:fixed;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;transition:opacity .45s linear}
 .fete.sort{opacity:0}
 /* confettis posés autour de la carte (ils « atterrissent » après l'explosion, puis restent immobiles) */
-.debris{z-index:1;left:50%;top:50%;width:0;height:0;--kx:1.75px;--ky:.8px;--ks:.8}
+.debris{z-index:1;left:50%;top:50%;width:0;height:0;--kx:1.75px;--ky:.8px;--ks:1}
 .eclat{
   position:absolute;left:0;top:0;overflow:visible;fill:currentColor;
   --xx:var(--xm,var(--x));--yy:var(--ym,var(--y));
@@ -338,46 +346,14 @@ h1,h2,h3{text-wrap:balance}
   margin:calc(var(--t) * var(--ks) * -.5px) 0 0 calc(var(--t) * var(--ks) * -.5px);
   transform:translate(calc(var(--xx) * var(--kx)),calc(var(--yy) * var(--ky))) rotate(calc(var(--r) * 1deg));
 }
-.eclat.o,.dd.o{display:none}
+.dd.o{display:none}
 .c-r{color:var(--rouge)}.c-f{color:#9B0911}.c-n{color:var(--noir)}.c-j{color:var(--jaune)}
 @media (min-width:880px){
   .hero-grille{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:center;gap:3.5rem}
   .hero-texte{gap:1.2rem}
-  .cta-offres{display:inline-flex}
-  .vedette{padding:1.6rem 1.6rem 1.7rem;gap:1rem}
-  .v-tete{font-size:.92rem}
-  .v-gain{display:block}
-  .v-avant{font-size:1.7rem}.v-apres{font-size:2.6rem}
-  .vedette .j-barre{height:.9rem}
-  .v-reseau{font-size:.9rem;gap:.5rem;padding-top:.85rem}
-  .v-reseau svg{width:16px;height:16px}
   .scene{margin-block:0}
-  .hero{--ta:800ms;--dg:540ms;--tc:1300ms;--dp:1200ms;--tf:1500ms;--db:1500ms;--tk:1400ms;--dk:1300ms;--tz:1680ms;--do:750ms;--dt:800ms;--df:450ms;--tj:2300ms;--tb:3300ms;--ts:3450ms;--tv:3600ms;--tpo:1.7s;
-    --kp:900px;--ky0:12px;--kx0:12deg;--kr0:-10deg;--ks0:.8;--ky1:-10px;--kx1:-2deg;--kr1:3deg;--ks1:1.1;--ky2:3px;--kr2:-1deg;--ks2:.98;--ky3:-1px;--ks3:1.006;--cs:44px}
-  .slot{rotate:-1.5deg}
-  .coeur::after{inset:18px 5% 0;box-shadow:0 28px 52px -18px rgba(20,24,31,.5)}
-  .pouls{--rx:1.05;--ry:1.1;--sx:1.14;--sy:1.26}
-  .papier{inset:12px;perspective:760px;perspective-origin:44% 54%}
-  .trou{inset:14px;background:radial-gradient(120% 140% at 44% 54%,#F2242C,#E30613 55%,#A8000F)}
-  .cadre{inset:calc(12px - var(--cs) + 1px)}
-  .pb2,.fentes.d{display:block}
-  .fentes.m{display:none}
-  .fentes path{stroke-width:1.6}
-  .ombre{background:rgba(20,24,31,.32)}
-  .ph1,.ph2{--oy:1.5px}.pb1,.pb2{--oy:-1.5px}.pg{--ox:1.5px}.pd{--ox:-1.5px}
-  .pan i{clip-path:var(--cd)}
-  .pb1{--o:0ms;--m:1.1;--a0:-9deg;--a1:-128deg;--a2:-104deg;--a3:-110deg;--te:55%;transform:rotateX(-110deg)}
-  .ph1{--o:20ms;--m:1.05;--a0:8deg;--a1:118deg;--a2:100deg;--a3:106deg;--te:54%;transform:rotateX(106deg)}
-  .pb2{--o:35ms;--m:1;--a0:-8deg;--a1:-124deg;--a2:-102deg;--a3:-108deg;--sh:.5;--te:55%;transform:rotateX(-108deg)}
-  .ph2{--o:50ms;--m:.95;--a0:7deg;--a1:126deg;--a2:104deg;--a3:110deg;--te:54%;transform:rotateX(110deg)}
-  .pg{--o:65ms;--m:.85;--a1:-140deg;--a2:-118deg;--a3:-124deg;--te:14%;transform:rotateY(-124deg)}
-  .pd{--o:80ms;--m:.85;--a1:136deg;--a2:114deg;--a3:120deg;--te:15%;transform:rotateY(120deg)}
-  .fantome{inset:46px 20%;border-radius:40px;box-shadow:0 0 44px 28px var(--noir)}
-  .b1{--bx:65%;--by:47%;--dx:120px;--h:-64px;--f:230px;--rot:540deg}
-  .b2{--bx:28%;--by:52%;--dx:-96px;--h:-50px;--f:260px;--rot:-430deg}
-  .debris{--kx:3.2px;--ky:2px;--ks:1}
+  .debris{--kx:3.2px;--ky:2px}
   .eclat{--xx:var(--x);--yy:var(--y)}
-  .eclat.o{display:block}
 }
 
 /* ---------- Section offres ---------- */
@@ -387,7 +363,6 @@ h1,h2,h3{text-wrap:balance}
 .sec-tete h2{margin:0;font-size:clamp(1.35rem,1.6vw + 1rem,2.1rem);letter-spacing:-.025em;line-height:1.15}
 .sec-tete p{margin:0;color:var(--texte-2);font-size:.92rem}
 .sec-tete p strong{color:var(--texte)}
-@media (max-width:599px){.m-cache{display:none}}
 
 /* Barre de filtres : collante seulement pendant la section offres */
 .barre-filtres{position:sticky;top:0;z-index:20;background:var(--fond);padding-top:env(safe-area-inset-top,0px)}
@@ -511,17 +486,11 @@ h1,h2,h3{text-wrap:balance}
 .tel-code{display:flex;justify-content:center;min-height:2.6rem;align-items:center;font-family:var(--chiffres);font-weight:700;font-size:2.15rem;letter-spacing:.02em;line-height:1;white-space:nowrap}
 .tel-code span{display:inline-block;transition:transform .2s var(--sortie)}
 .tel-pave{display:grid;grid-template-columns:repeat(3,44px);gap:8px 14px;justify-content:center;font-family:var(--chiffres);font-weight:700;font-size:1.15rem;margin-top:.25rem}
-.tel-pave span{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--fond-2)}
+.tel-pave span{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--fond-2);transition:transform .14s ease,background-color .14s ease}
+.tel-pave span.enfonce{transform:scale(.86);background:#D8CFCA}
 .tel-appel{position:relative;width:52px;height:52px;border-radius:50%;background:#16A34A;display:grid;place-items:center;color:#fff}
 .tel-appel svg{width:24px;height:24px}
 .tel-appel::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid #16A34A;opacity:0;pointer-events:none}
-@media (max-width:799px){
-  .tel-zone{width:100%}
-  .tel{border-radius:26px;padding:8px}
-  .tel-ecran{grid-template-columns:1fr auto;grid-template-areas:"leg appel" "code appel";align-items:center;justify-items:start;border-radius:20px;padding:.55rem .6rem .6rem 1.1rem;gap:.1rem .75rem}
-  .tel-leg{grid-area:leg}.tel-code{grid-area:code;justify-content:flex-start;font-size:2rem}.tel-appel{grid-area:appel}
-  .tel-pave{display:none}
-}
 
 /* ---------- Bande catalogue ---------- */
 .cata .wrap{padding-block:clamp(2rem,5vw,4rem)}
@@ -636,6 +605,9 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 @keyframes fantome{0%{opacity:0;scale:.9;animation-timing-function:cubic-bezier(.55,0,.9,.45)}80%{opacity:.13;scale:1}to{opacity:0;scale:1.03}}
 @keyframes tremble{0%{translate:-1.5px .5px}20%{translate:1.5px -.5px}40%{translate:-1.2px 0}60%{translate:1px .5px}80%{translate:-.5px 0}to{translate:0 0}}
 @keyframes fente{0%,30%{opacity:1}to{opacity:0}}
+/* la frontière du Sénégal se trace, tient, puis s'efface quand la pièce part ; la pièce bombe puis s'envole */
+@keyframes frontiere{0%{opacity:1;stroke-dashoffset:1;animation-timing-function:cubic-bezier(.4,0,.2,1)}40%{stroke-dashoffset:0}80%{opacity:1;stroke-dashoffset:0}to{opacity:0;stroke-dashoffset:0}}
+@keyframes envol{0%{transform:none;animation-timing-function:cubic-bezier(.3,0,.6,1)}14%{transform:scale(1.06);animation-timing-function:cubic-bezier(.55,0,.9,.45)}70%{opacity:1}to{transform:translate(-34%,175%) rotate(-40deg) scale(.62);opacity:0}}
 @keyframes ouvreX{0%{transform:rotateX(0deg);animation-timing-function:cubic-bezier(.5,0,.9,.5)}12%{transform:rotateX(var(--a0));animation-timing-function:cubic-bezier(.3,.7,.4,1)}45%{transform:rotateX(var(--a1));animation-timing-function:cubic-bezier(.4,0,.6,1)}70%{transform:rotateX(var(--a2));animation-timing-function:cubic-bezier(.4,0,.6,1)}to{transform:rotateX(var(--a3))}}
 @keyframes ouvreY{0%{transform:rotateY(0deg);animation-timing-function:cubic-bezier(.5,0,.9,.5)}12%{transform:rotateY(var(--a0));animation-timing-function:cubic-bezier(.3,.7,.4,1)}45%{transform:rotateY(var(--a1));animation-timing-function:cubic-bezier(.4,0,.6,1)}70%{transform:rotateY(var(--a2));animation-timing-function:cubic-bezier(.4,0,.6,1)}to{transform:rotateY(var(--a3))}}
 @keyframes ombrer{0%,12%{opacity:0}45%,to{opacity:var(--sh)}}
@@ -658,13 +630,15 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 .anim .hero.guette:not(.go):not(.fini) :is(.coeur:not(:focus-within),.papier,.debris){animation:none;opacity:0}   /* intro en attente */
 .anim .hero:not(.go):not(.fini) .coeur:focus-within{animation:none}
 .anim .hero.en-fete{z-index:21}               /* le temps des confettis : ils passent sur l'en-tête et la barre de filtres (z 20) */
-.anim .hero.go:not(.fini) :is(.trou,.cadre,.fantome,.bout){display:block}
-.anim .hero.go:not(.fini) .slot{animation:tremble 180ms linear calc(var(--tc) - 120ms)}
-.anim .hero.go:not(.fini) .trou{animation:trou var(--dt) linear var(--tc)}
+.anim .hero.go:not(.fini) :is(.trou,.cadre,.fantome,.bout,.piece){display:block}
+.anim .hero.go:not(.fini) .slot{animation:tremble 180ms linear calc(var(--tv0) - 180ms)}
+.anim .hero.go:not(.fini) .trou{animation:trou var(--dt) linear var(--tv0)}
 .anim .hero.go:not(.fini) .cadre{animation:tenir calc(var(--tz) + 55ms) linear}
 .anim .hero.go:not(.fini) .fantome{animation:fantome var(--dg) linear var(--ta)}
 .anim .hero.go:not(.fini) .fentes path{animation:fente var(--df) linear calc(var(--tc) + var(--o))}
-.anim .hero.go:not(.fini) .pan{opacity:0;animation:tenir 1ms linear var(--tc) forwards,ouvreX calc(var(--dp) * var(--m)) linear calc(var(--tc) + var(--o)) both}
+.anim .hero.go:not(.fini) .pan{opacity:0;animation:tenir 1ms linear var(--tv0) forwards,ouvreX calc(var(--dp) * var(--m)) linear calc(var(--tc) + var(--o)) both}
+.anim .hero.go:not(.fini) .piece{animation:envol var(--dv) linear var(--tv0) both}
+.anim .hero.go:not(.fini) .frontiere path{animation:frontiere var(--dsn) linear var(--tsn) both}
 .anim .hero.go:not(.fini) :is(.pg,.pd){animation-name:tenir,ouvreY}
 .anim .hero.go:not(.fini) .ton{animation:ombrer calc(var(--dp) * var(--m)) linear calc(var(--tc) + var(--o)) both}
 .anim .hero.go:not(.fini) .vedette{animation:jaillit var(--dk) linear var(--tk) backwards}
@@ -772,45 +746,35 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
       <div class="scene">
         <!-- le JS insère ici <canvas class="fete"> le temps des confettis (moins de 5 s) -->
         <div class="debris" aria-hidden="true">
-          <svg class="eclat c-r" style="--x:-109;--y:-38;--xm:91;--ym:-182;--r:200;--t:12;--tp:1.40s"><use href="#k1"/></svg>
+          <svg class="eclat c-r" style="--x:-109;--y:-38;--xm:89;--ym:-182;--r:200;--t:12;--tp:1.40s"><use href="#k1"/></svg>
           <svg class="eclat c-j" style="--x:-150;--y:60;--xm:88;--ym:-262;--r:0;--t:8;--tp:1.45s"><use href="#k3"/></svg>
           <svg class="eclat c-n" style="--x:-110;--y:-60;--xm:91;--ym:-87;--r:45;--t:9;--tp:1.50s"><use href="#k2"/></svg>
           <svg class="eclat c-r" style="--x:-60;--y:90;--xm:91;--ym:-120;--r:160;--t:10;--tp:1.55s"><use href="#k4"/></svg>
-          <svg class="eclat c-j" style="--x:-20;--y:-80;--xm:65;--ym:-282;--r:30;--t:11;--tp:1.60s"><use href="#plus"/></svg>
-          <svg class="eclat c-j" style="--x:40;--y:-90;--xm:-91;--ym:-64;--r:-120;--t:11;--tp:1.65s"><use href="#k1"/></svg>
-          <svg class="eclat c-r" style="--x:109;--y:-75;--xm:90;--ym:-52;--r:20;--t:14;--tp:1.70s"><use href="#k5"/></svg>
+          <svg class="eclat c-j" style="--x:-20;--y:-80;--xm:66;--ym:-327;--r:30;--t:11;--tp:1.60s"><use href="#plus"/></svg>
+          <svg class="eclat c-j" style="--x:40;--y:-90;--xm:-89;--ym:-64;--r:-120;--t:11;--tp:1.65s"><use href="#k1"/></svg>
+          <svg class="eclat c-r" style="--x:109;--y:-75;--xm:88;--ym:-52;--r:20;--t:14;--tp:1.70s"><use href="#k5"/></svg>
           <svg class="eclat c-r" style="--x:110;--y:-28;--xm:91;--ym:-15;--r:300;--t:9;--tp:1.75s"><use href="#k2"/></svg>
-          <svg class="eclat c-n" style="--x:110;--y:59;--xm:93;--ym:40;--r:0;--t:7;--tp:1.80s"><use href="#k3"/></svg>
+          <svg class="eclat c-n" style="--x:110;--y:59;--xm:91;--ym:40;--r:0;--t:7;--tp:1.80s"><use href="#k3"/></svg>
           <svg class="eclat c-r" style="--x:109;--y:104;--xm:80;--ym:74;--r:-220;--t:12;--tp:1.85s"><use href="#k1"/></svg>
           <svg class="eclat c-j" style="--x:90;--y:120;--xm:92;--ym:108;--r:90;--t:9;--tp:1.90s"><use href="#k4"/></svg>
           <svg class="eclat c-r" style="--x:20;--y:129;--xm:55;--ym:118;--r:-60;--t:8;--tp:1.95s"><use href="#k2"/></svg>
           <svg class="eclat c-j" style="--x:-40;--y:110;--xm:-88;--ym:74;--r:-30;--t:13;--tp:2.00s"><use href="#k5"/></svg>
-          <svg class="eclat c-n" style="--x:-120;--y:128;--xm:-91;--ym:20;--r:140;--t:10;--tp:2.05s"><use href="#k1"/></svg>
+          <svg class="eclat c-n" style="--x:-120;--y:128;--xm:-89;--ym:20;--r:140;--t:10;--tp:2.05s"><use href="#k1"/></svg>
           <svg class="eclat c-r" style="--x:-190;--y:100;--xm:-91;--ym:-27;--r:0;--t:9;--tp:2.10s"><use href="#k3"/></svg>
           <svg class="eclat c-r" style="--x:-315;--y:12;--xm:79;--ym:129;--r:-15;--t:12;--tp:2.15s"><use href="#plus"/></svg>
-          <svg class="eclat c-j o" style="--x:-179;--y:-101;--r:70;--t:8;--tp:2.20s"><use href="#k2"/></svg>
-          <svg class="eclat c-r o" style="--x:-90;--y:20;--r:0;--t:6;--tp:2.25s"><use href="#k3"/></svg>
-          <svg class="eclat c-j o" style="--x:65;--y:129;--r:260;--t:10;--tp:2.30s"><use href="#k1"/></svg>
-          <svg class="eclat c-n o" style="--x:110;--y:-50;--r:10;--t:9;--tp:2.35s"><use href="#plus"/></svg>
-          <svg class="eclat c-j o" style="--x:110;--y:37;--r:0;--t:7;--tp:2.40s"><use href="#k3"/></svg>
-          <svg class="eclat c-n o" style="--x:-114;--y:26;--r:200;--t:8;--tp:2.45s"><use href="#k4"/></svg>
-          <svg class="eclat c-r o" style="--x:60;--y:-85;--r:20;--t:7;--tp:2.50s"><use href="#k2"/></svg>
-          <svg class="eclat c-n o" style="--x:109;--y:127;--r:40;--t:12;--tp:2.55s"><use href="#k5"/></svg>
+          <svg class="eclat c-j o" style="--x:-179;--y:-101;--xm:-90;--ym:-101;--r:70;--t:8;--tp:2.20s"><use href="#k2"/></svg>
+          <svg class="eclat c-r o" style="--x:-90;--y:20;--xm:-77;--ym:41;--r:0;--t:6;--tp:2.25s"><use href="#k3"/></svg>
+          <svg class="eclat c-j o" style="--x:65;--y:129;--xm:65;--ym:144;--r:260;--t:10;--tp:2.30s"><use href="#k1"/></svg>
+          <svg class="eclat c-n o" style="--x:110;--y:-50;--xm:77;--ym:-28;--r:10;--t:9;--tp:2.35s"><use href="#plus"/></svg>
+          <svg class="eclat c-j o" style="--x:110;--y:37;--xm:80;--ym:15;--r:0;--t:7;--tp:2.40s"><use href="#k3"/></svg>
+          <svg class="eclat c-n o" style="--x:-114;--y:26;--xm:-78;--ym:-3;--r:200;--t:8;--tp:2.45s"><use href="#k4"/></svg>
+          <svg class="eclat c-r o" style="--x:60;--y:-85;--xm:60;--ym:-85;--r:20;--t:7;--tp:2.50s"><use href="#k2"/></svg>
+          <svg class="eclat c-n o" style="--x:109;--y:127;--xm:89;--ym:158;--r:40;--t:12;--tp:2.55s"><use href="#k5"/></svg>
         </div>
         <div class="slot">
           <div class="trou" aria-hidden="true"></div>
           <div class="coeur"><i class="pouls" aria-hidden="true"></i><!-- gen:vedette --><a class="vedette" href="#pronet-3go" aria-label="Exemple : ProNET 3 Go, 2,5 Go avant, 3 Go maintenant, toujours 975 francs. Couverture du réseau 4G+ sur plus de 98 % du territoire sénégalais"><span class="v-tete"><span><b>ProNET 3 Go</b> · 7 jours</span><span class="v-prix">975 F · même prix</span></span><span class="v-gain">+0,5 Go</span><span class="v-jauge" style="--r:0.833"><span class="v-avant">2,5 Go</span><span class="j-barre"><span class="j-gain"></span></span><span class="v-apres">3 Go</span></span><span class="v-reseau" title="Couverture du réseau 4G+ sur plus de 98 % du territoire sénégalais"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="10" width="2.6" height="4.5" rx=".6"/><rect x="5" y="7" width="2.6" height="7.5" rx=".6"/><rect x="9" y="4" width="2.6" height="10.5" rx=".6"/><rect x="13" y="1" width="2.6" height="13.5" rx=".6"/></svg><b>4G+</b><span>Réseau sur plus de 98 % du Sénégal</span></span></a><!-- /gen:vedette --></div>
-          <div class="cadre" aria-hidden="true"></div>
-          <div class="papier" aria-hidden="true">
-            <div class="pan pb1"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
-            <div class="pan pb2"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
-            <div class="pan pg"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
-            <div class="pan pd"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
-            <div class="pan ph2"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
-            <div class="pan ph1"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
-            <svg class="fentes m" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><path class="c1"/><path class="c2"/><path class="c3"/></svg>
-            <svg class="fentes d" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><path class="c1"/><path class="c2"/><path class="c3"/></svg>
-          </div>
+          <!-- gen:papier --><div class="papier" aria-hidden="true" style="--sn:polygon(18.6% 45%,22.3% 42.3%,25.3% 35.9%,28.8% 25.4%,29.5% 17.9%,30.4% 16.7%,31.3% 11.5%,32.9% 10.6%,33.7% 11.8%,37.6% 12%,39.7% 10.1%,40.2% 10.7%,43.2% 10.1%,43.4% 8.5%,44.1% 9.1%,44.7% 8%,45.4% 9%,50.5% 8.6%,54.9% 14.8%,55% 16.8%,56.3% 18.9%,57.4% 17.6%,58% 19.2%,59.9% 18.3%,59.7% 19.4%,60.4% 19.3%,61.6% 22.6%,62.4% 28.5%,63.7% 29%,64% 31%,65.2% 30.6%,65.7% 33.4%,66.6% 35%,66% 35.6%,67% 36.3%,67.7% 38.4%,68.7% 38.4%,70.1% 40.1%,70.5% 42.2%,73.2% 46.3%,73.3% 47.6%,72.6% 49.6%,72.8% 52.1%,73.9% 52.7%,74.7% 54.8%,75.1% 56.8%,74.8% 59.8%,75.5% 61.6%,75.2% 63.7%,74% 65.2%,76.1% 69.8%,76.1% 71.6%,76.8% 72.8%,77.7% 70.9%,79% 71.8%,79.8% 76.6%,80.6% 77.3%,80.8% 79.5%,81.3% 79.3%,80.5% 87.4%,81.4% 88.7%,81.3% 90.1%,74% 90.1%,71.4% 92%,70.3% 90.5%,69% 90.9%,68.4% 89.7%,67.2% 89.5%,65.7% 87.6%,65% 88.9%,64.3% 88.8%,63.9% 85.6%,42.5% 84.8%,37.6% 89.4%,32% 89.1%,30.1% 90.9%,26.9% 91.5%,26.1% 88.4%,28.4% 85.7%,28.8% 87%,29.1% 86.4%,30.5% 87.3%,31.1% 86.4%,32.3% 86.8%,34% 85.7%,35.9% 87.2%,37% 86.5%,37.9% 87.6%,39.3% 85.7%,39% 82.9%,40.3% 82.5%,40.5% 81.8%,38.9% 82.6%,38.9% 85.4%,37.9% 87.1%,36.6% 85.9%,35.2% 86.3%,34.1% 83.9%,33.5% 85.6%,31% 86.2%,30.5% 87%,29.3% 85.8%,29.2% 84.3%,29.1% 85.9%,28.5% 84.6%,27.8% 85%,28.2% 82.6%,27.7% 85.7%,26.6% 86.9%,26.4% 84.9%,27.2% 83.7%,26.2% 84.2%,26.4% 82.7%,26.1% 82.3%,27.1% 75.7%,36% 75.7%,36.1% 72.3%,41.6% 71.4%,43.1% 67.4%,47.2% 71.8%,48.7% 72%,50.9% 74.2%,52.6% 74.3%,55.7% 72.7%,56.5% 70.5%,54.8% 67.6%,50.9% 70%,49.1% 66.4%,48.3% 66%,47.1% 66.9%,45.7% 63.7%,43.7% 63%,41.7% 64.5%,41.4% 63.7%,40.5% 63.9%,39.2% 67.5%,28.6% 67.5%,28.4% 66.4%,29.1% 64.5%,28.2% 66.2%,27.9% 64.1%,28.6% 62.5%,29.3% 63.3%,29.3% 59.5%,28.7% 62.1%,27.1% 64%,26.7% 60.5%,28.4% 59.8%,28.8% 58.8%,28.3% 58.7%,30.6% 56.3%,29.5% 55.8%,29.6% 56.6%,27.6% 59.5%,26.9% 59.2%,27.6% 57.6%,26.9% 58.3%,26.4% 62.6%,26.3% 58.4%,24.6% 53.8%,24.5% 52.1%,23.4% 50.6%,21.8% 46.3%,19.8% 45.4%,19.6% 47%);--hors:polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,18.6% 45%,22.3% 42.3%,25.3% 35.9%,28.8% 25.4%,29.5% 17.9%,30.4% 16.7%,31.3% 11.5%,32.9% 10.6%,33.7% 11.8%,37.6% 12%,39.7% 10.1%,40.2% 10.7%,43.2% 10.1%,43.4% 8.5%,44.1% 9.1%,44.7% 8%,45.4% 9%,50.5% 8.6%,54.9% 14.8%,55% 16.8%,56.3% 18.9%,57.4% 17.6%,58% 19.2%,59.9% 18.3%,59.7% 19.4%,60.4% 19.3%,61.6% 22.6%,62.4% 28.5%,63.7% 29%,64% 31%,65.2% 30.6%,65.7% 33.4%,66.6% 35%,66% 35.6%,67% 36.3%,67.7% 38.4%,68.7% 38.4%,70.1% 40.1%,70.5% 42.2%,73.2% 46.3%,73.3% 47.6%,72.6% 49.6%,72.8% 52.1%,73.9% 52.7%,74.7% 54.8%,75.1% 56.8%,74.8% 59.8%,75.5% 61.6%,75.2% 63.7%,74% 65.2%,76.1% 69.8%,76.1% 71.6%,76.8% 72.8%,77.7% 70.9%,79% 71.8%,79.8% 76.6%,80.6% 77.3%,80.8% 79.5%,81.3% 79.3%,80.5% 87.4%,81.4% 88.7%,81.3% 90.1%,74% 90.1%,71.4% 92%,70.3% 90.5%,69% 90.9%,68.4% 89.7%,67.2% 89.5%,65.7% 87.6%,65% 88.9%,64.3% 88.8%,63.9% 85.6%,42.5% 84.8%,37.6% 89.4%,32% 89.1%,30.1% 90.9%,26.9% 91.5%,26.1% 88.4%,28.4% 85.7%,28.8% 87%,29.1% 86.4%,30.5% 87.3%,31.1% 86.4%,32.3% 86.8%,34% 85.7%,35.9% 87.2%,37% 86.5%,37.9% 87.6%,39.3% 85.7%,39% 82.9%,40.3% 82.5%,40.5% 81.8%,38.9% 82.6%,38.9% 85.4%,37.9% 87.1%,36.6% 85.9%,35.2% 86.3%,34.1% 83.9%,33.5% 85.6%,31% 86.2%,30.5% 87%,29.3% 85.8%,29.2% 84.3%,29.1% 85.9%,28.5% 84.6%,27.8% 85%,28.2% 82.6%,27.7% 85.7%,26.6% 86.9%,26.4% 84.9%,27.2% 83.7%,26.2% 84.2%,26.4% 82.7%,26.1% 82.3%,27.1% 75.7%,36% 75.7%,36.1% 72.3%,41.6% 71.4%,43.1% 67.4%,47.2% 71.8%,48.7% 72%,50.9% 74.2%,52.6% 74.3%,55.7% 72.7%,56.5% 70.5%,54.8% 67.6%,50.9% 70%,49.1% 66.4%,48.3% 66%,47.1% 66.9%,45.7% 63.7%,43.7% 63%,41.7% 64.5%,41.4% 63.7%,40.5% 63.9%,39.2% 67.5%,28.6% 67.5%,28.4% 66.4%,29.1% 64.5%,28.2% 66.2%,27.9% 64.1%,28.6% 62.5%,29.3% 63.3%,29.3% 59.5%,28.7% 62.1%,27.1% 64%,26.7% 60.5%,28.4% 59.8%,28.8% 58.8%,28.3% 58.7%,30.6% 56.3%,29.5% 55.8%,29.6% 56.6%,27.6% 59.5%,26.9% 59.2%,27.6% 57.6%,26.9% 58.3%,26.4% 62.6%,26.3% 58.4%,24.6% 53.8%,24.5% 52.1%,23.4% 50.6%,21.8% 46.3%,19.8% 45.4%,19.6% 47%,18.6% 45%)"><i class="cadre"></i><div class="pan pb1"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div><div class="pan pb2"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div><div class="pan pg"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div><div class="pan pd"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div><div class="pan ph2"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div><div class="pan ph1"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div><i class="piece"><i class="face"></i><i class="ton"></i></i><svg class="fentes" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><defs><clipPath id="hors-sn"><path clip-rule="evenodd" d="M0 0H100V100H0ZM18.6 45L22.3 42.3L25.3 35.9L28.8 25.4L29.5 17.9L30.4 16.7L31.3 11.5L32.9 10.6L33.7 11.8L37.6 12L39.7 10.1L40.2 10.7L43.2 10.1L43.4 8.5L44.1 9.1L44.7 8L45.4 9L50.5 8.6L54.9 14.8L55 16.8L56.3 18.9L57.4 17.6L58 19.2L59.9 18.3L59.7 19.4L60.4 19.3L61.6 22.6L62.4 28.5L63.7 29L64 31L65.2 30.6L65.7 33.4L66.6 35L66 35.6L67 36.3L67.7 38.4L68.7 38.4L70.1 40.1L70.5 42.2L73.2 46.3L73.3 47.6L72.6 49.6L72.8 52.1L73.9 52.7L74.7 54.8L75.1 56.8L74.8 59.8L75.5 61.6L75.2 63.7L74 65.2L76.1 69.8L76.1 71.6L76.8 72.8L77.7 70.9L79 71.8L79.8 76.6L80.6 77.3L80.8 79.5L81.3 79.3L80.5 87.4L81.4 88.7L81.3 90.1L74 90.1L71.4 92L70.3 90.5L69 90.9L68.4 89.7L67.2 89.5L65.7 87.6L65 88.9L64.3 88.8L63.9 85.6L42.5 84.8L37.6 89.4L32 89.1L30.1 90.9L26.9 91.5L26.1 88.4L28.4 85.7L28.8 87L29.1 86.4L30.5 87.3L31.1 86.4L32.3 86.8L34 85.7L35.9 87.2L37 86.5L37.9 87.6L39.3 85.7L39 82.9L40.3 82.5L40.5 81.8L38.9 82.6L38.9 85.4L37.9 87.1L36.6 85.9L35.2 86.3L34.1 83.9L33.5 85.6L31 86.2L30.5 87L29.3 85.8L29.2 84.3L29.1 85.9L28.5 84.6L27.8 85L28.2 82.6L27.7 85.7L26.6 86.9L26.4 84.9L27.2 83.7L26.2 84.2L26.4 82.7L26.1 82.3L27.1 75.7L36 75.7L36.1 72.3L41.6 71.4L43.1 67.4L47.2 71.8L48.7 72L50.9 74.2L52.6 74.3L55.7 72.7L56.5 70.5L54.8 67.6L50.9 70L49.1 66.4L48.3 66L47.1 66.9L45.7 63.7L43.7 63L41.7 64.5L41.4 63.7L40.5 63.9L39.2 67.5L28.6 67.5L28.4 66.4L29.1 64.5L28.2 66.2L27.9 64.1L28.6 62.5L29.3 63.3L29.3 59.5L28.7 62.1L27.1 64L26.7 60.5L28.4 59.8L28.8 58.8L28.3 58.7L30.6 56.3L29.5 55.8L29.6 56.6L27.6 59.5L26.9 59.2L27.6 57.6L26.9 58.3L26.4 62.6L26.3 58.4L24.6 53.8L24.5 52.1L23.4 50.6L21.8 46.3L19.8 45.4L19.6 47Z"/></clipPath></defs><g clip-path="url(#hors-sn)"><path class="c1"/><path class="c2"/><path class="c3"/></g></svg><svg class="frontiere" viewBox="0 0 182 100" preserveAspectRatio="none" focusable="false"><path pathLength="1" d="M33.9 45L40.6 42.3L46.1 35.9L52.5 25.4L53.7 17.9L55.2 16.7L56.9 11.5L59.9 10.6L61.4 11.8L68.5 12L72.3 10.1L73.2 10.7L78.6 10.1L78.9 8.5L80.2 9.1L81.4 8L82.6 9L91.9 8.6L99.9 14.8L100.1 16.8L102.5 18.9L104.5 17.6L105.6 19.2L109 18.3L108.7 19.4L109.9 19.3L112.2 22.6L113.6 28.5L116 29L116.5 31L118.7 30.6L119.5 33.4L121.2 35L120.1 35.6L122 36.3L123.3 38.4L125 38.4L127.6 40.1L128.3 42.2L133.2 46.3L133.5 47.6L132.2 49.6L132.4 52.1L134.4 52.7L135.9 54.8L136.6 56.8L136.1 59.8L137.4 61.6L137 63.7L134.7 65.2L138.6 69.8L138.5 71.6L139.7 72.8L141.4 70.9L143.7 71.8L145.2 76.6L146.8 77.3L147 79.5L147.9 79.3L146.4 87.4L148.1 88.7L147.9 90.1L134.6 90.1L129.9 92L127.9 90.5L125.5 90.9L124.5 89.7L122.2 89.5L119.6 87.6L118.4 88.9L117.1 88.8L116.3 85.6L77.3 84.8L68.4 89.4L58.3 89.1L54.7 90.9L48.9 91.5L47.5 88.4L51.6 85.7L52.5 87L53 86.4L55.5 87.3L56.6 86.4L58.8 86.8L61.8 85.7L65.4 87.2L67.4 86.5L69 87.6L71.5 85.7L71 82.9L73.4 82.5L73.7 81.8L70.7 82.6L70.9 85.4L69 87.1L66.7 85.9L64 86.3L62 83.9L61 85.6L56.4 86.2L55.5 87L53.3 85.8L53.1 84.3L53 85.9L51.8 84.6L50.6 85L51.3 82.6L50.4 85.7L48.4 86.9L48 84.9L49.4 83.7L47.6 84.2L48.1 82.7L47.5 82.3L49.3 75.7L65.5 75.7L65.7 72.3L75.8 71.4L78.4 67.4L85.9 71.8L88.7 72L92.6 74.2L95.7 74.3L101.3 72.7L102.8 70.5L99.7 67.6L92.7 70L89.4 66.4L87.9 66L85.7 66.9L83.2 63.7L79.5 63L76 64.5L75.3 63.7L73.6 63.9L71.3 67.5L52 67.5L51.7 66.4L53 64.5L51.3 66.2L50.7 64.1L52.1 62.5L53.4 63.3L53.4 59.5L52.2 62.1L49.4 64L48.5 60.5L51.7 59.8L52.3 58.8L51.4 58.7L55.6 56.3L53.7 55.8L53.8 56.6L50.3 59.5L49 59.2L50.3 57.6L48.9 58.3L48 62.6L47.8 58.4L44.9 53.8L44.7 52.1L42.5 50.6L39.7 46.3L36.1 45.4L35.7 47Z"/></svg></div><!-- /gen:papier -->
           <i class="fantome" aria-hidden="true"></i>
           <i class="bout b1" aria-hidden="true"><i></i></i>
           <i class="bout b2" aria-hidden="true"><i></i></i>
@@ -1000,6 +964,9 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
      suivante — seulement tant qu'il est à l'écran ; il repart de l'offre vedette à chaque retour. */
   var tel = document.querySelector(".tel");
   var leg = tel ? tel.querySelector(".tel-leg") : null;
+  var touches = {};      /* clavier : la touche du caractère tapé s'enfonce */
+  if (tel) { Array.prototype.forEach.call(tel.querySelectorAll(".tel-pave span"), function(k){ touches[k.textContent] = k; }); }
+  function enfoncer(c){ var k = touches[c]; if (!k) { return; } k.classList.add("enfonce"); setTimeout(function(){ k.classList.remove("enfonce"); }, 160); }
   var boite = tel ? tel.querySelector(".tel-code") : null;
   var appel = tel ? tel.querySelector(".tel-appel") : null;
   var D = window.PROMOBILE;
@@ -1043,7 +1010,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
         if (leg) { leg.classList.remove("sort"); }
         var i = 0;
         (function taper(){
-          if (i < chiffres.length) { chiffres[i++].classList.add("on"); attendre(160, g, taper); return; }
+          if (i < chiffres.length) { chiffres[i].classList.add("on"); enfoncer(chiffres[i++].textContent); attendre(160, g, taper); return; }
           if (appel) { appel.classList.remove("sonne"); void appel.offsetWidth; appel.classList.add("sonne"); }
           attendre(1700, g, function effacer(){
             var j = chiffres.length;

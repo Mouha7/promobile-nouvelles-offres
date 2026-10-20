@@ -26,6 +26,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from offres_data import RACINE, charger  # noqa: E402
+from build_dechirure import html_papier  # noqa: E402
 
 PAGE = RACINE / "index.html"
 NBSP = " "
@@ -461,6 +462,7 @@ def construire(d: dict, page: str) -> str:
         "h1": html_h1(d),
         "doss": html_doss(d),
         "vedette": html_vedette(d),
+        "papier": html_papier(),
         "filtres": html_filtres(d),
         "offres": "".join(html_carte(d, o) for o in d["offres"]),
         "code": html_code(d),
