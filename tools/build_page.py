@@ -170,12 +170,27 @@ def html_jauge(j: dict, classe: str = "jauge") -> str:
             f'<span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li>')
 
 
+def html_jauge_inclus(x: dict) -> str:
+    """Ligne qui ne change pas mais qu'on veut voir en barre (« jauge »: true) : barre pleine, grise (ce qu'on avait
+    déjà), mention « inclus » ; sans cela, l'information passerait inaperçue dans « Toujours inclus »."""
+    return (f'<li class="jauge egal" style="--r:1">'
+            f'<span class="j-lab">{e(x["label"])}</span>'
+            f'<span class="j-val"><b>{e(x["apres"])}</b><span class="j-inclus">inclus</span></span>'
+            f'<span class="j-barre" aria-hidden="true"><span class="j-gain"></span></span></li>')
+
+
 def html_carte(d: dict, o: dict) -> str:
     js = jauges(o)
     verifier_gain(o, js)
     duree(o)
     plus = f'<span class="gain-plus">{e(o["gainSecondaire"])}</span>' if o.get("gainSecondaire") else ""
-    fixes = [x for x in o["details"] if not x.get("change")]
+    suite, lignes = iter(js), []
+    for x in o["details"]:                          # dans l'ordre du fichier : jauges avant/après et lignes « jauge »
+        if x.get("change"):
+            lignes.append(html_jauge(next(suite)))
+        elif x.get("jauge"):
+            lignes.append(html_jauge_inclus(x))
+    fixes = [x for x in o["details"] if not x.get("change") and not x.get("jauge")]
     inclus = ""
     if fixes:
         items = f'<span class="sep" aria-hidden="true"> · </span>'.join(
@@ -188,7 +203,7 @@ def html_carte(d: dict, o: dict) -> str:
         f'<span class="duree">{HORLOGE}{e(o["validiteLongue"])}</span></div>'
         f'<div class="gain-ligne"><p class="gain"><span class="gain-val">{e(o["gain"])}</span>{plus}</p>'
         f'<p class="prix"><span class="sr">Prix : </span>{fcfa(o["prix"])}<small>F</small></p></div>'
-        f'<ul class="jauges">{"".join(html_jauge(j) for j in js)}</ul>'
+        f'<ul class="jauges">{"".join(lignes)}</ul>'
         f'{inclus}'
         f'<a class="activer" href="{tel(o["code"])}" data-code="{e(o["code"])}" aria-label="Activer {e(o["nom"])} '
         f'avec {e(o["code"])}, {e(fcfa(o["prix"]))} francs, {e(o["validiteLongue"])}">'

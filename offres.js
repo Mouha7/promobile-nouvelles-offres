@@ -74,7 +74,7 @@ var PROMOBILE = {
       "gainDetail": "2\u00a0000 F de bonus au lieu de 1\u00a0000 F",
       "details": [
         { "label": "Bonus appels", "avant": "1\u00a0000 F", "apres": "2\u00a0000 F tous réseaux", "change": true },
-        { "label": "Internet", "avant": "175 Mo", "apres": "175 Mo", "change": false }
+        { "label": "Internet", "avant": "175 Mo", "apres": "175 Mo", "change": false, "jauge": true }
       ]
     },
     {

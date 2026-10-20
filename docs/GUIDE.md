@@ -46,6 +46,7 @@ Champs d'une offre :
 | `gainSecondaire` | facultatif, pastille jaune à côté du gain              | `"+50 SMS"`                |
 | `gainDetail`     | phrase pour le référencement                           | `"3 Go au lieu de 2,5 Go"` |
 | `details`        | lignes avant → après ; `change: true` = jauge rouge    | voir le fichier            |
+| `jauge`          | facultatif, sur une ligne qui ne change pas : la montre quand même en barre (pleine, « inclus ») au lieu de « Toujours inclus » | `true` |
 
 Les lignes `change: true` doivent avoir des valeurs lisibles (`"2,5 Go"`, `"1 000 F"`, `"80 min"`,
 `"50"`), la même unité avant et après, et une valeur après plus grande : c'est ce qui dessine la
