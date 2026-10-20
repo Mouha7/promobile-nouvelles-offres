@@ -247,6 +247,7 @@ h1,h2,h3{text-wrap:balance}
 /* le coup de feutre : plus grand que le slogan, de travers, deux passages ; z-index négatif dans .hero-texte, il passe
    SOUS le bas du titre et le haut du paragraphe, comme un vrai surligneur qui déborde */
 .doss::before{content:"";position:absolute;z-index:-1;left:-.32em;right:-.6em;top:-.52em;bottom:-.46em;rotate:-3.5deg;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 90' preserveAspectRatio='none'%3E%3Cpath fill='%23FFD21F' opacity='.95' d='M9 33C62 25 152 22 291 15c5 13 7 34 1 47-93 7-183 9-279 16-7-12-9-31-4-45z'/%3E%3Cpath fill='%23FFCF00' opacity='.55' d='M2 47c90-7 190-12 295-17l1 22C192 58 94 63 4 70c-4-7-4-16-2-23z'/%3E%3Cpath fill='none' stroke='%23fff' stroke-opacity='.3' stroke-width='2' d='M22 41c88-6 176-11 262-15'/%3E%3Cpath fill='none' stroke='%23E8B800' stroke-opacity='.35' stroke-width='1.6' d='M16 68c92-5 182-9 270-12'/%3E%3C/svg%3E") center/100% 100% no-repeat;transform-origin:0 50%;pointer-events:none}
+.doss::after{content:"";position:absolute;z-index:-2;left:-.12em;right:-.3em;top:.32em;bottom:-.78em;rotate:-1.2deg;opacity:.55;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 60' preserveAspectRatio='none'%3E%3Cpath fill='%23FFE36B' d='M6 22C70 14 170 12 294 10c4 10 5 26 0 36-96 4-190 6-284 9-6-9-8-23-4-33z'/%3E%3Cpath fill='none' stroke='%23fff' stroke-opacity='.35' stroke-width='2' d='M20 30c90-6 180-9 262-11'/%3E%3C/svg%3E") center/100% 100% no-repeat;transform-origin:0 50%;pointer-events:none}   /* 2e passe, légère, en dessous */
 .doss em{font-style:normal;color:var(--rouge)}
 .doss span[lang]::after{content:"";position:absolute;right:-.36em;top:.12em;width:.4em;height:.8em;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 24' fill='none' stroke='%23E30613' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M2 7 9 2.5M2.5 12H11M2 17l7 4.5'/%3E%3C/svg%3E") center/contain no-repeat}
 .sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
@@ -645,8 +646,8 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 @keyframes pose{from{transform:translate(0,-70px) rotate(-120deg) scale(.5)}}
 @keyframes anneau{from{transform:scale(1);opacity:.75}to{transform:scale(1.9);opacity:0}}
 @keyframes sonne{0%,100%{transform:none}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
-@keyframes bat{0%{scale:1;animation-timing-function:cubic-bezier(.3,0,.5,1)}12%{scale:1.04;animation-timing-function:cubic-bezier(.4,0,.6,1)}22%{scale:1.004;animation-timing-function:cubic-bezier(.3,0,.5,1)}34%{scale:1.025;animation-timing-function:cubic-bezier(.4,0,.6,1)}55%,to{scale:1}}
-@keyframes pouls{0%,9%{opacity:0;scale:1}14%{opacity:.9;scale:1.005}62%,to{opacity:0;scale:var(--rx) var(--ry)}}
+@keyframes bat{0%{scale:1;animation-timing-function:cubic-bezier(.3,0,.5,1)}12%{scale:1.022;animation-timing-function:cubic-bezier(.4,0,.6,1)}22%{scale:1.002;animation-timing-function:cubic-bezier(.3,0,.5,1)}34%{scale:1.013;animation-timing-function:cubic-bezier(.4,0,.6,1)}55%,to{scale:1}}
+@keyframes pouls{0%,9%{opacity:0;scale:1}14%{opacity:.55;scale:1.004}62%,to{opacity:0;scale:var(--rx) var(--ry)}}
 
 /* avant .go (héros lu en plusieurs morceaux) : carte, papier et confettis posés cachés ; filet de sécurité CSS à 3 s */
 .anim .hero:not(.go):not(.fini) :is(.coeur,.papier,.debris){animation:attente 1ms 3s backwards}
@@ -679,13 +680,14 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 .anim .hero.go .v-apres{animation:surgit .5s var(--ressort) var(--ts) both}
 .anim .hero.go .v-gain{animation:surgit .6s var(--ressort) var(--tv) both;transform-origin:left bottom}
 .anim .doss::before{animation:surligne .65s cubic-bezier(.65,0,.35,1) .35s backwards}   /* le texte reste lisible */
+.anim .doss::after{animation:surligne .55s cubic-bezier(.65,0,.35,1) 1.05s backwards}   /* la passe légère, en dernier */
 .anim .doss span[lang]{animation:tampon .55s linear .95s,signe 5s ease-in-out 6s infinite;animation-play-state:running,var(--jeu,paused)}
 .anim .doss span[lang]::after{animation:jaillir .45s cubic-bezier(.2,.8,.3,1.4) 1.15s backwards;transform-origin:0 50%}
 
-/* Battement (classe .bat, posée par le JS après l'apparition du nouveau volume) : continu, à ~67 bpm, tant que le héros
+/* Battement (classe .bat, posée par le JS après l'apparition du nouveau volume) : continu, lent et doux (~38 bpm), tant que le héros
    est à l'écran (.actif) ; en pause sinon. Choix du client : la page reste vivante (pas de bouton pause). */
-.anim .hero.bat .coeur{animation:bat .9s infinite;animation-play-state:var(--jeu,paused)}
-.anim .hero.bat .pouls{animation:pouls .9s ease-out infinite;animation-play-state:var(--jeu,paused)}
+.anim .hero.bat .coeur{animation:bat 1.6s infinite;animation-play-state:var(--jeu,paused)}
+.anim .hero.bat .pouls{animation:pouls 1.6s ease-out infinite;animation-play-state:var(--jeu,paused)}
 .actif{--jeu:running}
 
 /* Confettis posés dans les sections : ils atterrissent à leur première apparition, puis flottent tant qu'ils sont à l'écran */
