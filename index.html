@@ -513,7 +513,8 @@ h1,h2,h3{text-wrap:balance}
 .cata-boite .btn{position:relative;z-index:1}
 
 /* ---------- Pied de page ---------- */
-footer{background:#0D1015;color:#fff}
+footer{position:relative;background:#0D1015;color:#fff}
+footer .wrap{position:relative;z-index:1}   /* devant les débris */
 footer .wrap{padding-block:2.4rem 1.6rem;display:grid;gap:1.6rem}
 .pied-haut{display:grid;gap:1.6rem}
 @media (min-width:760px){.pied-haut{grid-template-columns:1.2fr 1fr 1fr}}
@@ -827,14 +828,18 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 
   <section class="offres" id="offres" aria-labelledby="t-offres">
     <div class="derive" aria-hidden="true">
-      <span class="dd c-r" style="--t:12;--r:28;--mt:540px;--ml:calc(100% - 13px);--dt:300px;--dl:3%"><svg style="--fd:4.4s;--fdl:-1s;--fx:6px"><use href="#k1"/></svg></span>
-      <span class="dd c-j" style="--t:9;--r:0;--mt:1010px;--ml:3px;--dt:610px;--dl:calc(100% - 70px)"><svg style="--fd:3.6s;--fdl:-2s;--fx:-5px"><use href="#k3"/></svg></span>
-      <span class="dd c-n" style="--t:9;--r:65;--mt:1500px;--ml:calc(100% - 12px);--dt:880px;--dl:4%"><svg style="--fd:5s;--fdl:-0.4s;--fx:6px"><use href="#k2"/></svg></span>
-      <span class="dd c-r" style="--t:11;--r:-15;--mt:1980px;--ml:3px;--dt:450px;--dl:calc(50% - 5px)"><svg style="--fd:3.9s;--fdl:-2.6s;--fx:-4px"><use href="#plus"/></svg></span>
-      <span class="dd c-j o" style="--t:13;--r:110;--dt:1050px;--dl:calc(100% - 50px)"><svg style="--fd:4.6s;--fdl:-1.4s;--fx:7px"><use href="#k5"/></svg></span>
-      <span class="dd c-r o" style="--t:9;--r:40;--dt:180px;--dl:calc(100% - 90px)"><svg style="--fd:4.2s;--fdl:-0.8s;--fx:-6px"><use href="#k4"/></svg></span>
-      <span class="dd c-n o" style="--t:10;--r:-50;--dt:760px;--dl:2%"><svg style="--fd:5.2s;--fdl:-3s;--fx:5px"><use href="#k1"/></svg></span>
-      <span class="dd c-j o" style="--t:8;--r:20;--dt:1180px;--dl:1.5%"><svg style="--fd:4s;--fdl:-1.8s;--fx:-5px"><use href="#k2"/></svg></span>
+      <span class="dd c-r" style="--t:11;--r:65;--mt:8.1%;--ml:4px;--dt:6.9%;--dl:2%"><svg style="--fd:5.1s;--fdl:-0.8s;--fx:-5px"><use href="#k4"/></svg></span>
+      <span class="dd c-j" style="--t:8;--r:-45;--mt:15.0%;--ml:calc(100% - 10px);--dt:12.7%;--dl:calc(100% - 40px)"><svg style="--fd:4.5s;--fdl:-0.4s;--fx:4px"><use href="#k1"/></svg></span>
+      <span class="dd c-n" style="--t:13;--r:-15;--mt:22.2%;--ml:3px;--dt:19.9%;--dl:3%"><svg style="--fd:5.1s;--fdl:-0.4s;--fx:-4px"><use href="#k1"/></svg></span>
+      <span class="dd c-r" style="--t:13;--r:-60;--mt:31.9%;--ml:calc(100% - 16px);--dt:34.0%;--dl:calc(100% - 55px)"><svg style="--fd:4.8s;--fdl:-1.2s;--fx:5px"><use href="#k3"/></svg></span>
+      <span class="dd c-j" style="--t:9;--r:-35;--mt:38.6%;--ml:2px;--dt:40.8%;--dl:4%"><svg style="--fd:3.6s;--fdl:-2.0s;--fx:-5px"><use href="#k2"/></svg></span>
+      <span class="dd c-r" style="--t:13;--r:5;--mt:46.5%;--ml:calc(100% - 15px);--dt:47.4%;--dl:calc(100% - 90px)"><svg style="--fd:3.9s;--fdl:-1.2s;--fx:5px"><use href="#k5"/></svg></span>
+      <span class="dd c-r" style="--t:10;--r:-55;--mt:54.7%;--ml:4px;--dt:56.5%;--dl:6%"><svg style="--fd:5.1s;--fdl:-1.2s;--fx:-6px"><use href="#k5"/></svg></span>
+      <span class="dd c-j" style="--t:12;--r:-5;--mt:60.2%;--ml:calc(100% - 15px);--dt:57.5%;--dl:calc(100% - 70px)"><svg style="--fd:4.2s;--fdl:-1.2s;--fx:5px"><use href="#k1"/></svg></span>
+      <span class="dd c-n" style="--t:13;--r:115;--mt:69.3%;--ml:2px;--dt:67.5%;--dl:6%"><svg style="--fd:5.1s;--fdl:-0.8s;--fx:-6px"><use href="#k2"/></svg></span>
+      <span class="dd c-r" style="--t:8;--r:-5;--mt:74.6%;--ml:calc(100% - 12px);--dt:72.5%;--dl:calc(100% - 90px)"><svg style="--fd:5.1s;--fdl:-2.0s;--fx:4px"><use href="#k4"/></svg></span>
+      <span class="dd c-j" style="--t:9;--r:10;--mt:84.5%;--ml:4px;--dt:84.4%;--dl:4%"><svg style="--fd:4.8s;--fdl:-1.2s;--fx:-5px"><use href="#plus"/></svg></span>
+      <span class="dd c-r" style="--t:8;--r:25;--mt:91.9%;--ml:calc(100% - 10px);--dt:90.7%;--dl:calc(100% - 90px)"><svg style="--fd:4.2s;--fdl:-1.6s;--fx:4px"><use href="#plus"/></svg></span>
     </div>
     <div class="wrap sec-tete">
       <h2 id="t-offres">Les <span data-d="nb">8</span> offres améliorées</h2>
@@ -851,10 +856,12 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 
   <section class="comment" aria-labelledby="t-comment">
     <div class="derive" aria-hidden="true">
-      <span class="dd c-r" style="--t:11;--r:30;--mt:10px;--ml:calc(100% - 30px);--dt:40px;--dl:3%"><svg style="--fd:4.3s;--fdl:-1.2s;--fx:6px"><use href="#k1"/></svg></span>
-      <span class="dd c-j" style="--t:11;--r:0;--mt:470px;--ml:3px;--dt:330px;--dl:calc(100% - 40px)"><svg style="--fd:3.8s;--fdl:-2.2s;--fx:-5px"><use href="#plus"/></svg></span>
-      <span class="dd c-n o" style="--t:7;--r:0;--dt:30px;--dl:62%"><svg style="--fd:4.8s;--fdl:-0.6s;--fx:5px"><use href="#k3"/></svg></span>
-      <span class="dd c-r" style="--t:12;--r:-20;--mt:720px;--ml:calc(100% - 14px);--dt:420px;--dl:calc(100% - 30px)"><svg style="--fd:4.1s;--fdl:-1.6s;--fx:-6px"><use href="#k5"/></svg></span>
+      <span class="dd c-j" style="--t:10;--r:10;--mt:11.7%;--ml:calc(100% - 13px);--dt:10.7%;--dl:calc(100% - 70px)"><svg style="--fd:3.9s;--fdl:-1.2s;--fx:4px"><use href="#plus"/></svg></span>
+      <span class="dd c-r" style="--t:13;--r:115;--mt:28.3%;--ml:3px;--dt:30.0%;--dl:6%"><svg style="--fd:5.1s;--fdl:-0.8s;--fx:-4px"><use href="#plus"/></svg></span>
+      <span class="dd c-n" style="--t:13;--r:-50;--mt:42.4%;--ml:calc(100% - 15px);--dt:42.5%;--dl:calc(100% - 40px)"><svg style="--fd:5.1s;--fdl:-0.8s;--fx:5px"><use href="#k5"/></svg></span>
+      <span class="dd c-r" style="--t:13;--r:115;--mt:54.7%;--ml:3px;--dt:53.6%;--dl:6%"><svg style="--fd:4.5s;--fdl:-1.2s;--fx:-6px"><use href="#k5"/></svg></span>
+      <span class="dd c-j" style="--t:10;--r:-50;--mt:70.8%;--ml:calc(100% - 12px);--dt:71.1%;--dl:calc(100% - 40px)"><svg style="--fd:3.9s;--fdl:-1.6s;--fx:5px"><use href="#plus"/></svg></span>
+      <span class="dd c-r" style="--t:12;--r:60;--mt:86.3%;--ml:2px;--dt:83.6%;--dl:2%"><svg style="--fd:3.6s;--fdl:-0.8s;--fx:-5px"><use href="#k1"/></svg></span>
     </div>
     <div class="wrap comment-grille">
       <div>
@@ -881,9 +888,10 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 
   <section class="cata" aria-labelledby="t-cata">
     <div class="derive" aria-hidden="true">
-      <span class="dd c-j" style="--t:11;--r:-35;--mt:12px;--ml:80%;--dt:24px;--dl:6%"><svg style="--fd:4.4s;--fdl:-1s;--fx:6px"><use href="#k1"/></svg></span>
-      <span class="dd c-r" style="--t:8;--r:0;--mt:14px;--ml:10%;--dt:20px;--dl:70%"><svg style="--fd:3.9s;--fdl:-2s;--fx:-5px"><use href="#k3"/></svg></span>
-      <span class="dd c-n o" style="--t:9;--r:120;--dt:190px;--dl:calc(100% - 46px)"><svg style="--fd:4.7s;--fdl:-0.5s;--fx:5px"><use href="#k4"/></svg></span>
+      <span class="dd c-r" style="--t:9;--r:25;--mt:14.5%;--ml:4px;--dt:14.0%;--dl:3%"><svg style="--fd:3.9s;--fdl:-2.6s;--fx:-4px"><use href="#k1"/></svg></span>
+      <span class="dd c-j" style="--t:11;--r:85;--mt:40.2%;--ml:calc(100% - 13px);--dt:39.8%;--dl:calc(100% - 40px)"><svg style="--fd:3.9s;--fdl:-1.6s;--fx:4px"><use href="#k4"/></svg></span>
+      <span class="dd c-r" style="--t:12;--r:-15;--mt:59.7%;--ml:3px;--dt:60.0%;--dl:2%"><svg style="--fd:4.2s;--fdl:-0.4s;--fx:-6px"><use href="#plus"/></svg></span>
+      <span class="dd c-j" style="--t:9;--r:75;--mt:84.9%;--ml:calc(100% - 13px);--dt:85.5%;--dl:calc(100% - 90px)"><svg style="--fd:3.9s;--fdl:-2.6s;--fx:5px"><use href="#plus"/></svg></span>
     </div>
     <div class="wrap">
       <div class="cata-boite">
@@ -901,6 +909,12 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 </main>
 
 <footer>
+  <div class="derive" aria-hidden="true">
+      <span class="dd c-r" style="--t:10;--r:-25;--mt:17.4%;--ml:calc(100% - 14px);--dt:16.1%;--dl:calc(100% - 55px)"><svg style="--fd:3.9s;--fdl:-2.6s;--fx:6px"><use href="#k1"/></svg></span>
+      <span class="dd c-j" style="--t:10;--r:-35;--mt:38.9%;--ml:3px;--dt:37.2%;--dl:6%"><svg style="--fd:4.8s;--fdl:-0.8s;--fx:-6px"><use href="#plus"/></svg></span>
+      <span class="dd c-j" style="--t:12;--r:75;--mt:62.0%;--ml:calc(100% - 16px);--dt:59.8%;--dl:calc(100% - 40px)"><svg style="--fd:3.6s;--fdl:-1.6s;--fx:4px"><use href="#k3"/></svg></span>
+      <span class="dd c-r" style="--t:11;--r:45;--mt:79.6%;--ml:4px;--dt:79.7%;--dl:4%"><svg style="--fd:4.8s;--fdl:-0.4s;--fx:-6px"><use href="#k2"/></svg></span>
+  </div>
   <div class="wrap">
     <div class="pied-haut">
       <div>
@@ -1077,6 +1091,32 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
       if (el === tel) { telVisible = vis; telStop(); if (vis) { telStart(); } }
     });
   }
+  /* Débris des sections : position, côté, taille, forme, couleur et rythme tirés au hasard à chaque visite ; toujours dans
+     les marges (mobile : 16 px de chaque côté des cartes ; ordinateur : marges latérales), une tranche de hauteur chacun */
+  (function(){
+    var formes = ["k1", "k2", "k3", "k4", "k5", "plus"];
+    var h = function(a, b){ return a + Math.random() * (b - a); };
+    var un = function(l){ return l[Math.floor(Math.random() * l.length)]; };
+    $$(".derive").forEach(function(z){
+      var dd = Array.prototype.slice.call(z.querySelectorAll(".dd")), n = dd.length;
+      var couleurs = z.closest("footer") ? ["c-r", "c-j"] : ["c-r", "c-j", "c-n", "c-r", "c-j"];
+      dd.forEach(function(d, i){
+        var g = Math.random() < .5, taille = Math.round(h(7, 10)), haut = 4 + (i + h(.1, .9)) / n * 92, s = d.firstElementChild;
+        d.className = "dd " + un(couleurs);
+        d.style.setProperty("--t", taille);
+        d.style.setProperty("--r", Math.round(h(-90, 180)));
+        d.style.setProperty("--mt", haut.toFixed(1) + "%");
+        d.style.setProperty("--dt", (haut + h(-3, 3)).toFixed(1) + "%");
+        d.style.setProperty("--ml", g ? Math.round(h(1, 2)) + "px" : "calc(100% - " + (taille + Math.round(h(1, 2))) + "px)");   /* une fois incliné, reste dans 16 px */
+        d.style.setProperty("--dl", g ? h(1.5, 6.5).toFixed(1) + "%" : "calc(100% - " + Math.round(h(36, 100)) + "px)");
+        if (!s) { return; }
+        s.style.setProperty("--fx", (g ? -1 : 1) * Math.round(h(4, 7)) + "px");   /* flottement vers l'extérieur */
+        s.style.setProperty("--fd", h(3.6, 5.2).toFixed(1) + "s");
+        s.style.setProperty("--fdl", (-h(0, 2.6)).toFixed(1) + "s");
+        if (s.firstElementChild) { s.firstElementChild.setAttribute("href", "#" + un(formes)); }
+      });
+    });
+  })();
   var zones = new IntersectionObserver(suivre, { threshold: 0 });
   $$(".derive,.dd").forEach(function(el){ zones.observe(el); });
   if (tel) { zones.observe(tel); }
