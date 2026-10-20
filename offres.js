@@ -57,7 +57,7 @@ var PROMOBILE = {
   "familles": {
     "ProNET":  { "prefixe": "PRO'", "suffixe": "NET",  "libelle": "Offres Internet", "court": "Internet" },
     "ProMIX":  { "prefixe": "PRO'", "suffixe": "MIX",  "libelle": "Offres Mix", "court": "Appels + Internet" },
-    "ProMINI": { "prefixe": "PRO'", "suffixe": "MINI", "libelle": "Bonus & Internet", "court": "Bonus" }
+    "ProMINI": { "prefixe": "PRO'", "suffixe": "MINI", "libelle": "Bonus & Internet", "court": "Bonus + Internet" }
   },
 
   "offres": [
