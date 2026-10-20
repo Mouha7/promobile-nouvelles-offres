@@ -36,25 +36,66 @@
 <script defer data-domain="offres.promobile.sn" src="https://plausible.io/js/script.tagged-events.js"></script>
 -->
 
-<!-- Animations : seulement si le mouvement est autorisé et le navigateur assez récent (translate/rotate/scale, unités
-     de conteneur). Sans la classe « anim », tout s'affiche à l'état final, immobile. Ce script lance l'intro du héros
-     (classe .go) deux images après que le héros est entièrement lu. -->
+<!-- Animations : seulement si le mouvement est autorisé et le navigateur assez récent (translate/rotate/scale, clip-path).
+     Sans la classe « anim », tout s'affiche à l'état final, immobile. Ce script dessine aussi la déchirure du héros
+     (graine fixe) et lance l'intro (classe .go) deux images après que le héros est entièrement lu. -->
 <script>
 (function(d,h){
-  var A=false;
-  try{A=!!window.requestAnimationFrame&&matchMedia("(prefers-reduced-motion: no-preference)").matches&&"IntersectionObserver"in window
-        &&CSS.supports("translate","1px")&&CSS.supports("width","1cqw");}catch(e){}
-  if(!A){return;}
-  h.className+=" anim";
+  var A=false,C=false;
+  try{C=CSS.supports("clip-path","polygon(0 0,1px 0,0 1px)")&&!!window.requestAnimationFrame;}catch(e){}
+  try{A=C&&matchMedia("(prefers-reduced-motion: no-preference)").matches&&"IntersectionObserver"in window&&CSS.supports("translate","1px");}catch(e){}
+  if(A){h.className+=" anim";}
+  if(!C){return;}
+  /* Déchirure : fissures à deux échelles (dérive lente + grain, atténué près des extrémités), lambeaux qui pavent le trou */
+  function dechirure(pap){
+    var s=20261021;
+    function r(){s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}
+    function c(v){return Math.min(100,Math.max(0,v));}
+    function v(a){return a.slice().reverse();}
+    function f(a,b,k){
+      var ax=a[0]*k.W/100,ay=a[1]*k.H/100,dx=b[0]*k.W/100-ax,dy=b[1]*k.H/100-ay,L=Math.sqrt(dx*dx+dy*dy),
+          nx=-dy/L,ny=dx/L,w=L*(.03+.03*r()),p=r()*6.28,q=r()*6.28,o=[],u=0,t,e,g;
+      for(;;){
+        u+=2+5*r();if(u>=L-2){break;}t=u/L;g=Math.min(1,Math.min(u,L-u)/8);
+        e=Math.sin(Math.PI*t)*w*(.65*Math.sin(8*t+p)+.35*Math.sin(19*t+q))
+          +g*((r()*2-1)*(1+1.5*r())+(r()<.1?(r()<.5?-1:1)*(3+2*r()):0));
+        o.push([c((ax+dx*t+nx*e)/k.W*100),c((ay+dy*t+ny*e)/k.H*100)]);
+      }
+      return o;
+    }
+    function poly(a){return "polygon("+a.map(function(p){return p[0].toFixed(1)+"% "+p[1].toFixed(1)+"%";}).join(",")+")";}
+    function ch(a){return "M"+a.map(function(p){return p[0].toFixed(1)+" "+p[1].toFixed(1);}).join("L");}
+    [["m",{W:308,H:72,P:[43,56],L:[8.5,47],R:[91,52],F:[67,50],T:[76,0]}],
+     ["d",{W:446,H:226,P:[44,54],L:[13,49],R:[86,45],F:[66,47],T:[73,0],G:[27,52],B:[21,100]}]].forEach(function(x){
+      var id=x[0],k=x[1],P=k.P,L=k.L,R=k.R,F=k.F,T=k.T,G=k.G,B=k.B,TL=[0,0],TR=[100,0],BR=[100,100],BL=[0,100],
+          lg=G&&f(L,G,k),gp=G&&f(G,P,k),gb=G&&f(G,B,k),lp=G?lg.concat([G],gp):f(L,P,k),
+          pf=f(P,F,k),fr=f(F,R,k),ft=f(F,T,k),lt=f(L,TL,k),lb=f(L,BL,k),rt=f(R,TR,k),rb=f(R,BR,k),
+          z={ph1:[TL,T].concat(v(ft),[F],v(pf),[P],v(lp),[L],lt),
+             ph2:[T,TR].concat(v(rt),[R],v(fr),[F],ft),
+             pg:[TL].concat(v(lt),[L],lb,[BL]),
+             pd:[TR,BR].concat(v(rb),[R],rt),
+             pb1:G?[BL].concat(v(lb),[L],lg,[G],gb,[B]):[BL].concat(v(lb),[L],lp,[P],pf,[F],fr,[R],rb,[BR]),
+             pb2:G&&[B,BR].concat(v(rb),[R],v(fr),[F],v(pf),[P],v(gp),[G],gb)},
+          fk=[[L].concat(lt,[TL]),[L].concat(lb,[BL]),[R].concat(rt,[TR]),[R].concat(rb,[BR]),[F].concat(ft,[T])],
+          svg=pap.querySelector(".fentes."+id),n,el;
+      for(n in z){el=pap.querySelector("."+n);if(el&&z[n]){el.style.setProperty("--c"+id,poly(z[n]));}}
+      if(G){fk.push([G].concat(gb,[B]));}
+      svg.querySelector(".c1").setAttribute("d",ch(lp.slice(-Math.ceil(lp.length*.35)).concat([P],pf.slice(0,Math.ceil(pf.length*.5)))));
+      svg.querySelector(".c2").setAttribute("d",ch([L].concat(lp,[P],pf,[F],fr,[R])));
+      svg.querySelector(".c3").setAttribute("d",fk.map(ch).join(""));
+    });
+  }
   requestAnimationFrame(function guet(){
     /* attendre que le héros soit entièrement lu (la section suivante existe) */
     if(!d.getElementById("offres")&&d.readyState==="loading"){requestAnimationFrame(guet);return;}
-    var hero=d.getElementById("hero"),slot=hero&&hero.querySelector(".slot");
-    if(!slot){return;}
+    var hero=d.getElementById("hero"),pap=hero&&hero.querySelector(".papier"),ok=false;
+    if(!pap){return;}
+    try{dechirure(pap);pap.classList.add("pret");ok=true;}catch(e){}
+    if(!A){return;}                                   /* mouvement réduit : seulement la collerette, immobile */
     requestAnimationFrame(function(){requestAnimationFrame(function(){   /* deux images plus tard : l'image du h1 reste légère */
       var co=hero.querySelector(".coeur"),an=co&&co.getAnimations?co.getAnimations():[],
-          b=slot.getBoundingClientRect(),
-          go=!(an[0]&&an[0].currentTime>2600)&&b.bottom>0&&b.top<innerHeight
+          b=hero.querySelector(".slot").getBoundingClientRect(),
+          go=ok&&!(an[0]&&an[0].currentTime>2600)&&b.bottom>0&&b.top<innerHeight
              &&!/^#(offres|grille|t-[\w-]+|pro[\w-]+)$/i.test(location.hash);
       hero.classList.add(go?"go":"fini");
       if(go){hero.classList.add("en-fete");}
@@ -70,7 +111,7 @@
    Charte Promobile : blanc, rouge #E30613, noir bleuté #14181F, accent jaune #FFCF00 (ruban « Nouvelle offre »
    de promobile.sn). Poppins pour le texte, Barlow Condensed (proche du DIN du site officiel) pour les chiffres.
    Concept « Avant → Après » : chaque carte montre l'ancien volume (gris) et ce qui s'ajoute (rouge), au même prix.
-   Héros : la carte vedette sort d'un portable couché (l'écran s'allume, elle traverse la vitre), passe devant et bat ;
+   Héros : la carte vedette crève la page blanche (fissure, lambeaux de papier, cavité rouge), passe devant et bat ;
    confettis (canvas) sur toute la page.
    ---------------------------------------------------------------- */
 @font-face{font-family:"Poppins";font-style:normal;font-weight:400;font-display:swap;src:url("assets/fonts/poppins-latin-400-normal.woff2") format("woff2")}
@@ -167,7 +208,7 @@ h1,h2,h3{text-wrap:balance}
 
 /* ---------- Héros ---------- */
 /* z-index 2 (21 pendant les confettis, .en-fete). overflow-x: clip coupe l'anneau de choc et les éclats sur les côtés
-   sans couper le portable ni son ombre ; repli « hidden » avant Safari 16. */
+   sans couper la collerette ; repli « hidden » avant Safari 16. */
 .hero{position:relative;z-index:2;overflow:hidden}
 @supports (overflow:clip){.hero{overflow:visible;overflow-x:clip}}
 .hero-grille{display:grid;gap:1rem;padding-block:clamp(.75rem,3vw,3.5rem) clamp(1rem,3vw,3.5rem)}
@@ -203,39 +244,57 @@ h1,h2,h3{text-wrap:balance}
 .vedette .j-barre{height:.7rem;background:rgba(255,255,255,.12)}
 .vedette .j-barre::before{background:rgba(255,255,255,.4)}
 
-/* Scène : la carte vedette sort d'un portable couché, dessiné en CSS. L'écran s'allume, la carte arrive du fond de
-   l'écran (la coque cache ses bords), pousse sur la vitre, la traverse, passe devant et se pose au-dessus du portable,
-   puis bat. Confettis (canvas) tirés de l'écran, sur toute la page. Tout est absolu ou fixe : la mise en page ne bouge
-   jamais. .slot : écran 1 < carte 2 (7 à --tz) < vitre 5 < coque 6.  Héros : confettis posés 1 < texte 2 < canvas 3
-   < .slot 4. */
+/* Scène : la carte vedette est cachée derrière la page blanche ; elle la crève (fissure, cavité rouge, lambeaux de
+   papier repliés vers l'avant en 3D, éclats), passe devant, puis bat. Confettis (canvas) derrière la carte, sur toute la page.
+   Tout est absolu ou fixe : la mise en page ne bouge jamais. Polygones des lambeaux : calculés dans <head> (graine fixe).
+   .slot : trou 1 < carte 2 (7 à --tz) < cadre 3 < papier 4 < fantôme 5 < éclats 8.  Héros : confettis posés 1 < texte 2
+   < canvas 3 < .slot 4. */
 .hero{
-  /* horloge de l'intro (depuis .go) ; --tz = --tk + --dk / 2 : la carte traverse la vitre au milieu de son animation */
-  --ta:350ms;--dl:550ms;--tk:850ms;--dk:1600ms;--tz:1650ms;--tr:1500ms;--do:700ms;
-  --tj:2400ms;--tb:3100ms;--ts:3250ms;--tv:3400ms;--tpo:1.65s;
-  /* carte : profondeur, échelle au fond de l'écran (--s0) puis contre la vitre (--si), dépassement en sortant */
-  --kp:520px;--s0:.42;--si:.78;--kx1:14deg;--ky1:-6px;--ks1:1.06;--ky2:2px;--ks2:.985;
-  /* portable : chevauchement carte / portable, épaisseur de la coque. Le portable fait 86 % de large, ratio 2,25 :
-     sa hauteur vaut 38,22 % de la largeur, d'où le décalage entre le centre de la carte posée et celui de l'écran. */
-  --ov:40px;--bz:7px;--dy:calc(50% + 19.11cqw - var(--ov))}
-.scene{position:relative;margin-block:18px 16px;max-width:480px}
-.slot{position:relative;z-index:4;padding-bottom:calc(38.22% - var(--ov));container-type:inline-size}
+  /* horloge de l'intro (depuis .go) */
+  --ta:600ms;--dg:440ms;--tc:1000ms;--dp:1000ms;--tf:1150ms;--db:1100ms;--tk:1050ms;--dk:950ms;--tz:1320ms;--do:700ms;
+  --dt:600ms;--df:400ms;--tj:1700ms;--tb:2500ms;--ts:2650ms;--tv:2800ms;--tpo:1.3s;
+  /* jaillissement de la carte (mobile : 1.05 maxi, pas de rotateY) */
+  --kp:520px;--ky0:6px;--kx0:24deg;--kr0:0deg;--ks0:.6;--ky1:-4px;--kx1:-3deg;--kr1:0deg;--ks1:1.05;--ky2:1px;--kr2:0deg;--ks2:.985;--ky3:0px;--ks3:1;
+  /* cadre blanc qui masque la carte autour du trou tant qu'elle est derrière la page */
+  --cs:calc(12px + 2.5vw)}
+.scene{position:relative;margin-block:18px 16px}
+.slot{position:relative;z-index:4}
 .coeur{position:relative;z-index:7}
-.coeur::after{content:"";position:absolute;z-index:-1;inset:12px 10% 0;border-radius:var(--rayon);box-shadow:0 16px 30px -10px rgba(20,24,31,.5);pointer-events:none}
+.coeur::after{content:"";position:absolute;z-index:-1;inset:12px 4% 0;border-radius:var(--rayon);box-shadow:0 16px 30px -10px rgba(20,24,31,.5);pointer-events:none}
 .pouls{position:absolute;inset:0;z-index:-1;border-radius:var(--rayon);box-shadow:0 0 0 2px rgba(227,6,19,.55),0 0 16px 3px rgba(227,6,19,.28);opacity:0;pointer-events:none;--rx:1.07;--ry:1.26;--sx:1.2;--sy:1.7}
-.vedette::before{content:"";position:absolute;inset:0;z-index:3;background:#05070A;opacity:0;pointer-events:none}
-.debris{position:absolute;pointer-events:none}
-/* portable couché : ni z-index ni transform ici, ses morceaux s'intercalent avec la carte (palier de --tz) */
-.portable{position:absolute;left:7%;right:7%;bottom:0;padding-top:38.22%;pointer-events:none}
-.portable i{position:absolute;display:block}
-.ecran{z-index:1;inset:var(--bz);border-radius:calc(24px - var(--bz));overflow:hidden;background:linear-gradient(115deg,#0D1016 40%,#1C212B 52%,#0D1016 64%)}
-.lueur{inset:0;background:radial-gradient(120% 150% at 50% 6%,#FFF3C4 0,#FFCF00 13%,#F2242C 44%,#B9050F 80%,#7A0009)}
-.lueur::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 85% at 50% 6%,rgba(255,243,196,.85),rgba(255,207,0,0) 72%);opacity:0}
-.rayons{left:50%;top:6%;width:260%;padding-top:260%;margin:-130% 0 0 -130%;border-radius:50%;background:repeating-conic-gradient(rgba(255,255,255,.15) 0 6deg,rgba(255,255,255,0) 6deg 18deg)}
-.onde{left:50%;top:50%;width:56%;padding-top:56%;margin:-28% 0 0 -28%;border-radius:50%;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 16px 3px rgba(255,243,196,.7),inset 0 0 12px 2px rgba(255,243,196,.5);opacity:0}
-.vitre{z-index:5;inset:var(--bz);border-radius:calc(24px - var(--bz));background:linear-gradient(112deg,rgba(255,255,255,0) 28%,rgba(255,255,255,.16) 29%,rgba(255,255,255,.05) 44%,rgba(255,255,255,0) 45%);opacity:.75}
-.coque{z-index:6;inset:0;border:var(--bz) solid var(--noir);border-radius:24px;box-shadow:0 22px 30px -16px rgba(20,24,31,.6)}
-.coque::before{content:"";position:absolute;top:calc(-1 * var(--bz) - 3px);right:18%;width:28%;height:4px;border-radius:3px 3px 0 0;background:linear-gradient(90deg,var(--noir) 0 36%,transparent 36% 52%,var(--noir) 52%)}
-.coque::after{content:"";position:absolute;left:9px;top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;background:#05070A;box-shadow:0 0 0 2px rgba(255,255,255,.08)}
+.trou,.cadre,.papier,.fantome,.bout,.debris{position:absolute;pointer-events:none}
+.papier{inset:10px}
+.trou{inset:12px}
+.cadre{inset:calc(10px - var(--cs) + 1px)}
+.trou,.cadre,.papier,.fantome,.bout,.pb2,.fentes.d{display:none}
+.papier.pret{display:block}
+.trou{z-index:1;opacity:0;background:radial-gradient(130% 160% at 43% 56%,#F2242C,#E30613 55%,#A8000F);box-shadow:inset 0 4px 12px rgba(0,0,0,.45);clip-path:polygon(0 6%,2% 0,27% 2%,55% 0,97% 1.5%,100% 6%,99.3% 50%,100% 94%,96.5% 100%,60% 98%,22% 100%,1.5% 97.5%,0 92%,.7% 46%)}
+/* la « page » autour du trou : un anneau blanc (fond, pas une ombre : même teinte que la page en mode sombre forcé) */
+.cadre{z-index:3;opacity:0;background:var(--fond);clip-path:polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,var(--cs) var(--cs),var(--cs) calc(100% - var(--cs)),calc(100% - var(--cs)) calc(100% - var(--cs)),calc(100% - var(--cs)) var(--cs),var(--cs) var(--cs))}
+.papier{z-index:4;perspective:100vw;perspective-origin:43% 56%}
+.pan{position:absolute;inset:0}
+.pan i{position:absolute;inset:0;clip-path:var(--cm)}
+.ombre{background:rgba(20,24,31,.4);translate:var(--ox,0) var(--oy,0)}
+.face{background:var(--fond)}
+.ton{background:linear-gradient(var(--sens),rgba(20,24,31,.04),rgba(20,24,31,.34) var(--te));opacity:var(--sh)}
+.ph1,.ph2{transform-origin:50% 0;--oy:2px;--sens:to bottom;--te:56%}
+.pb1,.pb2{transform-origin:50% 100%;--oy:-2px;--sens:to top;--te:53%}
+.pg{transform-origin:0 50%;--ox:2px;--sens:to right;--te:9%}
+.pd{transform-origin:100% 50%;--ox:-2px;--sens:to left;--te:9%}
+/* angles : pré-ouverture / pic / rebond / repos (collerette) ; décalages irréguliers, durées propres à chaque lambeau */
+.pb1{--o:0ms;--m:1.1;--a0:-9deg;--a1:-132deg;--a2:-112deg;--a3:-118deg;--sh:.55;transform:rotateX(-118deg)}
+.ph1{--o:20ms;--m:1.05;--a0:9deg;--a1:128deg;--a2:110deg;--a3:116deg;--sh:.9;transform:rotateX(116deg)}
+.ph2{--o:35ms;--m:.95;--a0:8deg;--a1:124deg;--a2:108deg;--a3:114deg;--sh:.85;transform:rotateX(114deg)}
+.pg{--o:50ms;--m:.85;--a0:-8deg;--a1:-134deg;--a2:-114deg;--a3:-120deg;--sh:.95;transform:rotateY(-120deg)}
+.pd{--o:65ms;--m:.85;--a0:8deg;--a1:130deg;--a2:112deg;--a3:118deg;--sh:.6;transform:rotateY(118deg)}
+.fentes{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.fentes path{fill:none;stroke:#2B3038;stroke-width:1.3;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:0}
+.c1{--o:-60ms}.c2{--o:0ms}.c3{--o:70ms}
+.fantome{z-index:5;inset:24px 18%;border-radius:30px;background:var(--noir);box-shadow:0 0 26px 18px var(--noir);opacity:0}
+.bout{z-index:8;left:var(--bx);top:var(--by);width:0;height:0;opacity:0}
+.bout i{position:absolute;width:13px;height:10px;margin:-5px 0 0 -6px;background:linear-gradient(140deg,#fff 40%,#c4c4c4);clip-path:polygon(0 25%,100% 0,72% 100%)}
+.b1{--bx:66%;--by:50%;--o:0ms;--dx:58px;--h:-34px;--f:120px;--rot:470deg}
+.b2{--bx:11%;--by:48%;--o:25ms;--dx:-34px;--h:-26px;--f:130px;--rot:-390deg}
 .fete{position:fixed;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;transition:opacity .45s linear}
 .fete.sort{opacity:0}
 /* confettis posés autour de la carte (ils « atterrissent » après l'explosion, puis restent immobiles) */
@@ -259,14 +318,29 @@ h1,h2,h3{text-wrap:balance}
   .v-avant{font-size:1.7rem}.v-apres{font-size:2.6rem}
   .vedette .j-barre{height:.9rem}
   .scene{margin-block:0}
-  .hero{--ta:450ms;--dl:650ms;--tk:1050ms;--dk:1900ms;--tz:2000ms;--tr:1850ms;--do:750ms;--tj:2800ms;--tb:3500ms;--ts:3650ms;--tv:3800ms;--tpo:2s;
-    --kp:900px;--s0:.4;--si:.7;--kx1:10deg;--ky1:-10px;--ks1:1.07;--ky2:3px;--ks2:.985;--ov:64px;--bz:8px}
+  .hero{--ta:800ms;--dg:540ms;--tc:1300ms;--dp:1200ms;--tf:1500ms;--db:1500ms;--tk:1400ms;--dk:1300ms;--tz:1680ms;--do:750ms;--dt:800ms;--df:450ms;--tj:2300ms;--tb:3300ms;--ts:3450ms;--tv:3600ms;--tpo:1.7s;
+    --kp:900px;--ky0:12px;--kx0:12deg;--kr0:-10deg;--ks0:.8;--ky1:-10px;--kx1:-2deg;--kr1:3deg;--ks1:1.1;--ky2:3px;--kr2:-1deg;--ks2:.98;--ky3:-1px;--ks3:1.006;--cs:44px}
   .slot{rotate:-1.5deg}
-  .coeur::after{inset:18px 11% 0;box-shadow:0 28px 52px -18px rgba(20,24,31,.5)}
+  .coeur::after{inset:18px 5% 0;box-shadow:0 28px 52px -18px rgba(20,24,31,.5)}
   .pouls{--rx:1.05;--ry:1.1;--sx:1.14;--sy:1.26}
-  .coque{border-radius:30px;box-shadow:0 36px 50px -26px rgba(20,24,31,.55)}
-  .ecran,.vitre{border-radius:calc(30px - var(--bz))}
-  .coque::after{left:12px;width:11px;height:11px;margin-top:-5.5px}
+  .papier{inset:12px;perspective:760px;perspective-origin:44% 54%}
+  .trou{inset:14px;background:radial-gradient(120% 140% at 44% 54%,#F2242C,#E30613 55%,#A8000F)}
+  .cadre{inset:calc(12px - var(--cs) + 1px)}
+  .pb2,.fentes.d{display:block}
+  .fentes.m{display:none}
+  .fentes path{stroke-width:1.6}
+  .ombre{background:rgba(20,24,31,.32)}
+  .ph1,.ph2{--oy:1.5px}.pb1,.pb2{--oy:-1.5px}.pg{--ox:1.5px}.pd{--ox:-1.5px}
+  .pan i{clip-path:var(--cd)}
+  .pb1{--o:0ms;--m:1.1;--a0:-9deg;--a1:-128deg;--a2:-104deg;--a3:-110deg;--te:55%;transform:rotateX(-110deg)}
+  .ph1{--o:20ms;--m:1.05;--a0:8deg;--a1:118deg;--a2:100deg;--a3:106deg;--te:54%;transform:rotateX(106deg)}
+  .pb2{--o:35ms;--m:1;--a0:-8deg;--a1:-124deg;--a2:-102deg;--a3:-108deg;--sh:.5;--te:55%;transform:rotateX(-108deg)}
+  .ph2{--o:50ms;--m:.95;--a0:7deg;--a1:126deg;--a2:104deg;--a3:110deg;--te:54%;transform:rotateX(110deg)}
+  .pg{--o:65ms;--m:.85;--a1:-140deg;--a2:-118deg;--a3:-124deg;--te:14%;transform:rotateY(-124deg)}
+  .pd{--o:80ms;--m:.85;--a1:136deg;--a2:114deg;--a3:120deg;--te:15%;transform:rotateY(120deg)}
+  .fantome{inset:46px 20%;border-radius:40px;box-shadow:0 0 44px 28px var(--noir)}
+  .b1{--bx:65%;--by:47%;--dx:120px;--h:-64px;--f:230px;--rot:540deg}
+  .b2{--bx:28%;--by:52%;--dx:-96px;--h:-50px;--f:260px;--rot:-430deg}
   .debris{--kx:3.2px;--ky:2px;--ks:1}
   .eclat{--xx:var(--x);--yy:var(--y)}
   .eclat.o{display:block}
@@ -492,25 +566,24 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 @keyframes attente{from,to{opacity:0}}
 @keyframes tenir{from,to{opacity:1}}
 @keyframes sous{from,to{z-index:2}}
+@keyframes jaillit{
+  0%{opacity:0;transform:perspective(var(--kp)) translateY(var(--ky0)) rotateX(var(--kx0)) rotateY(var(--kr0)) scale(var(--ks0));animation-timing-function:cubic-bezier(.23,1,.32,1)}
+  6%{opacity:1}
+  42%{transform:perspective(var(--kp)) translateY(var(--ky1)) rotateX(var(--kx1)) rotateY(var(--kr1)) scale(var(--ks1));animation-timing-function:cubic-bezier(.45,0,.55,1)}
+  68%{transform:perspective(var(--kp)) translateY(var(--ky2)) rotateX(1deg) rotateY(var(--kr2)) scale(var(--ks2));animation-timing-function:cubic-bezier(.45,0,.55,1)}
+  86%{transform:perspective(var(--kp)) translateY(var(--ky3)) rotateX(0deg) rotateY(0deg) scale(var(--ks3));animation-timing-function:cubic-bezier(.45,0,.55,1)}
+  to{opacity:1;transform:perspective(var(--kp)) translateY(0) rotateX(0deg) rotateY(0deg) scale(1)}}
 @keyframes ambiant{0%{opacity:0;translate:0 4px;scale:.9;animation-timing-function:cubic-bezier(.23,1,.32,1)}42%{opacity:.8;translate:0 18px;scale:1.08;animation-timing-function:cubic-bezier(.45,0,.55,1)}to{opacity:1;translate:0 0;scale:1}}
-@keyframes choc{from{opacity:.85;translate:0 var(--dy);scale:var(--si)}to{opacity:0;translate:0 calc(var(--dy) * .3);scale:var(--sx) var(--sy)}}
-/* portable : l'écran s'allume en vacillant ; la carte monte du fond de l'écran, traverse la vitre au milieu (--tz),
-   dépasse puis se pose ; elle s'éclaircit en approchant ; la vitre s'éclaire sous la poussée ; le portable tremble
-   puis recule quand la carte le quitte ; onde sur l'écran au passage ; la lueur pulse avec le cœur ; rayons */
-@keyframes allume{0%{opacity:0}14%{opacity:1}24%{opacity:.35}38%{opacity:1}52%{opacity:.8}to{opacity:1}}
-@keyframes sort{
-  0%{opacity:0;transform:perspective(var(--kp)) translateY(var(--dy)) rotateX(0deg) scale(var(--s0));animation-timing-function:cubic-bezier(.55,0,.9,.55)}
-  8%{opacity:1}
-  50%{transform:perspective(var(--kp)) translateY(var(--dy)) rotateX(0deg) scale(var(--si));animation-timing-function:cubic-bezier(.2,.75,.35,1)}
-  74%{transform:perspective(var(--kp)) translateY(var(--ky1)) rotateX(var(--kx1)) scale(var(--ks1));animation-timing-function:cubic-bezier(.45,0,.55,1)}
-  88%{transform:perspective(var(--kp)) translateY(var(--ky2)) rotateX(-2deg) scale(var(--ks2));animation-timing-function:cubic-bezier(.45,0,.55,1)}
-  to{opacity:1;transform:perspective(var(--kp)) translateY(0) rotateX(0deg) scale(1)}}
-@keyframes sombre{from{opacity:.85}to{opacity:0}}
-@keyframes secousse{0%{translate:-1.5px .5px}7%{translate:1.5px -.5px}14%{translate:-1.2px 0}21%{translate:1px .5px}28%{translate:-.5px 0}33%{translate:0 0;animation-timing-function:cubic-bezier(.2,.7,.3,1)}48%{translate:0 5px;animation-timing-function:cubic-bezier(.4,0,.6,1)}to{translate:0 0}}
-@keyframes presse{0%,to{opacity:.75}40%{opacity:1}}
-@keyframes onde{from{opacity:.95;scale:.3}to{opacity:0;scale:2.4}}
-@keyframes irradie{0%{opacity:0;animation-timing-function:cubic-bezier(.3,0,.5,1)}12%{opacity:.75}22%{opacity:.1}34%{opacity:.45}55%,to{opacity:0}}
-@keyframes tourne{to{rotate:360deg}}
+@keyframes trou{0%,80%{opacity:1}to{opacity:0}}
+@keyframes fantome{0%{opacity:0;scale:.9;animation-timing-function:cubic-bezier(.55,0,.9,.45)}80%{opacity:.13;scale:1}to{opacity:0;scale:1.03}}
+@keyframes tremble{0%{translate:-1.5px .5px}20%{translate:1.5px -.5px}40%{translate:-1.2px 0}60%{translate:1px .5px}80%{translate:-.5px 0}to{translate:0 0}}
+@keyframes fente{0%,30%{opacity:1}to{opacity:0}}
+@keyframes ouvreX{0%{transform:rotateX(0deg);animation-timing-function:cubic-bezier(.5,0,.9,.5)}12%{transform:rotateX(var(--a0));animation-timing-function:cubic-bezier(.3,.7,.4,1)}45%{transform:rotateX(var(--a1));animation-timing-function:cubic-bezier(.4,0,.6,1)}70%{transform:rotateX(var(--a2));animation-timing-function:cubic-bezier(.4,0,.6,1)}to{transform:rotateX(var(--a3))}}
+@keyframes ouvreY{0%{transform:rotateY(0deg);animation-timing-function:cubic-bezier(.5,0,.9,.5)}12%{transform:rotateY(var(--a0));animation-timing-function:cubic-bezier(.3,.7,.4,1)}45%{transform:rotateY(var(--a1));animation-timing-function:cubic-bezier(.4,0,.6,1)}70%{transform:rotateY(var(--a2));animation-timing-function:cubic-bezier(.4,0,.6,1)}to{transform:rotateY(var(--a3))}}
+@keyframes ombrer{0%,12%{opacity:0}45%,to{opacity:var(--sh)}}
+@keyframes bout-y{0%{opacity:1;translate:0 0;animation-timing-function:cubic-bezier(.2,.6,.35,1)}28%{translate:0 var(--h);animation-timing-function:cubic-bezier(.55,0,1,.45)}85%{opacity:1}to{opacity:0;translate:0 var(--f)}}
+@keyframes bout-x{to{translate:var(--dx) 0;rotate:var(--rot)}}
+@keyframes choc{from{opacity:.85;scale:1}to{opacity:0;scale:var(--sx) var(--sy)}}
 /* confettis posés : la position est portée par « translate », la chute et le flottement par « transform » (sur place) */
 @keyframes atterrit{0%{opacity:0;transform:translate(0,-40px) rotate(calc(var(--r) * 1deg - 140deg)) scale(.6)}25%{opacity:1}}
 @keyframes flotte{to{transform:translate(var(--fx,4px),var(--fy,-5px)) rotate(calc(var(--r) * 1deg + var(--fr,12deg))) scale(1)}}
@@ -522,21 +595,25 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 @keyframes bat{0%{scale:1;animation-timing-function:cubic-bezier(.3,0,.5,1)}12%{scale:1.04;animation-timing-function:cubic-bezier(.4,0,.6,1)}22%{scale:1.004;animation-timing-function:cubic-bezier(.3,0,.5,1)}34%{scale:1.025;animation-timing-function:cubic-bezier(.4,0,.6,1)}55%,to{scale:1}}
 @keyframes pouls{0%,9%{opacity:0;scale:1}14%{opacity:.9;scale:1.005}62%,to{opacity:0;scale:var(--rx) var(--ry)}}
 
-/* avant .go (héros lu en plusieurs morceaux) : carte, lueur de l'écran et confettis posés cachés ; filet CSS à 3 s */
-.anim .hero:not(.go):not(.fini) :is(.coeur,.lueur,.debris){animation:attente 1ms 3s backwards}
+/* avant .go (héros lu en plusieurs morceaux) : carte, papier et confettis posés cachés ; filet de sécurité CSS à 3 s */
+.anim .hero:not(.go):not(.fini) :is(.coeur,.papier,.debris){animation:attente 1ms 3s backwards}
 .anim .hero:not(.go):not(.fini) .coeur:focus-within{animation:none}
 .anim .hero.en-fete{z-index:21}               /* le temps des confettis : ils passent sur l'en-tête et la barre de filtres (z 20) */
-.anim .hero.go:not(.fini) .lueur{animation:allume var(--dl) linear var(--ta) backwards}
-.anim .hero.go:not(.fini) .vedette{animation:sort var(--dk) linear var(--tk) backwards}
-.anim .hero.go:not(.fini) .vedette::before{animation:sombre calc(var(--dk) / 2) cubic-bezier(.4,0,.7,.2) var(--tk) backwards}
+.anim .hero.go:not(.fini) :is(.trou,.cadre,.fantome,.bout){display:block}
+.anim .hero.go:not(.fini) .slot{animation:tremble 180ms linear calc(var(--tc) - 120ms)}
+.anim .hero.go:not(.fini) .trou{animation:trou var(--dt) linear var(--tc)}
+.anim .hero.go:not(.fini) .cadre{animation:tenir calc(var(--tz) + 55ms) linear}
+.anim .hero.go:not(.fini) .fantome{animation:fantome var(--dg) linear var(--ta)}
+.anim .hero.go:not(.fini) .fentes path{animation:fente var(--df) linear calc(var(--tc) + var(--o))}
+.anim .hero.go:not(.fini) .pan{opacity:0;animation:tenir 1ms linear var(--tc) forwards,ouvreX calc(var(--dp) * var(--m)) linear calc(var(--tc) + var(--o)) both}
+.anim .hero.go:not(.fini) :is(.pg,.pd){animation-name:tenir,ouvreY}
+.anim .hero.go:not(.fini) .ton{animation:ombrer calc(var(--dp) * var(--m)) linear calc(var(--tc) + var(--o)) both}
+.anim .hero.go:not(.fini) .vedette{animation:jaillit var(--dk) linear var(--tk) backwards}
 .anim .hero.go:not(.fini) .coeur{animation:sous 1ms linear var(--tz) backwards}   /* animation à part : la transform de la carte reste sur le compositeur */
-.anim .hero.go:not(.fini) .coeur::after{animation:ambiant calc(var(--dk) / 2) linear var(--tz) backwards}
+.anim .hero.go:not(.fini) .coeur::after{animation:ambiant var(--dk) linear var(--tk) backwards}
 .anim .hero.go:not(.fini) .pouls{animation:choc var(--do) cubic-bezier(.2,.7,.3,1) var(--tz)}
-.anim .hero.go:not(.fini) :is(.ecran,.coque){animation:secousse 450ms linear var(--tr)}
-.anim .hero.go:not(.fini) .vitre{animation:secousse 450ms linear var(--tr),presse 300ms ease-out var(--tr)}
-.anim .hero.go:not(.fini) .onde{animation:onde 750ms cubic-bezier(.2,.7,.3,1) var(--tz)}
-.anim .rayons{animation:tourne 36s linear infinite;animation-play-state:var(--jeu,paused)}
-.anim .hero.bat .lueur::after{animation:irradie .9s infinite;animation-play-state:var(--jeu,paused)}
+.anim .hero.go:not(.fini) .bout{animation:bout-y var(--db) linear calc(var(--tf) + var(--o))}
+.anim .hero.go:not(.fini) .bout i{animation:bout-x var(--db) cubic-bezier(.2,.7,.4,1) calc(var(--tf) + var(--o))}
 .anim .eclat{translate:calc(var(--xx) * var(--kx)) calc(var(--yy) * var(--ky));transform:translate(0,0) rotate(calc(var(--r) * 1deg)) scale(1)}
 .eclat:nth-child(3n){--fx:-5px;--fy:4px;--fr:-14deg;--fd:2.6s}
 .eclat:nth-child(3n+1){--fx:4px;--fy:-6px;--fr:10deg;--fd:3.1s}
@@ -548,9 +625,8 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 .anim .hero.go .v-apres{animation:surgit .5s var(--ressort) var(--ts) both}
 .anim .hero.go .v-gain{animation:surgit .6s var(--ressort) var(--tv) both;transform-origin:left bottom}
 
-/* Battement (classe .bat, posée par le JS après l'apparition du nouveau volume) : continu, à ~67 bpm, avec la lueur de
-   l'écran, tant que le héros est à l'écran (.actif) ; en pause sinon (rayons et confettis
-   posés aussi). Choix du client : la page reste vivante (pas de bouton pause). */
+/* Battement (classe .bat, posée par le JS après l'apparition du nouveau volume) : continu, à ~67 bpm, tant que le héros
+   est à l'écran (.actif) ; en pause sinon. Choix du client : la page reste vivante (pas de bouton pause). */
 .anim .hero.bat .coeur{animation:bat .9s infinite;animation-play-state:var(--jeu,paused)}
 .anim .hero.bat .pouls{animation:pouls .9s ease-out infinite;animation-play-state:var(--jeu,paused)}
 .actif{--jeu:running}
@@ -578,8 +654,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 @media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
 @media print{
   .top .btn,.barre-filtres,.ruban,.feuille,.toast,.evitement,.cta-offres,
-  .portable,.fete,.pouls,.debris,.derive{display:none!important}
-  .slot{padding-bottom:0!important}
+  .trou,.cadre,.papier,.fantome,.bout,.fete,.pouls,.debris,.derive{display:none!important}
   .carte{break-inside:avoid;box-shadow:none}
   .vedette,.scene,.slot,.coeur,.j-gain,.gain,.tel-code span,.v-apres,.v-gain,.v-avant::after{transform:none!important;translate:none!important;rotate:none!important;scale:none!important;animation:none!important}
 }
@@ -633,38 +708,48 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
       <div class="scene">
         <!-- le JS insère ici <canvas class="fete"> le temps des confettis (moins de 5 s) -->
         <div class="debris" aria-hidden="true">
-          <svg class="eclat c-r" style="--x:-109;--y:-38;--xm:91;--ym:-182;--r:200;--t:12;--tp:1.40s"><use href="#k1"/></svg>
+          <svg class="eclat c-r" style="--x:-109;--y:-38;--xm:99;--ym:-190;--r:200;--t:12;--tp:1.40s"><use href="#k1"/></svg>
           <svg class="eclat c-j" style="--x:-150;--y:60;--xm:88;--ym:-262;--r:0;--t:8;--tp:1.45s"><use href="#k3"/></svg>
-          <svg class="eclat c-n" style="--x:-110;--y:-60;--xm:87;--ym:-125;--r:45;--t:9;--tp:1.50s"><use href="#k2"/></svg>
-          <svg class="eclat c-r" style="--x:-68;--y:94;--xm:71;--ym:-127;--r:160;--t:10;--tp:1.55s"><use href="#k4"/></svg>
-          <svg class="eclat c-j" style="--x:-23;--y:-93;--xm:65;--ym:-282;--r:30;--t:11;--tp:1.60s"><use href="#plus"/></svg>
-          <svg class="eclat c-j" style="--x:79;--y:-93;--xm:-90;--ym:59;--r:-120;--t:11;--tp:1.65s"><use href="#k1"/></svg>
-          <svg class="eclat c-r" style="--x:109;--y:-75;--xm:90;--ym:60;--r:20;--t:14;--tp:1.70s"><use href="#k5"/></svg>
-          <svg class="eclat c-r" style="--x:110;--y:-28;--xm:90;--ym:93;--r:300;--t:9;--tp:1.75s"><use href="#k2"/></svg>
-          <svg class="eclat c-n" style="--x:111;--y:59;--xm:92;--ym:128;--r:0;--t:7;--tp:1.80s"><use href="#k3"/></svg>
-          <svg class="eclat c-r" style="--x:109;--y:104;--xm:52;--ym:-127;--r:-220;--t:12;--tp:1.85s"><use href="#k1"/></svg>
-          <svg class="eclat c-j" style="--x:90;--y:114;--xm:91;--ym:162;--r:90;--t:9;--tp:1.90s"><use href="#k4"/></svg>
-          <svg class="eclat c-r" style="--x:17;--y:113;--xm:63;--ym:160;--r:-60;--t:8;--tp:1.95s"><use href="#k2"/></svg>
-          <svg class="eclat c-j" style="--x:-40;--y:110;--xm:-91;--ym:103;--r:-30;--t:13;--tp:2.00s"><use href="#k5"/></svg>
-          <svg class="eclat c-n" style="--x:-123;--y:113;--xm:64;--ym:-234;--r:140;--t:10;--tp:2.05s"><use href="#k1"/></svg>
-          <svg class="eclat c-r" style="--x:-190;--y:100;--xm:-87;--ym:139;--r:0;--t:9;--tp:2.10s"><use href="#k3"/></svg>
-          <svg class="eclat c-r" style="--x:-315;--y:12;--xm:83;--ym:-214;--r:-15;--t:12;--tp:2.15s"><use href="#plus"/></svg>
+          <svg class="eclat c-n" style="--x:-110;--y:-60;--xm:99;--ym:-95;--r:45;--t:9;--tp:1.50s"><use href="#k2"/></svg>
+          <svg class="eclat c-r" style="--x:-60;--y:90;--xm:96;--ym:-120;--r:160;--t:10;--tp:1.55s"><use href="#k4"/></svg>
+          <svg class="eclat c-j" style="--x:-20;--y:-80;--xm:60;--ym:-282;--r:30;--t:11;--tp:1.60s"><use href="#plus"/></svg>
+          <svg class="eclat c-j" style="--x:40;--y:-90;--xm:-98;--ym:-95;--r:-120;--t:11;--tp:1.65s"><use href="#k1"/></svg>
+          <svg class="eclat c-r" style="--x:110;--y:-75;--xm:93;--ym:-70;--r:20;--t:14;--tp:1.70s"><use href="#k5"/></svg>
+          <svg class="eclat c-r" style="--x:160;--y:-30;--xm:100;--ym:-30;--r:300;--t:9;--tp:1.75s"><use href="#k2"/></svg>
+          <svg class="eclat c-n" style="--x:200;--y:40;--xm:100;--ym:40;--r:0;--t:7;--tp:1.80s"><use href="#k3"/></svg>
+          <svg class="eclat c-r" style="--x:150;--y:95;--xm:80;--ym:74;--r:-220;--t:12;--tp:1.85s"><use href="#k1"/></svg>
+          <svg class="eclat c-j" style="--x:90;--y:120;--xm:100;--ym:100;--r:90;--t:9;--tp:1.90s"><use href="#k4"/></svg>
+          <svg class="eclat c-r" style="--x:20;--y:135;--xm:55;--ym:118;--r:-60;--t:8;--tp:1.95s"><use href="#k2"/></svg>
+          <svg class="eclat c-j" style="--x:-40;--y:110;--xm:-88;--ym:74;--r:-30;--t:13;--tp:2.00s"><use href="#k5"/></svg>
+          <svg class="eclat c-n" style="--x:-120;--y:130;--xm:-100;--ym:20;--r:140;--t:10;--tp:2.05s"><use href="#k1"/></svg>
+          <svg class="eclat c-r" style="--x:-190;--y:100;--xm:-96;--ym:-40;--r:0;--t:9;--tp:2.10s"><use href="#k3"/></svg>
+          <svg class="eclat c-r" style="--x:-315;--y:12;--xm:92;--ym:140;--r:-15;--t:12;--tp:2.15s"><use href="#plus"/></svg>
           <svg class="eclat c-j o" style="--x:-178;--y:-81;--r:70;--t:8;--tp:2.20s"><use href="#k2"/></svg>
           <svg class="eclat c-r o" style="--x:-90;--y:20;--r:0;--t:6;--tp:2.25s"><use href="#k3"/></svg>
-          <svg class="eclat c-j o" style="--x:64;--y:113;--r:260;--t:10;--tp:2.30s"><use href="#k1"/></svg>
-          <svg class="eclat c-n o" style="--x:110;--y:-50;--r:10;--t:9;--tp:2.35s"><use href="#plus"/></svg>
-          <svg class="eclat c-j o" style="--x:111;--y:37;--r:0;--t:7;--tp:2.40s"><use href="#k3"/></svg>
+          <svg class="eclat c-j o" style="--x:70;--y:150;--r:260;--t:10;--tp:2.30s"><use href="#k1"/></svg>
+          <svg class="eclat c-n o" style="--x:210;--y:-60;--r:10;--t:9;--tp:2.35s"><use href="#plus"/></svg>
+          <svg class="eclat c-j o" style="--x:130;--y:30;--r:0;--t:7;--tp:2.40s"><use href="#k3"/></svg>
           <svg class="eclat c-n o" style="--x:-114;--y:26;--r:200;--t:8;--tp:2.45s"><use href="#k4"/></svg>
-          <svg class="eclat c-r o" style="--x:60;--y:-91;--r:20;--t:7;--tp:2.50s"><use href="#k2"/></svg>
-          <svg class="eclat c-n o" style="--x:109;--y:90;--r:40;--t:12;--tp:2.55s"><use href="#k5"/></svg>
+          <svg class="eclat c-r o" style="--x:60;--y:-85;--r:20;--t:7;--tp:2.50s"><use href="#k2"/></svg>
+          <svg class="eclat c-n o" style="--x:180;--y:130;--r:40;--t:12;--tp:2.55s"><use href="#k5"/></svg>
         </div>
         <div class="slot">
+          <div class="trou" aria-hidden="true"></div>
           <div class="coeur"><i class="pouls" aria-hidden="true"></i><!-- gen:vedette --><a class="vedette" href="#pronet-3go" aria-label="Exemple : ProNET 3 Go, 2,5 Go avant, 3 Go maintenant, toujours 975 francs"><span class="v-tete"><span><b>ProNET 3 Go</b> · 7 jours</span><span class="v-prix">975 F · même prix</span></span><span class="v-gain">+0,5 Go</span><span class="v-jauge" style="--r:0.833"><span class="v-avant">2,5 Go</span><span class="j-barre"><span class="j-gain"></span></span><span class="v-apres">3 Go</span></span></a><!-- /gen:vedette --></div>
-          <div class="portable" aria-hidden="true">
-            <i class="ecran"><i class="lueur"><i class="rayons"></i></i><i class="onde"></i></i>
-            <i class="vitre"></i>
-            <i class="coque"></i>
+          <div class="cadre" aria-hidden="true"></div>
+          <div class="papier" aria-hidden="true">
+            <div class="pan pb1"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
+            <div class="pan pb2"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
+            <div class="pan pg"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
+            <div class="pan pd"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
+            <div class="pan ph2"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
+            <div class="pan ph1"><i class="ombre"></i><i class="face"></i><i class="ton"></i></div>
+            <svg class="fentes m" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><path class="c1"/><path class="c2"/><path class="c3"/></svg>
+            <svg class="fentes d" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false"><path class="c1"/><path class="c2"/><path class="c3"/></svg>
           </div>
+          <i class="fantome" aria-hidden="true"></i>
+          <i class="bout b1" aria-hidden="true"><i></i></i>
+          <i class="bout b2" aria-hidden="true"><i></i></i>
         </div>
       </div>
     </div>
@@ -923,13 +1008,12 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
   if (tel) { zones.observe(tel); }
   document.addEventListener("visibilitychange", function(){ if (document.hidden) { telStop(); } else { telStart(); } });
 
-  /* ---------- Héros : la carte sort du portable ----------
-     L'intro est 100 % CSS (.go posée dans <head>). Ici, calé sur les vraies animations : confettis quand la carte
-     traverse la vitre (début de « choc »), fin de l'intro (fin de « sort »), battement après l'apparition du nouveau
-     volume. Les confettis visent la carte là où elle est vraiment (elle sort de l'écran puis monte). */
+  /* ---------- Héros : la carte crève la page ----------
+     L'intro est 100 % CSS (.go posée dans <head>). Ici, calé sur les vraies animations : confettis quand la carte passe
+     devant la page (début de « choc »), fin de l'intro (fin du 2e éclat), battement après l'apparition du nouveau volume,
+     rejoué quand la carte revient à l'écran. */
   var hero = document.getElementById("hero");
   var coeur = hero ? hero.querySelector(".coeur") : null;
-  var carte = hero ? hero.querySelector(".vedette") : null;
   var fete = null, cv = null, finie = false, batPret = false, sorti = false, kMed = 16.7, tire = false;
   function nettoyer(){
     if (fete) { try { fete.reset(); } catch (e) {} }
@@ -954,8 +1038,8 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
   }
   function feu(){
     var C = window.confetti;
-    if (!C || document.hidden || !carte) { return; }
-    var r0 = carte.getBoundingClientRect();
+    if (!C || document.hidden || !coeur) { return; }
+    var r0 = coeur.getBoundingClientRect();
     if (r0.bottom < 0 || r0.top > innerHeight) { return; }
     var M = !matchMedia("(min-width:880px)").matches,
         i = kMed, k = Math.min(1.8, Math.max(1, i * (Math.floor(15 / i) + 1) / 16.67)),   /* la bibliothèque avance au plus toutes les 15 ms */
@@ -971,7 +1055,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
     fete = C.create(cv, { resize: true, useWorker: false });
     function tir(part, o){
       if (!fete || !cv) { return; }
-      var r = carte.getBoundingClientRect(), R = cv.getBoundingClientRect(), W = R.width || innerWidth, H = R.height || innerHeight;
+      var r = coeur.getBoundingClientRect(), R = cv.getBoundingClientRect(), W = R.width || innerWidth, H = R.height || innerHeight;
       if (r.bottom < 0 || r.top > innerHeight) { return; }
       var p = { particleCount: Math.max(2, Math.round(N * part)), colors: TOUS, spread: 360,
                 origin: { x: (r.left + r.width / 2 - R.left) / W, y: (r.top + r.height / 2 - R.top) / H },
@@ -1007,7 +1091,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
     if (!hero || !coeur) { return; }
     if (!I.go) { finie = true; sorti = true; batPret = true; return; }   /* pas d'intro : le cœur battra à la 1re vue */
     cadence();
-    var pouls = hero.querySelector(".pouls"), apres = hero.querySelector(".v-apres");
+    var pouls = hero.querySelector(".pouls"), b2 = hero.querySelector(".b2"), apres = hero.querySelector(".v-apres");
     function tirer(){
       if (tire) { return; }
       tire = true;
@@ -1016,7 +1100,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
     }
     hero.addEventListener("animationstart", function(e){ if (e.animationName === "choc") { tirer(); } });
     hero.addEventListener("animationend", function(e){
-      if (e.animationName === "sort" && e.target === carte) { finir(); }
+      if (e.animationName === "bout-y" && e.target === b2) { finir(); }
       if (e.animationName === "surgit" && e.target === apres && !batPret) { battre(); }
     });
     /* script arrivé en retard (3G) : rattraper ce qui a déjà commencé */
