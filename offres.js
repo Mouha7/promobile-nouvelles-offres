@@ -29,6 +29,8 @@ var PROMOBILE = {
   "email": "contact@promobile.sn",
   "siteOfficiel": "https://www.promobile.sn",
 
+  "mesure": { "umami": "cb54054d-f849-4d20-b867-b991ca0dbe94" },
+
   "sloganWolof": "Dose Bi Yokkuti Na !!!",
   "sloganWolofAccent": "Yokkuti Na",
   "sloganWolofSens": "le niveau a augmenté",

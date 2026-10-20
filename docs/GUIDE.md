@@ -56,7 +56,8 @@ Astuce : ` ` dans un texte = espace insécable (évite « 1 000 F » coupé en 
 Paramètres globaux : `lancementTexte` (date affichée), `ussd` (**`#175#`**, le menu général ; chaque
 offre a en plus son `code` direct, qui doit commencer par `#175#` et finir par `#`), `whatsapp` (numéro
 international sans « + », ex. `221755250000`), `serviceClient`, `email`, `adresse` (adresse du site,
-voir § 6), `vedette` (l'offre rejouée dans le haut de page, par son `id`).
+voir § 6), `vedette` (l'offre rejouée dans le haut de page, par son `id`), `mesure` (identifiant du site
+Umami, voir § 8 ; vide = aucune mesure).
 
 Textes de campagne (facultatifs : un champ absent fait disparaître l'élément) :
 
@@ -100,11 +101,16 @@ Pour régénérer le PDF « maison » à partir de `offres.js` :
 
 ## 5. Liens à diffuser (mesure par source)
 
-Ajouter `?src=` au lien selon le canal ; la source est jointe à chaque événement mesuré :
+Ajouter la source au lien selon le canal. Umami la range dans son rapport **UTM**, et la page la joint à chaque
+événement (propriété `source`) :
 
-- SMS : `https://ADRESSE/?src=sms`
-- WhatsApp : `https://ADRESSE/?src=whatsapp`
-- Réseaux sociaux : `https://ADRESSE/?src=social` (ou `facebook`, `instagram`, `tiktok`…)
+- SMS : `https://ADRESSE/?utm_source=sms`
+- WhatsApp : `https://ADRESSE/?utm_source=whatsapp`
+- Réseaux sociaux : `https://ADRESSE/?utm_source=facebook` (ou `instagram`, `tiktok`…)
+- Une campagne précise : ajouter `&utm_campaign=lancement-oct26`
+
+La forme courte `?src=sms` marche aussi pour les événements, mais Umami ne la range pas dans son rapport UTM.
+La source est retenue pendant toute la visite, même après un rechargement.
 
 ## 6. Nom de domaine (ex. `offres.promobile.sn`)
 
@@ -172,20 +178,65 @@ boîte du papier (rapport `BOITE` = 1,82, le même que `.papier{aspect-ratio}` d
 et écrit la zone `gen:papier`. Les lambeaux et les fissures qui partent du centre sont calculés dans `<head>`
 (fonction `dechirure`, graine fixe : identiques à chaque visite).
 
-## 8. Mesure (F5) — sans données personnelles
+## 8. Mesure d'audience (Umami Cloud) — sans cookie ni donnée personnelle
 
-La page émet ces événements : `visite`, `offre_clic`, `activer_ussd`, `activer_whatsapp`,
-`copier_code`, `telecharger_pdf` (+ `filtre`), chacun avec `offre` et `source`.
-Ils sont transmis à l'outil présent dans la page. Recommandé : **Umami Cloud**
-(gratuit jusqu'à 100 000 événements/mois, sans cookie, conforme RGPD) :
+La page est mesurée par **Umami Cloud**. Umami ne pose pas de cookie et ne garde aucune donnée personnelle, donc
+pas de bandeau de consentement. Les mentions légales le disent déjà : « seules des statistiques anonymes de
+consultation sont mesurées ».
 
-1. Créer un compte sur umami.is, ajouter le site, copier l'identifiant (`data-website-id`).
-2. Dans `index.html`, bloc « MESURE (F5) » en haut : décommenter la ligne Umami et coller l'identifiant.
-3. Les événements apparaissent dans Umami → Events, filtrables par `offre` et `source`.
+**Réglage** : l'identifiant du site Umami est dans `offres.js`, champ `"mesure": { "umami": "…" }`. `build_page.py`
+écrit la balise dans `<head>` (zone `gen:mesure`).
+- **Vide** : aucune mesure, la page ne charge rien.
+- **Mal formé** : la construction s'arrête avec un message clair.
+- **Seul le site en ligne est compté** : la balise ne retient que l'hôte de `adresse`. Les tests en local et les
+  aperçus ne faussent donc pas les chiffres, et au passage au nom de domaine (§ 6), changer `adresse` suffit.
+- **Les visiteurs qui ont activé « Ne pas me pister »** ne sont pas comptés.
 
-Plausible (payant) ou Google Analytics 4 fonctionnent aussi sans rien changer d'autre.
-Sans outil, les événements restent visibles dans la console du navigateur (préfixe `[mesure]`,
-niveau « Verbose » à activer), utile pour la recette.
+**Où lire les chiffres** : cloud.umami.is, puis le site. On y trouve :
+- **Vue d'ensemble** : visiteurs, visites, pages vues, durée de visite ;
+- **Sources** et rapport **UTM** : d'où viennent les visiteurs (liens du § 5) ;
+- **Appareils**, navigateurs, systèmes, pays et villes ;
+- **Events** : les événements ci-dessous, filtrables par propriété ;
+- **Realtime** : les visites en direct, utile pour vérifier que la mesure marche.
+
+Les chiffres sont un **minimum** : les bloqueurs de publicité et « Ne pas me pister » en écartent une partie.
+
+**Événements envoyés par la page** (en plus des pages vues, qu'Umami compte seul) :
+
+| Événement | Quand | Propriétés |
+|---|---|---|
+| `vu_offres` | la liste des offres apparaît à l'écran (une fois par visite) | — |
+| `vu_comment` | « Activer une offre prend dix secondes » apparaît | — |
+| `vu_catalogue` | le bloc du PDF apparaît | — |
+| `vu_pied` | le pied de page apparaît (page lue jusqu'au bout) | — |
+| `offre_clic` | une carte d'offre est touchée (la feuille d'activation s'ouvre) | `offre` |
+| `vedette_clic` | la carte du haut (ProNET 3 Go) est touchée | `offre` |
+| `activer_ussd` | « Activer » : le clavier s'ouvre avec le code | `offre` |
+| `activer_whatsapp` | activation par WhatsApp | `offre` |
+| `copier_code` | « Copier le code » (iPhone surtout) | `offre` |
+| `filtre` | un filtre est choisi | `famille` |
+| `recharge` | un moyen de recharge est touché | `canal` (Wave, Max it, Promobile, En ligne) |
+| `telecharger_pdf` | le catalogue PDF est téléchargé | `position` (`haut` ou `bas`) |
+
+Chaque événement porte aussi `source` quand la visite vient d'un lien du § 5. `offre` vaut l'identifiant de la
+carte (`pronet-3go`, `promix-975`…). Un événement émis avant le chargement d'Umami est gardé puis envoyé : rien ne
+se perd au chargement.
+
+**Entonnoir à créer** (Umami › Reports › Funnel) : `vu_offres` → `offre_clic` → `activer_ussd`. Il montre combien
+de visiteurs voient les offres, en ouvrent une, puis lancent l'activation. Un second entonnoir, avec
+`activer_whatsapp` en dernière étape, mesure WhatsApp. **Objectifs** (Reports › Goals) : `activer_ussd` et
+`activer_whatsapp`, les deux gestes qui comptent.
+
+**Partager les chiffres** sans donner l'accès au compte : Settings › Websites › le site › Edit › **Share URL**
+(lien en lecture seule, à donner à Promobile).
+
+**Quota** : l'offre gratuite (Hobby) compte environ 100 000 événements par mois et garde 6 mois d'historique. Une
+page vue compte pour un événement, chaque événement aussi, et **chaque propriété en compte un de plus**. Une visite
+moyenne coûte une dizaine d'événements, soit **environ 10 000 visites par mois**. Au-delà : passer à l'offre
+payante, ou retirer des propriétés dans `track()` (script principal de `index.html`).
+
+**Recette** : ouvrir le site avec `?utm_source=test`, toucher une offre, puis vérifier dans Umami › Realtime.
+Les événements sont aussi visibles dans la console du navigateur (préfixe `[mesure]`, niveau « Verbose »).
 
 ## 9. Recette (critères de validation § 7)
 
@@ -198,4 +249,4 @@ niveau « Verbose » à activer), utile pour la recette.
       intégrés, d'où vient l'essentiel du trafic) : clavier, WhatsApp et PDF.
 - [ ] Le PDF se télécharge et s'ouvre sur un téléphone d'entrée de gamme.
 - [ ] L'aperçu du lien collé dans WhatsApp montre l'image et le titre.
-- [ ] Les événements remontent dans l'outil de mesure, avec l'offre et la source.
+- [ ] Les visites et les événements remontent dans Umami (Realtime), avec l'offre et la source.

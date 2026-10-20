@@ -22,6 +22,7 @@ import pathlib
 import re
 import shutil
 import subprocess
+import urllib.parse
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -369,6 +370,22 @@ def description(d: dict) -> str:
             f"plus de bonus, au même prix. Activez avec {d['ussd']} ou sur WhatsApp.")
 
 
+UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+
+
+def html_mesure(d: dict) -> str:
+    """Mesure d'audience Umami Cloud, sans cookie ni donnée personnelle ; « mesure.umami » vide = aucune mesure.
+    data-domains : seul le site en ligne (hôte de « adresse ») est compté, pas les tests en local ni les aperçus."""
+    ident = str((d.get("mesure") or {}).get("umami") or "").strip().lower()
+    if not ident:
+        return "<!-- mesure désactivée : renseigner « mesure.umami » dans offres.js -->"
+    if not UUID.fullmatch(ident):
+        raise Erreur("« mesure.umami » : identifiant de site Umami invalide (attendu : xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)")
+    hote = urllib.parse.urlparse(d["adresse"]).hostname or ""
+    return (f'<script defer src="https://cloud.umami.is/script.js" data-website-id="{ident}" '
+            f'data-domains="{e(hote)}" data-do-not-track="true"></script>')
+
+
 def html_meta(d: dict) -> str:
     a = d["adresse"]
     if not re.fullmatch(r"https://[^\s]+/", a):
@@ -470,6 +487,7 @@ def construire(d: dict, page: str) -> str:
     verifier_codes(d)
     zones = {
         "meta": html_meta(d),
+        "mesure": html_mesure(d),
         "jsonld": jsonld(d),
         "h1": html_h1(d),
         "doss": html_doss(d),
