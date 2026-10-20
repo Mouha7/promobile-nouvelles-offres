@@ -61,7 +61,7 @@ voir § 6), `vedette` (l'offre rejouée dans le haut de page, par son `id`).
 Textes de campagne (facultatifs : un champ absent fait disparaître l'élément) :
 
 - `sloganWolof` : le slogan du moment sous le titre, sur un coup de surligneur jaune (ex. `"Dose Bi Yokkuti Na !!!"`).
-  La ponctuation finale s'affiche en rouge. `sloganWolofSens` donne sa traduction, lue par les lecteurs d'écran et
+  La ponctuation finale s'affiche en rouge, ainsi que la partie donnée dans `sloganWolofAccent` (ex. `"Yokkuti Na"`). `sloganWolofSens` donne sa traduction, lue par les lecteurs d'écran et
   affichée au survol.
 - `reseau` : la ligne en pied de la carte phare. `badge` (`"4G+"`), `court` (la phrase affichée), `chiffre`
   (facultatif, en jaune après un point ; le tout tient sur une ligne : rester court) et `complet` (la phrase entière, lue par les lecteurs d'écran). Garder la source du chiffre de

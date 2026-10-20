@@ -30,6 +30,7 @@ var PROMOBILE = {
   "siteOfficiel": "https://www.promobile.sn",
 
   "sloganWolof": "Dose Bi Yokkuti Na !!!",
+  "sloganWolofAccent": "Yokkuti Na",
   "sloganWolofSens": "le niveau a augmenté",
 
   "reseau": {

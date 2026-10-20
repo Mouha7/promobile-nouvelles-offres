@@ -256,8 +256,14 @@ def html_doss(d: dict) -> str:
     if not sens:
         raise Erreur("« sloganWolofSens » : donner la traduction de « sloganWolof »")
     titre = typo(f"« {sens[:1].upper()}{sens[1:]} »")
-    m = re.fullmatch(r"(.*?)\s*([!?.…]+)", s)          # la ponctuation finale (« !!! ») passe en rouge
-    texte = f'{e(m.group(1))}<em>{NBSP}{e(m.group(2))}</em>' if m else e(typo(s))
+    m = re.fullmatch(r"(.*?)\s*([!?.…]+)", s)          # la ponctuation finale (« !!! ») passe en rouge…
+    corps, ponct = (m.group(1), NBSP + m.group(2)) if m else (s, "")
+    accent = (d.get("sloganWolofAccent") or "").strip()   # …et la partie « sloganWolofAccent » qui la précède
+    if accent and accent in corps:
+        i = corps.index(accent)
+        texte = f'{e(corps[:i])}<em>{e(corps[i:])}{e(ponct)}</em>'
+    else:
+        texte = f'{e(corps)}<em>{e(ponct)}</em>' if ponct else e(typo(s))
     return (f'<p class="doss"><span lang="wo" title="{e(titre)}">{texte}</span>'
             f'<span class="sr"> ({e(sens)})</span></p>')
 
