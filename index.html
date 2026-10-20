@@ -683,6 +683,14 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 /* Confettis posés dans les sections : ils atterrissent à leur première apparition, puis flottent tant qu'ils sont à l'écran */
 .anim .dd:not(.vu){transform:translate(0,-70px) rotate(-120deg) scale(.5)}
 .anim .dd.vu{animation:pose .9s cubic-bezier(.2,.8,.3,1)}
+/* Parallaxe des débris (suggestion du client) : chaque débris glisse à sa vitesse au défilement — les gros (proches)
+   plus vite que la page, les petits (lointains) moins vite. Animation liée au défilement (view()), sans JS ni coût hors
+   défilement ; ignorée par les navigateurs qui ne la connaissent pas, et en version douce. */
+@keyframes parallaxe{from{translate:0 calc(var(--pz,0) * 80px)}to{translate:0 calc(var(--pz,0) * -80px)}}
+@supports (animation-timeline:view()){
+  .anim:not(.doux) .dd{animation:parallaxe linear both;animation-timeline:view()}
+  .anim:not(.doux) .dd.vu{animation:pose .9s cubic-bezier(.2,.8,.3,1),parallaxe linear both;animation-timeline:auto,view()}
+}
 .anim .dd svg{animation-name:glisse,flotter;animation-duration:calc(var(--fd,5s) * .85),1.9s;animation-delay:var(--fdl,0s),var(--fdl,0s);animation-iteration-count:infinite;animation-direction:alternate;animation-timing-function:ease-in-out;animation-play-state:var(--jeu,paused)}
 
 /* Cartes : la jauge pousse, puis le gain rebondit, quand la carte entre à l'écran (classe .vu) */
@@ -1104,6 +1112,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
         var g = Math.random() < .5, taille = Math.round(h(7, 10)), haut = 4 + (i + h(.1, .9)) / n * 92, s = d.firstElementChild;
         d.className = "dd " + un(couleurs);
         d.style.setProperty("--t", taille);
+        d.style.setProperty("--pz", ((taille - 8.5) / 1.5 + h(-.3, .3)).toFixed(2));   /* profondeur : gros = proche = plus rapide */
         d.style.setProperty("--r", Math.round(h(-90, 180)));
         d.style.setProperty("--mt", haut.toFixed(1) + "%");
         d.style.setProperty("--dt", (haut + h(-3, 3)).toFixed(1) + "%");
