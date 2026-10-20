@@ -1344,6 +1344,23 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
     var ruban = $("#ruban"); if (ruban) { ruban.setAttribute("data-on", ""); }
     pdfLiens.forEach(function(a){ a.removeAttribute("download"); a.target = "_blank"; a.rel = "noopener"; });
   }
+
+  /* ---------- Diagnostic : ajouter ?diag à l'adresse affiche ce que le téléphone déclare (rien sinon) ---------- */
+  if (/[?&]diag\b/.test(location.search)) {
+    var dg = document.createElement("div");
+    dg.setAttribute("style", "position:fixed;left:8px;right:8px;bottom:8px;z-index:99;padding:10px 12px;border-radius:12px;" +
+      "background:#14181F;color:#fff;font:13px/1.45 system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.35)");
+    var oui = function(b){ return b ? "OUI" : "non"; };
+    var maj = function(){
+      var h = document.getElementById("hero"), c = h ? h.className : "";
+      dg.innerHTML = "<b>Diagnostic</b><br>" +
+        "« Réduire les animations » (réglage du téléphone) : <b>" + oui(matchMedia("(prefers-reduced-motion: reduce)").matches) + "</b><br>" +
+        "Animations du site actives : <b>" + oui(document.documentElement.classList.contains("anim")) + "</b><br>" +
+        "Intro : <b>" + (/\bgo\b/.test(c) ? (/\bfini\b/.test(c) ? "jouée" : "en cours") : /guette/.test(c) ? "en attente (carte pas assez visible)" : /\bfini\b/.test(c) ? "sautée" : "—") + "</b><br>" +
+        "Écran : " + innerWidth + " × " + innerHeight + " · " + (navigator.userAgent.match(/(CriOS|FxiOS|EdgiOS|Version)\/[\d.]+/) || [""])[0];
+    };
+    document.body.appendChild(dg); maj(); setInterval(maj, 1000);
+  }
 })();
 </script>
 </body>
