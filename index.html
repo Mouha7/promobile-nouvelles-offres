@@ -42,10 +42,12 @@
      pas à l'écran (lien vers #offres…), l'intro attend qu'on y remonte (.guette). Un rechargement repart du haut. -->
 <script>
 (function(d,h){
-  var A=false,C=false;
+  var A=false,C=false,R=false;
   try{C=CSS.supports("clip-path","polygon(0 0,1px 0,0 1px)")&&!!window.requestAnimationFrame;}catch(e){}
-  try{A=C&&matchMedia("(prefers-reduced-motion: no-preference)").matches&&"IntersectionObserver"in window&&CSS.supports("translate","1px");}catch(e){}
-  if(A){h.className+=" anim";try{if("scrollRestoration"in history){history.scrollRestoration="manual";}}catch(e){}}
+  try{A=C&&"IntersectionObserver"in window&&CSS.supports("translate","1px");}catch(e){}
+  /* « Réduire les animations » : mode doux (fondus et tracés, sans 3D, secousses ni confettis) au lieu de tout couper */
+  try{R=matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}
+  if(A){h.className+=R?" anim doux":" anim";try{if("scrollRestoration"in history){history.scrollRestoration="manual";}}catch(e){}}
   if(!C){return;}
   /* Déchirure : fissures à deux échelles (dérive lente + grain, atténué près des extrémités), lambeaux qui pavent le trou */
   function dechirure(pap){
@@ -321,12 +323,12 @@ h1,h2,h3{text-wrap:balance}
 .pg{transform-origin:0 50%;--ox:1.5px;--sens:to right;--te:14%}
 .pd{transform-origin:100% 50%;--ox:-1.5px;--sens:to left;--te:15%}
 /* angles : pré-ouverture / pic / rebond / repos (collerette) ; décalages irréguliers, durées propres à chaque lambeau */
-.pb1{--o:0ms;--m:1.1;--a0:-9deg;--a1:-112deg;--a2:-100deg;--a3:-104deg;--sh:.55;transform:rotateX(-104deg)}
-.ph1{--o:20ms;--m:1.05;--a0:8deg;--a1:118deg;--a2:100deg;--a3:106deg;--sh:.9;transform:rotateX(106deg)}
-.pb2{--o:35ms;--m:1;--a0:-8deg;--a1:-114deg;--a2:-100deg;--a3:-104deg;--sh:.5;transform:rotateX(-104deg)}
-.ph2{--o:50ms;--m:.95;--a0:7deg;--a1:126deg;--a2:104deg;--a3:110deg;--sh:.85;transform:rotateX(110deg)}
-.pg{--o:65ms;--m:.85;--a0:-8deg;--a1:-140deg;--a2:-118deg;--a3:-124deg;--sh:.95;transform:rotateY(-124deg)}
-.pd{--o:80ms;--m:.85;--a0:8deg;--a1:136deg;--a2:114deg;--a3:120deg;--sh:.6;transform:rotateY(120deg)}
+.pb1{--o:0ms;--m:1.1;--a0:-9deg;--a1:-112deg;--a2:-100deg;--a3:-104deg;--sh:.55;--repos:rotateX(-104deg);transform:var(--repos)}
+.ph1{--o:20ms;--m:1.05;--a0:8deg;--a1:118deg;--a2:100deg;--a3:106deg;--sh:.9;--repos:rotateX(106deg);transform:var(--repos)}
+.pb2{--o:35ms;--m:1;--a0:-8deg;--a1:-114deg;--a2:-100deg;--a3:-104deg;--sh:.5;--repos:rotateX(-104deg);transform:var(--repos)}
+.ph2{--o:50ms;--m:.95;--a0:7deg;--a1:126deg;--a2:104deg;--a3:110deg;--sh:.85;--repos:rotateX(110deg);transform:var(--repos)}
+.pg{--o:65ms;--m:.85;--a0:-8deg;--a1:-140deg;--a2:-118deg;--a3:-124deg;--sh:.95;--repos:rotateY(-124deg);transform:var(--repos)}
+.pd{--o:80ms;--m:.85;--a0:8deg;--a1:136deg;--a2:114deg;--a3:120deg;--sh:.6;--repos:rotateY(120deg);transform:var(--repos)}
 .fentes{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .fentes path{fill:none;stroke:#2B3038;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:0}
 .frontiere{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
@@ -687,6 +689,37 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 .tel.tape .tel-code span:not(.on){transform:scale(0)}
 .tel-appel.sonne{animation:sonne .25s ease-in-out 2}
 .tel-appel.sonne::after{animation:anneau .9s ease-out 2}
+
+/* ================================================================
+   MODE DOUX — html.anim.doux, quand le téléphone demande « Réduire les animations ». On garde ce qui se lit sans
+   bouger : la fissure qui se trace, les fondus, le surligneur, la jauge, la frappe du code. On retire la 3D, les
+   secousses, les rebonds, l'explosion de confettis, le battement et les flottements.
+   ================================================================ */
+@keyframes fondu{from{opacity:0}}
+@keyframes efface{to{opacity:0}}
+@keyframes fantome-doux{0%{opacity:0}80%{opacity:.13}to{opacity:0}}
+/* lambeaux : papier à plat jusqu'à --tc, fondu, saut (invisible) à la position de repos, réapparition en collerette.
+   Pourcentages calés sur --tv0 1500 ms, --tc 2150 ms et une durée de 1650 ms. */
+@keyframes doux-pan{0%,39%{opacity:1;transform:none}63%{opacity:0;transform:none}64%{opacity:0;transform:var(--repos)}to{opacity:1;transform:var(--repos)}}
+.anim.doux .hero.go:not(.fini) .slot{animation:none}
+.anim.doux .hero.go:not(.fini) .fantome{animation:fantome-doux var(--dg) linear var(--ta)}
+.anim.doux .hero.go:not(.fini) .piece{animation:efface .45s ease-out var(--tv0) both}
+.anim.doux .hero.go:not(.fini) .pan{opacity:0;animation:doux-pan 1650ms linear var(--tv0) forwards}
+.anim.doux .hero.go:not(.fini) :is(.bout,.pouls){display:none}
+.anim.doux .hero.go:not(.fini) .vedette{animation:fondu .6s ease-out var(--tk) backwards}
+.anim.doux .hero.go:not(.fini) .coeur::after{animation:fondu .6s ease-out var(--tk) backwards}
+.anim.doux .hero.go .v-apres,.anim.doux .hero.go .v-gain{animation:fondu .5s ease-out var(--ts) backwards}
+.anim.doux .hero:is(.go,.fini) .eclat{animation:fondu .9s ease-out calc(var(--tp,1.6s) + var(--tpo,0s)) backwards}
+.anim.doux .hero.bat :is(.coeur,.pouls){animation:none}
+.anim.doux .doss span[lang]{animation:none}
+.anim.doux .doss span[lang]::after{animation:fondu .45s ease-out 1.15s backwards}
+.anim.doux .dd:not(.vu){transform:none}
+.anim.doux .dd.vu,.anim.doux .dd svg{animation:none}
+.anim.doux .carte:not(.vu) .gain{transform:none}
+.doux .tel.tape .tel-code span:not(.on){transform:none;opacity:0}
+.doux .tel-code span{transition:opacity .2s ease}
+.doux .tel-pave span.enfonce{transform:none}
+.doux .tel-appel.sonne,.doux .tel-appel.sonne::after{animation:none}
 
 /* Filtres : View Transition (navigateurs récents), sinon changement instantané */
 ::view-transition-group(*){animation-duration:.32s;animation-timing-function:var(--sortie)}
@@ -1136,6 +1169,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
     hero.addEventListener("animationstart", function(e){ if (e.animationName === "choc") { tirer(); } });
     hero.addEventListener("animationend", function(e){
       if (e.animationName === "bout-y" && e.target === b2) { finir(); }
+      if (e.animationName === "doux-pan" && e.target.classList.contains("pd")) { finir(); }   /* mode doux */
       if (e.animationName === "surgit" && e.target === apres && !batPret) { battre(); }
     });
     /* script arrivé en retard (3G) : rattraper ce qui a déjà commencé */
@@ -1210,7 +1244,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
     clearTimeout(toastT); toastT = setTimeout(function(){ t.removeAttribute("data-on"); }, 2200);
   }
   var IOS = /iP(hone|od|ad)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  var MOUVEMENT = document.documentElement.className.indexOf("anim") >= 0;
+  var MOUVEMENT = /(^|\s)anim(\s|$)/.test(document.documentElement.className) && !/(^|\s)doux(\s|$)/.test(document.documentElement.className);
 
   /* ---------- Recharge : sur iPhone, les applis ouvrent leur fiche App Store ---------- */
   $$(".canaux a").forEach(function(a){
@@ -1355,7 +1389,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
       var h = document.getElementById("hero"), c = h ? h.className : "";
       dg.innerHTML = "<b>Diagnostic</b><br>" +
         "« Réduire les animations » (réglage du téléphone) : <b>" + oui(matchMedia("(prefers-reduced-motion: reduce)").matches) + "</b><br>" +
-        "Animations du site actives : <b>" + oui(document.documentElement.classList.contains("anim")) + "</b><br>" +
+        "Animations du site : <b>" + (document.documentElement.classList.contains("doux") ? "version douce" : oui(document.documentElement.classList.contains("anim"))) + "</b><br>" +
         "Intro : <b>" + (/\bgo\b/.test(c) ? (/\bfini\b/.test(c) ? "jouée" : "en cours") : /guette/.test(c) ? "en attente (carte pas assez visible)" : /\bfini\b/.test(c) ? "sautée" : "—") + "</b><br>" +
         "Écran : " + innerWidth + " × " + innerHeight + " · " + (navigator.userAgent.match(/(CriOS|FxiOS|EdgiOS|Version)\/[\d.]+/) || [""])[0];
     };

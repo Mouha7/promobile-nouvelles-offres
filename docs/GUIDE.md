@@ -153,8 +153,11 @@ touche par touche. Chaque zone ne s'anime que lorsqu'elle
 est à l'écran et se met en pause dès qu'on la quitte (batterie), jusqu'au retour. Note : sans bouton pause, ces
 mouvements continus ne respectent pas la règle d'accessibilité WCAG 2.2.2 ; c'est un choix assumé.
 
-**Accessibilité et performances** : les personnes qui ont activé « Supprimer les animations » dans leur téléphone
-voient directement la composition finale, immobile (carte posée dans sa collerette). Le titre n'est jamais animé
+**Accessibilité et performances** : si le téléphone demande « Réduire les animations » (iPhone : Réglages >
+Accessibilité > Mouvement ; Android : « Supprimer les animations »), le site joue une **version douce** : la fissure
+« Sénégal » se trace, la carte et sa collerette arrivent en fondu, le surligneur se dessine, la jauge se remplit et le
+téléphone tape le code ; sans 3D, secousses, rebonds, explosion de confettis ni battement. Pour vérifier sur un
+téléphone ce qu'il déclare, ouvrir l'adresse du site suivie de `?diag`. Le titre n'est jamais animé
 (il reste l'élément affiché le plus vite). Sur les téléphones à faible mémoire, les confettis sont moins nombreux.
 
 Réglages (dans `index.html`, CSS de `.hero`) : les temps de l'intro (`--tsn` fissure « Sénégal », `--tv0` éjection
