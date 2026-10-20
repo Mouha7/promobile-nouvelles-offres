@@ -349,7 +349,7 @@ def html_contact(d: dict) -> str:
             f'<li>{wa_ic}<a href="{e(wa_lien(d))}" target="_blank" rel="noopener">WhatsApp {wa_affiche(d)}</a></li>'
             f'<li>{mail_ic}<a href="mailto:{e(d["email"])}">{e(d["email"])}</a></li>'
             f'<li>{web_ic}<a href="{e(site)}" target="_blank" rel="noopener">'
-            f'{e(re.sub(r"^https?://(www[.])?", "", site).rstrip("/"))}</a></li>')
+            f'{e(re.sub(r"^https?://", "", site).rstrip("/"))}</a></li>')       # « www.promobile.sn », comme les mentions légales
 
 
 def description(d: dict) -> str:
