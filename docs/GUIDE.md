@@ -119,7 +119,8 @@ vérifiée par fichier HTML (un TXT est impossible sur un sous-domaine en CNAME)
 **Intro du haut de page (environ 3 s, à chaque chargement)** : la zone de la carte est d'abord vide et blanche ;
 une ombre pousse derrière la page, la page se fissure, se déchire, et la carte (l'offre `vedette`) la crève et passe
 devant. Des confettis (bibliothèque canvas-confetti 1.9.4, licence ISC, intégrée à la page) jaillissent de derrière la
-carte et se répandent sur toute la page pendant environ 3 s. Les lambeaux de papier restent en collerette autour de
+carte ; en même temps, une pluie tombe sur toute la largeur et deux canons tirent depuis les coins bas de l'écran,
+si bien que tout l'écran est couvert pendant environ 3 s. Les lambeaux de papier restent en collerette autour de
 la carte, et des confettis restent posés autour d'elle et dans les marges, où ils flottent doucement.
 
 **Page vivante** (choix du client) : après l'apparition du nouveau volume, la carte bat en continu ; les confettis
@@ -132,7 +133,8 @@ voient directement la composition finale, immobile (carte posée dans sa collere
 (il reste l'élément affiché le plus vite). Sur les téléphones à faible mémoire, les confettis sont moins nombreux.
 
 Réglages (dans `index.html`, CSS de `.hero`) : les temps de l'intro (`--tc` fissure, `--tz` passage devant, etc.)
-et, dans le script de mouvement, le nombre de confettis (`N`). La forme de la déchirure est calculée dans `<head>`
+et, dans le script de mouvement (fonction `feu`), le nombre de confettis (`N`), leur vitesse (`startVelocity`) et
+leur durée de vie (`ticks`). La vitesse des confettis posés se règle par `--fd` (durée d'un aller). La forme de la déchirure est calculée dans `<head>`
 (fonction `dechirure`, graine fixe : elle est identique à chaque visite).
 
 ## 8. Mesure (F5) — sans données personnelles
