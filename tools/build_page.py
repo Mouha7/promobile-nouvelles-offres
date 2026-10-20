@@ -259,13 +259,14 @@ PLAY = "https://play.google.com/store/apps/details?id={}"
 APPSTORE = "https://apps.apple.com/sn/app/id{}"
 ID_ANDROID = re.compile(r"[a-zA-Z]\w*(?:\.[a-zA-Z]\w*)+")
 ID_IOS = re.compile(r"\d{6,12}")
-FLECHE = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" '
+FLECHE_EXT = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" '   # lien externe (pas FLECHE : celle des cartes)
           'stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>')
 
 
 GLOBE = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" '
          'stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>')
-PASTILLES = {"wave": "W", "maxit": "M", "promobile": "Pro", "en-ligne": GLOBE}   # couleurs : CSS .c-<id> .ic
+# un canal donne son « icone » (image carrée, affichée à fond perdu) ; sinon pastille dessinée ici, ou son initiale
+PASTILLES = {"en-ligne": GLOBE}
 
 
 def html_recharge(d: dict) -> str:
@@ -294,11 +295,16 @@ def html_recharge(d: dict) -> str:
         else:
             raise Erreur(f"« recharge » : le canal « {nom} » doit avoir « url », ou « android » et « ios »")
         cid = re.sub(r"[^a-z0-9-]", "", str(c.get("id") or nom).lower().replace(" ", "-"))
-        pastille = PASTILLES.get(cid, e(nom[:1].upper()))
+        if c.get("icone"):
+            if not (RACINE / c["icone"]).is_file():
+                raise Erreur(f"« recharge » : l'icône « {c['icone']} » du canal « {nom} » est introuvable")
+            pastille = f'<img src="{e(c["icone"])}" alt="" width="34" height="34" loading="lazy" decoding="async">'
+        else:
+            pastille = PASTILLES.get(cid, e(nom[:1].upper()))
         detail = f'<small>{e(c["detail"])}</small>' if c.get("detail") else ""
         liens.append(f'<a class="canal c-{cid}" href="{e(href)}"{ios} target="_blank" rel="noopener" data-canal="{e(nom)}">'
                      f'<span class="ic" aria-hidden="true">{pastille}</span><span class="cn"><b>{e(nom)}</b>{detail}</span>'
-                     f'{FLECHE}</a>')
+                     f'{FLECHE_EXT}</a>')
     return (f'<li class="recharge"><strong>{e(typo(r["titre"]))}</strong><span>{e(typo(r["texte"]))}</span>'
             f'<div class="canaux">{"".join(liens)}</div></li>')
 

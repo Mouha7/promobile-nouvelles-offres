@@ -67,7 +67,9 @@ Textes de campagne (facultatifs : un champ absent fait disparaître l'élément)
   garder court) et `complet` (la phrase entière, lue par les lecteurs d'écran). Garder la source du chiffre de
   couverture annoncé.
 - `recharge` : la 4e étape de « Comment activer ». `titre`, `texte` et `canaux`. Chaque canal a un `id` (`wave`,
-  `maxit`, `promobile`, `en-ligne` : il fixe la couleur de la pastille), un `nom`, un `detail` (sous-titre), puis soit
+  `maxit`, `promobile`, `en-ligne`), un `nom`, un `detail` (sous-titre), une `icone` facultative (image carrée,
+  ex. `assets/paiement/wave.png` ; les logos Wave et Orange Money, fournis par Promobile, sont rangés dans
+  `assets/paiement/`, l'icône de l'app dans `assets/app-promobile.png`), puis soit
   `url` (un site, en `https://`), soit `android` (identifiant Google Play, ex. `com.wave.personal`) **et** `ios`
   (numéro App Store, ex. `1523884528`). Une appli ouvre sa fiche Play Store ; sur iPhone, sa fiche App Store. La fiche
   affiche « Ouvrir » si l'appli est déjà installée. Pour ouvrir **directement** l'app Promobile (et une offre précise),
