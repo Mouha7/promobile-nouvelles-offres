@@ -122,6 +122,8 @@ devant. Des confettis (bibliothèque canvas-confetti 1.9.4, licence ISC, intégr
 carte ; en même temps, une pluie tombe sur toute la largeur et deux canons tirent depuis les coins bas de l'écran,
 si bien que tout l'écran est couvert pendant environ 3 s. Les lambeaux de papier restent en collerette autour de
 la carte, et des confettis restent posés autour d'elle et dans les marges, où ils flottent doucement.
+Si la page s'ouvre ailleurs qu'en haut (lien vers `#offres` ou vers une offre), la zone de la carte reste blanche
+et l'intro se joue quand on remonte jusqu'à elle. Un rechargement repart toujours du haut de la page.
 
 **Page vivante** (choix du client) : après l'apparition du nouveau volume, la carte bat en continu ; les confettis
 posés flottent et le téléphone de « Comment activer » tape les codes en boucle. Chaque zone ne s'anime que lorsqu'elle

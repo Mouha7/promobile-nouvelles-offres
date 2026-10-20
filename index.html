@@ -38,13 +38,14 @@
 
 <!-- Animations : seulement si le mouvement est autorisé et le navigateur assez récent (translate/rotate/scale, clip-path).
      Sans la classe « anim », tout s'affiche à l'état final, immobile. Ce script dessine aussi la déchirure du héros
-     (graine fixe) et lance l'intro (classe .go) deux images après que le héros est entièrement lu. -->
+     (graine fixe) et lance l'intro (classe .go) deux images après que le héros est entièrement lu ; si le héros n'est
+     pas à l'écran (lien vers #offres…), l'intro attend qu'on y remonte (.guette). Un rechargement repart du haut. -->
 <script>
 (function(d,h){
   var A=false,C=false;
   try{C=CSS.supports("clip-path","polygon(0 0,1px 0,0 1px)")&&!!window.requestAnimationFrame;}catch(e){}
   try{A=C&&matchMedia("(prefers-reduced-motion: no-preference)").matches&&"IntersectionObserver"in window&&CSS.supports("translate","1px");}catch(e){}
-  if(A){h.className+=" anim";}
+  if(A){h.className+=" anim";try{if("scrollRestoration"in history){history.scrollRestoration="manual";}}catch(e){}}
   if(!C){return;}
   /* Déchirure : fissures à deux échelles (dérive lente + grain, atténué près des extrémités), lambeaux qui pavent le trou */
   function dechirure(pap){
@@ -92,15 +93,29 @@
     if(!pap){return;}
     try{dechirure(pap);pap.classList.add("pret");ok=true;}catch(e){}
     if(!A){return;}                                   /* mouvement réduit : seulement la collerette, immobile */
-    requestAnimationFrame(function(){requestAnimationFrame(function(){   /* deux images plus tard : l'image du h1 reste légère */
-      var co=hero.querySelector(".coeur"),an=co&&co.getAnimations?co.getAnimations():[],
-          b=hero.querySelector(".slot").getBoundingClientRect(),
-          go=ok&&!(an[0]&&an[0].currentTime>2600)&&b.bottom>0&&b.top<innerHeight
-             &&!/^#(offres|grille|t-[\w-]+|pro[\w-]+)$/i.test(location.hash);
+    function lancer(go){
+      hero.classList.remove("guette");
       hero.classList.add(go?"go":"fini");
       if(go){hero.classList.add("en-fete");}
       window.pmIntro={go:go};
       if(window.pmHero){window.pmHero(window.pmIntro);}
+    }
+    requestAnimationFrame(function(){requestAnimationFrame(function(){   /* deux images plus tard : l'image du h1 reste légère */
+      var co=hero.querySelector(".coeur"),an=co&&co.getAnimations?co.getAnimations():[],
+          slot=hero.querySelector(".slot"),b=slot.getBoundingClientRect(),io;
+      if(!ok||(an[0]&&an[0].currentTime>2600)){lancer(false);return;}   /* déchirure impossible, ou héros lu très tard */
+      if(b.bottom>0&&b.top<innerHeight&&!/^#(offres|grille|t-[\w-]+|pro[\w-]+)$/i.test(location.hash)){lancer(true);return;}
+      /* héros hors de l'écran : zone blanche jusqu'à ce que la carte soit visible à 60 %, puis l'intro */
+      /* observé 700 ms après « load » : le saut vers l'ancre est animé (défilement doux) et ne part qu'au chargement */
+      hero.classList.add("guette");
+      function guetter(){
+        io=new IntersectionObserver(function(en){
+          if(en[en.length-1].intersectionRatio>=.6){io.disconnect();lancer(true);}
+        },{threshold:[0,.6]});
+        io.observe(slot);
+      }
+      if(d.readyState==="complete"){setTimeout(guetter,700);}
+      else{addEventListener("load",function(){setTimeout(guetter,700);});}
     });});
   });
 })(document,document.documentElement);
@@ -597,6 +612,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 
 /* avant .go (héros lu en plusieurs morceaux) : carte, papier et confettis posés cachés ; filet de sécurité CSS à 3 s */
 .anim .hero:not(.go):not(.fini) :is(.coeur,.papier,.debris){animation:attente 1ms 3s backwards}
+.anim .hero.guette:not(.go):not(.fini) :is(.coeur:not(:focus-within),.papier,.debris){animation:none;opacity:0}   /* intro en attente */
 .anim .hero:not(.go):not(.fini) .coeur:focus-within{animation:none}
 .anim .hero.en-fete{z-index:21}               /* le temps des confettis : ils passent sur l'en-tête et la barre de filtres (z 20) */
 .anim .hero.go:not(.fini) :is(.trou,.cadre,.fantome,.bout){display:block}
