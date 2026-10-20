@@ -1146,17 +1146,13 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
       tir(M ? .16 : .12, { angle: 65, spread: 40, startVelocity: M ? 43 : 60, colors: CLAIRS, haut: .65 });
     }, 60);
     setTimeout(function(){                                                                  /* coups de canon aux coins */
-      tir(M ? .12 : .14, { angle: M ? 150 : 155, spread: 45, startVelocity: M ? 36 : 70, haut: .08 });
+      tir(M ? .12 : .18, { angle: M ? 150 : 155, spread: 45, startVelocity: M ? 36 : 70, haut: .08 });
       tir(M ? .12 : .10, { angle: M ? 30 : 35, spread: 45, startVelocity: M ? 36 : 50, haut: .92 });
     }, 140);
     setTimeout(function(){                                                                  /* deux canons depuis les coins bas de l'écran */
-      tir(M ? .12 : .13, { angle: 58, spread: 45, startVelocity: M ? 46 : 62, colors: CLAIRS, ecran: [-.02, 1.02] });
-      tir(M ? .12 : .13, { angle: 122, spread: 45, startVelocity: M ? 46 : 62, colors: CLAIRS, ecran: [1.02, 1.02] });
+      tir(M ? .09 : .1, { angle: 62, spread: 40, startVelocity: M ? 50 : 68, colors: CLAIRS, ecran: [-.02, 1.02] });
+      tir(M ? .09 : .1, { angle: 118, spread: 40, startVelocity: M ? 50 : 68, colors: CLAIRS, ecran: [1.02, 1.02] });
     }, 200);
-    [.2, .5, .8].forEach(function(x, j){                                                    /* fontaines au bas de l'écran, en deux vagues : le bas aussi fait la fête */
-      setTimeout(function(){ tir(M ? .07 : .06, { angle: 90, spread: 55, startVelocity: M ? 34 : 44, colors: CLAIRS, ecran: [x, 1.02] }); }, 160 + 90 * j);
-      setTimeout(function(){ tir(M ? .05 : .045, { angle: 90, spread: 70, startVelocity: M ? 28 : 36, colors: CLAIRS, ecran: [x, 1.02] }); }, 750 + 90 * j);
-    });
     (M ? [.1, .37, .63, .9] : [.05, .23, .41, .59, .77, .95]).forEach(function(x, j){     /* pluie sur toute la largeur */
       setTimeout(function(){ tir(M ? .06 : .04, { angle: 270, spread: 80, startVelocity: M ? 14 : 18, gravity: 1, drift: (j % 2 ? .4 : -.4), ecran: [x, -.03] }); }, 90 + 70 * j);
     });
