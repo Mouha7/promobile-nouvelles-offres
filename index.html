@@ -686,10 +686,15 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
 /* Parallaxe des débris (suggestion du client) : chaque débris glisse à sa vitesse au défilement — les gros (proches)
    plus vite que la page, les petits (lointains) moins vite. Animation liée au défilement (view()), sans JS ni coût hors
    défilement ; ignorée par les navigateurs qui ne la connaissent pas, et en version douce. */
-@keyframes parallaxe{from{translate:0 calc(var(--pz,0) * 80px)}to{translate:0 calc(var(--pz,0) * -80px)}}
+@keyframes parallaxe{from{translate:0 calc(var(--pz,0) * 140px)}to{translate:0 calc(var(--pz,0) * -140px)}}
+/* débris du haut de page : à leur place exacte au chargement, ils remontent plus vite que la carte dès qu'on défile */
+@keyframes parallaxe-heros{to{translate:0 -110px}}
 @supports (animation-timeline:view()){
   .anim:not(.doux) .dd{animation:parallaxe linear both;animation-timeline:view()}
   .anim:not(.doux) .dd.vu{animation:pose .9s cubic-bezier(.2,.8,.3,1),parallaxe linear both;animation-timeline:auto,view()}
+}
+@supports (animation-timeline:scroll()){
+  .anim:not(.doux) .hero:is(.go,.fini) .debris{animation:parallaxe-heros linear both;animation-timeline:scroll(root);animation-range:0 100vh}
 }
 .anim .dd svg{animation-name:glisse,flotter;animation-duration:calc(var(--fd,5s) * .85),1.9s;animation-delay:var(--fdl,0s),var(--fdl,0s);animation-iteration-count:infinite;animation-direction:alternate;animation-timing-function:ease-in-out;animation-play-state:var(--jeu,paused)}
 
