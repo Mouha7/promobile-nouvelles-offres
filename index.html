@@ -1131,6 +1131,28 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
       });
     });
   })();
+  /* Parallaxe de relais : pour les navigateurs sans animation liée au défilement (Safari avant 26, Firefox), même calcul
+     que le CSS (parallaxe, parallaxe-heros), une mise à jour par image au défilement ; jamais en version douce */
+  (function(){
+    var cl = document.documentElement.className;
+    if (/(^|\s)doux(\s|$)/.test(cl)) { return; }
+    try { if (CSS.supports("animation-timeline: view()")) { return; } } catch (e) {}
+    var dd = $$(".dd"), heros = document.querySelector(".hero .debris"), prevu = false;
+    function maj(){
+      prevu = false;
+      var vh = innerHeight;
+      dd.forEach(function(d){
+        var haut = d.parentNode.getBoundingClientRect().top + d.offsetTop,          /* position sans le décalage déjà appliqué */
+            p = Math.min(1, Math.max(0, (vh - haut) / (vh + d.offsetHeight))),
+            pz = parseFloat(d.style.getPropertyValue("--pz")) || 0;
+        d.style.translate = "0 " + (pz * 140 * (1 - 2 * p)).toFixed(1) + "px";
+      });
+      if (heros) { heros.style.translate = "0 " + (-110 * Math.min(1, scrollY / vh)).toFixed(1) + "px"; }
+    }
+    addEventListener("scroll", function(){ if (!prevu) { prevu = true; requestAnimationFrame(maj); } }, { passive: true });
+    addEventListener("resize", maj);
+    maj();
+  })();
   var zones = new IntersectionObserver(suivre, { threshold: 0 });
   $$(".derive,.dd").forEach(function(el){ zones.observe(el); });
   if (tel) { zones.observe(tel); }
