@@ -297,7 +297,11 @@ h1,h2,h3{text-wrap:balance}
   --cs:9.2cqw}
 /* sur téléphone, la scène suit la largeur : ses marges aussi (une marge verticale en % se calcule sur la largeur) ;
    la collerette déborde de ~20,5 % de la largeur au-dessus comme au-dessous, au plus fort de l'ouverture */
-.scene{position:relative;margin-block:calc(20.5% - 10px) calc(20.5% - 18px);max-width:520px}
+.scene{position:relative;margin:calc(20.5% - 10px) auto calc(20.5% - 18px);width:100%;max-width:520px}
+/* grande largeur empilée (500 à 719 px) : un peu plus d'air au-dessus, le lambeau du haut ne frôle pas le bouton ; dès
+   552 px, la scène a sa largeur maximale (520 px), et elle se centre */
+@media (min-width:500px){.scene{margin-top:min(20.5% - 4px,104px)}}
+@media (min-width:552px){.scene{margin-bottom:96px}}
 .slot{position:relative;z-index:4;rotate:-1.5deg;container-type:inline-size}
 .coeur{position:relative;z-index:7}
 .coeur::after{content:"";position:absolute;z-index:-1;inset:18px 11% 0;inset:3.77cqw 11% 0;border-radius:var(--rayon);box-shadow:0 5.86cqw 10.9cqw -3.77cqw rgba(20,24,31,.5);pointer-events:none}
@@ -354,12 +358,23 @@ h1,h2,h3{text-wrap:balance}
 }
 .dd.o{display:none}
 .c-r{color:var(--rouge)}.c-f{color:#9B0911}.c-n{color:var(--noir)}.c-j{color:var(--jaune)}
-@media (min-width:880px){
-  .hero-grille{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:center;gap:3.5rem}
-  .hero-texte{gap:1.2rem}
-  .scene{margin-block:0}
-  .debris{--kx:3.2px;--ky:2px}
+/* deux colonnes dès la tablette (720 px) : titre et slogan suivent la largeur de leur colonne (cqw), le surligneur ne
+   passe jamais sous la déchirure ; à partir de 1040 px, les proportions de l'ordinateur */
+@media (min-width:720px){
+  .hero-grille{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:center;gap:1.75rem}
+  .hero-texte{gap:1.2rem;container-type:inline-size}
+  .hero h1{font-size:min(clamp(2.35rem,4.2vw + 1.35rem,4.75rem),13cqw)}
+  .doss{font-size:min(3.4rem,9.2cqw)}
+  .appui{max-width:min(38ch,88cqw)}   /* le lambeau gauche, ouvert, ne touche pas la fin de la ligne */
+  .scene{margin:0}
+  .debris{--kx:1.55px;--ky:1.4px}
   .eclat{--xx:var(--x);--yy:var(--y)}
+}
+/* les deux confettis posés qui, sur ordinateur, partent loin dans la marge gauche tomberaient ici sur le titre */
+@media (min-width:720px) and (max-width:1039.98px){.eclat.loin{display:none}}
+@media (min-width:1040px){
+  .hero-grille{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:3.5rem}
+  .debris{--kx:3.2px;--ky:2px}
 }
 
 /* ---------- Section offres ---------- */
@@ -815,8 +830,8 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
           <svg class="eclat c-j" style="--x:-40;--y:110;--xm:-88;--ym:74;--r:-30;--t:13;--tp:2.00s"><use href="#k5"/></svg>
           <svg class="eclat c-n" style="--x:-120;--y:128;--xm:-89;--ym:20;--r:140;--t:10;--tp:2.05s"><use href="#k1"/></svg>
           <svg class="eclat c-r" style="--x:-190;--y:100;--xm:-91;--ym:-27;--r:0;--t:9;--tp:2.10s"><use href="#k3"/></svg>
-          <svg class="eclat c-r" style="--x:-315;--y:12;--xm:79;--ym:129;--r:-15;--t:12;--tp:2.15s"><use href="#plus"/></svg>
-          <svg class="eclat c-j o" style="--x:-179;--y:-101;--xm:-90;--ym:-101;--r:70;--t:8;--tp:2.20s"><use href="#k2"/></svg>
+          <svg class="eclat c-r loin" style="--x:-315;--y:12;--xm:79;--ym:129;--r:-15;--t:12;--tp:2.15s"><use href="#plus"/></svg>
+          <svg class="eclat c-j o loin" style="--x:-179;--y:-101;--xm:-90;--ym:-101;--r:70;--t:8;--tp:2.20s"><use href="#k2"/></svg>
           <svg class="eclat c-r o" style="--x:-90;--y:20;--xm:-77;--ym:41;--r:0;--t:6;--tp:2.25s"><use href="#k3"/></svg>
           <svg class="eclat c-j o" style="--x:65;--y:129;--xm:65;--ym:144;--r:260;--t:10;--tp:2.30s"><use href="#k1"/></svg>
           <svg class="eclat c-n o" style="--x:110;--y:-50;--xm:77;--ym:-28;--r:10;--t:9;--tp:2.35s"><use href="#plus"/></svg>
@@ -1189,7 +1204,7 @@ footer li svg{width:18px;height:18px;opacity:.7;flex:none}
     if (!C || document.hidden || !coeur) { return; }
     var r0 = coeur.getBoundingClientRect();
     if (r0.bottom < 0 || r0.top > innerHeight) { return; }
-    var M = !matchMedia("(min-width:880px)").matches,
+    var M = !matchMedia("(min-width:720px)").matches,
         i = kMed, k = Math.min(1.8, Math.max(1, i * (Math.floor(15 / i) + 1) / 16.67)),   /* la bibliothèque avance au plus toutes les 15 ms */
         leger = (navigator.deviceMemory || 4) <= 2,
         N = M ? (leger ? 120 : 170) : (leger ? 160 : 240),

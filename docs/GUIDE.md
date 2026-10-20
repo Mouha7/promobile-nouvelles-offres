@@ -144,7 +144,9 @@ une ombre pousse derrière la page, puis **la page se fissure selon la frontièr
 pièce de papier en forme de pays est éjectée et laisse un trou rouge en forme de Sénégal, où la Gambie reste en
 papier blanc. La page se déchire ensuite tout autour, et la carte (l'offre `vedette`) la crève et passe devant.
 **Téléphone et ordinateur jouent exactement la même scène** : elle est réduite proportionnellement sur téléphone
-(même carte avec le « +0,5 Go », mêmes lambeaux, même rythme) ; seule la place du texte change. Des confettis (bibliothèque canvas-confetti 1.9.4, licence ISC, intégrée à la page) jaillissent de derrière la
+(même carte avec le « +0,5 Go », mêmes lambeaux, même rythme) ; seule la place du texte change.
+Sur tablette (720 à 1039 px de large), le texte et la carte sont côte à côte comme sur ordinateur ; le titre et le
+slogan suivent alors la largeur de leur colonne, pour ne jamais passer sous la déchirure. Des confettis (bibliothèque canvas-confetti 1.9.4, licence ISC, intégrée à la page) jaillissent de derrière la
 carte ; en même temps, une pluie tombe sur toute la largeur et deux canons tirent depuis les coins bas de l'écran,
 si bien que tout l'écran est couvert pendant environ 3 s. Les lambeaux de papier restent en collerette autour de
 la carte, et des confettis restent posés autour d'elle et dans les marges, où ils flottent doucement.
